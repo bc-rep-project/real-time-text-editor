@@ -58,7 +58,11 @@ const handleEditorChange = async (content, delta, source, editor) => {
   return (
     <div className="text-editor">
       <ReactQuill
-        ref={quillRef}
+        ref={(el) => {
+          if (el) {
+            quillRef.current = el.getEditor();
+          }
+        }}
         value={editorContent}
         onChange={handleEditorChange}
         theme="snow"
