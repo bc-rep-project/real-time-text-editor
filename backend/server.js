@@ -9,6 +9,8 @@ const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
+app.use(express.json());
+
 // MongoDB connection
 mongoose.connect('mongodb://localhost:27017/realtime-text-editor', {
   useNewUrlParser: true,
@@ -66,9 +68,29 @@ app.get('/documents/:id', async (req, res) => {
 });
 
 app.post('/documents', async (req, res) => {
-  const newDocument = new Document({ content: '', version: 1 });
+  const newDocument = new Document({ content: 'New Document', version: 1 });
   await newDocument.save();
   res.json(newDocument);
+});
+
+app.post('/documents/:id/save', async (req, res) => {
+  const document = await Document.findById(req.params.id);
+  if (document) {
+    document.versions.push({ content: document.content, version: document.version });
+    await document.save();
+    res.json(document);
+  } else {
+    res.status(404).send('Document not found');
+  }
+});
+
+app.get('/documents/:id/versions', async (req, res) => {
+  const document = await Document.findById(req.params.id);
+  if (document) {
+    res.json(document.versions);
+  } else {
+    res.status(404).send('Document not found');
+  }
 });
 
 const PORT = process.env.PORT || 3000;
