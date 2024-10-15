@@ -1,0 +1,7 @@
+Executing (default): SELECT name FROM sqlite_master WHERE type='table' AND name='Users';
+Executing (default): CREATE TABLE IF NOT EXISTS `Users` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `username` VARCHAR(255) NOT NULL UNIQUE, `password` VARCHAR(255) NOT NULL, `createdAt` DATETIME NOT NULL, `updatedAt` DATETIME NOT NULL);
+Executing (default): PRAGMA INDEX_LIST(`Users`)
+Executing (default): PRAGMA INDEX_INFO(`sqlite_autoindex_Users_1`)
+Server is running on port 3000
+Executing (default): INSERT INTO `Users` (`id`,`username`,`password`,`createdAt`,`updatedAt`) VALUES (NULL,$1,$2,$3,$4);
+Executing (default): SELECT `id`, `username`, `password`, `createdAt`, `updatedAt` FROM `Users` AS `User` WHERE `User`.`username` = 'testuser';

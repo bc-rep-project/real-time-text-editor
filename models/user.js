@@ -1,8 +1,6 @@
 
-const { Sequelize, DataTypes } = require('sequelize');
-const sequelize = new Sequelize(process.env.DATABASE_URL, {
-    dialect: 'postgres', // or 'mysql', 'sqlite', 'mariadb', 'mssql'
-});
+const { DataTypes } = require('sequelize');
+const sequelize = require('../config/database');
 
 const User = sequelize.define('User', {
     username: {
