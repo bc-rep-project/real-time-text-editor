@@ -1,6 +1,11 @@
-(node:1048) [DEP0170] DeprecationWarning: The URL sqlite::memory: is invalid. Future versions of Node.js will throw an error.
+(node:810) [DEP0170] DeprecationWarning: The URL sqlite::memory: is invalid. Future versions of Node.js will throw an error.
 (Use `node --trace-deprecation ...` to show where the warning was created)
 Server is running on http://localhost:3002
 Executing (default): SELECT name FROM sqlite_master WHERE type='table' AND name='Documents';
 Executing (default): CREATE TABLE IF NOT EXISTS `Documents` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `content` VARCHAR(255) NOT NULL, `version` INTEGER NOT NULL, `lastModified` DATETIME NOT NULL, `history` JSON NOT NULL, `createdAt` DATETIME NOT NULL, `updatedAt` DATETIME NOT NULL);
 Executing (default): PRAGMA INDEX_LIST(`Documents`)
+Executing (default): INSERT INTO `Documents` (`id`,`content`,`version`,`lastModified`,`history`,`createdAt`,`updatedAt`) VALUES (NULL,$1,$2,$3,$4,$5,$6);
+Executing (default): SELECT `id`, `content`, `version`, `lastModified`, `history`, `createdAt`, `updatedAt` FROM `Documents` AS `Document` WHERE `Document`.`id` = '1';
+Executing (default): UPDATE `Documents` SET `content`=$1,`version`=$2,`lastModified`=$3,`updatedAt`=$4 WHERE `id` = $5
+Executing (default): SELECT `id`, `content`, `version`, `lastModified`, `history`, `createdAt`, `updatedAt` FROM `Documents` AS `Document` WHERE `Document`.`id` = '1';
+Executing (default): UPDATE `Documents` SET `content`=$1,`version`=$2,`lastModified`=$3,`updatedAt`=$4 WHERE `id` = $5
