@@ -118,6 +118,19 @@ app.put('/documents/:id/revert', async (req, res) => {
   }
 });
 
+// In-memory storage for chat messages
+const chatMessages = [];
+
+app.post('/chat', (req, res) => {
+  const { message } = req.body;
+  chatMessages.push({ message, timestamp: new Date() });
+  res.status(201).send({ message: 'Message received' });
+});
+
+app.get('/chat', (req, res) => {
+  res.send(chatMessages);
+});
+
 server.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });
