@@ -7,6 +7,48 @@ const server = require('http').createServer(app);
 const wss = new WebSocket.Server({ server });
 const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = new Sequelize('sqlite::memory:');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const User = require('./models/user');
+const SECRET_KEY = 'your_secret_key';
+
+// Middleware to protect routes
+const authenticateToken = (req, res, next) => {
+  const token = req.header('Authorization')?.split(' ')[1];
+  if (!token) return res.status(401).send('Access Denied');
+  try {
+    const verified = jwt.verify(token, SECRET_KEY);
+    req.user = verified;
+    next();
+  } catch (err) {
+    res.status(400).send('Invalid Token');
+  }
+};
+
+// Register route
+app.post('/register', async (req, res) => {
+  const { username, password } = req.body;
+  const salt = await bcrypt.genSalt(10);
+  const hashedPassword = await bcrypt.hash(password, salt);
+  const user = new User({ username, password: hashedPassword });
+  try {
+    const savedUser = await user.save();
+    res.send({ user: savedUser._id });
+  } catch (err) {
+    res.status(400).send(err);
+  }
+});
+
+// Login route
+app.post('/login', async (req, res) => {
+  const { username, password } = req.body;
+  const user = await User.findOne({ where: { username } });
+  if (!user) return res.status(400).send('Username or password is wrong');
+  const validPass = await bcrypt.compare(password, user.password);
+  if (!validPass) return res.status(400).send('Invalid password');
+  const token = jwt.sign({ _id: user._id }, SECRET_KEY);
+  res.header('Authorization', 'Bearer ' + token).send(token);
+});
 
 const Document = sequelize.define('Document', {
   content: {

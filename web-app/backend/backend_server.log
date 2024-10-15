@@ -1,11 +1,29 @@
-(node:810) [DEP0170] DeprecationWarning: The URL sqlite::memory: is invalid. Future versions of Node.js will throw an error.
+(node:1133) [DEP0170] DeprecationWarning: The URL sqlite::memory: is invalid. Future versions of Node.js will throw an error.
 (Use `node --trace-deprecation ...` to show where the warning was created)
-Server is running on http://localhost:3002
-Executing (default): SELECT name FROM sqlite_master WHERE type='table' AND name='Documents';
-Executing (default): CREATE TABLE IF NOT EXISTS `Documents` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `content` VARCHAR(255) NOT NULL, `version` INTEGER NOT NULL, `lastModified` DATETIME NOT NULL, `history` JSON NOT NULL, `createdAt` DATETIME NOT NULL, `updatedAt` DATETIME NOT NULL);
-Executing (default): PRAGMA INDEX_LIST(`Documents`)
-Executing (default): INSERT INTO `Documents` (`id`,`content`,`version`,`lastModified`,`history`,`createdAt`,`updatedAt`) VALUES (NULL,$1,$2,$3,$4,$5,$6);
-Executing (default): SELECT `id`, `content`, `version`, `lastModified`, `history`, `createdAt`, `updatedAt` FROM `Documents` AS `Document` WHERE `Document`.`id` = '1';
-Executing (default): UPDATE `Documents` SET `content`=$1,`version`=$2,`lastModified`=$3,`updatedAt`=$4 WHERE `id` = $5
-Executing (default): SELECT `id`, `content`, `version`, `lastModified`, `history`, `createdAt`, `updatedAt` FROM `Documents` AS `Document` WHERE `Document`.`id` = '1';
-Executing (default): UPDATE `Documents` SET `content`=$1,`version`=$2,`lastModified`=$3,`updatedAt`=$4 WHERE `id` = $5
+node:events:497
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use 0.0.0.0:3002
+    at Server.setupListenHandle [as _listen2] (node:net:1904:16)
+    at listenInCluster (node:net:1961:12)
+    at Server.listen (node:net:2063:7)
+    at Object.<anonymous> (/home/user/real-time-text-editor/web-app/backend/server.js:176:8)
+    at Module._compile (node:internal/modules/cjs/loader:1469:14)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1548:10)
+    at Module.load (node:internal/modules/cjs/loader:1288:32)
+    at Module._load (node:internal/modules/cjs/loader:1104:12)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:174:12)
+    at node:internal/main/run_main_module:28:49
+Emitted 'error' event on WebSocketServer instance at:
+    at Server.emit (node:events:519:28)
+    at emitErrorNT (node:net:1940:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:82:21) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '0.0.0.0',
+  port: 3002
+}
+
+Node.js v20.17.0

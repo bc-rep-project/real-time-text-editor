@@ -1,0 +1,6 @@
+(node:748) [DEP0170] DeprecationWarning: The URL sqlite::memory: is invalid. Future versions of Node.js will throw an error.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+Server is running on http://localhost:3002
+Executing (default): SELECT name FROM sqlite_master WHERE type='table' AND name='Documents';
+Executing (default): CREATE TABLE IF NOT EXISTS `Documents` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `content` VARCHAR(255) NOT NULL, `version` INTEGER NOT NULL, `lastModified` DATETIME NOT NULL, `history` JSON NOT NULL, `createdAt` DATETIME NOT NULL, `updatedAt` DATETIME NOT NULL);
+Executing (default): PRAGMA INDEX_LIST(`Documents`)

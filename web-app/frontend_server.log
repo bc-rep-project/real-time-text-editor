@@ -11,12 +11,5 @@ This information is used to shape Next.js' roadmap and prioritize features.
 You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
 https://nextjs.org/telemetry
 
- ✓ Ready in 1800ms
- ○ Compiling / ...
- ✓ Compiled / in 8.6s (857 modules)
- HEAD / 200 in 9011ms
- ✓ Compiled in 657ms (390 modules)
- GET / 200 in 89ms
- ○ Compiling /favicon.ico ...
- ✓ Compiled /favicon.ico in 535ms (467 modules)
- GET /favicon.ico 200 in 670ms
+ ✓ Ready in 1703ms
+[?25h
