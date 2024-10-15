@@ -5,8 +5,11 @@ const cors = require('cors');
 const { WebSocketServer } = require('ws');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
+const { Sequelize } = require('sequelize');
+const sequelize = new Sequelize(process.env.DATABASE_URL, {
+    dialect: 'postgres', // or 'mysql', 'sqlite', 'mariadb', 'mssql'
+});
 const User = require('../models/user');
-
 const app = express();
 const port = process.env.PORT || 4000;
 
@@ -79,8 +82,10 @@ app.get('/', (req, res) => {
 });
 
 // Start server
-const server = app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
+sequelize.sync().then(() => {
+  const server = app.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
+  });
 });
 
 // Upgrade HTTP server to WebSocket server
