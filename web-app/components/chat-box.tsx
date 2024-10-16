@@ -35,13 +35,21 @@ export default function ChatBox() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ message: newMessage }),
+        body: JSON.stringify({ message: newMessage, userId: 1 }),  // Assuming userId is 1 for testing
       })
-        .then((response) => response.json())
-        .then((data) => {
-          setMessages((prevMessages) => [...prevMessages, data]);
-          setNewMessage("");
-        });
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Failed to send message");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        setMessages((prevMessages) => [...prevMessages, data]);
+        setNewMessage("");
+      })
+      .catch((error) => {
+        console.error("Error sending message:", error);
+      });
     }
   };
 

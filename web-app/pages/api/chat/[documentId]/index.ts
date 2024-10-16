@@ -16,6 +16,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     res.status(200).json(messages);
   } else if (req.method === 'POST') {
     const { userId, message } = req.body;
+    console.log("Received request body:", req.body);
+    console.log("Received request body:", req.body);
+    console.log("Received request body:", req.body);
+    console.log("Received request body:", req.body);
+    console.log("Received request body:", req.body);
+    console.log("Received request body:", req.body);
+    console.log("Received request body:", req.body);
+    console.log("Received userId:", userId);
     const result = await db.run('INSERT INTO chat_messages (documentId, userId, message, timestamp) VALUES (?, ?, ?, ?)', [
       documentId,
       userId,

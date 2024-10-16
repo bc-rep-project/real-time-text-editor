@@ -39,6 +39,18 @@ export default function EditorArea() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ content: document.content }),
+      })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Failed to save document");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log("Document saved successfully:", data);
+      })
+      .catch((error) => {
+        console.error("Error saving document:", error);
       });
     }
   };
