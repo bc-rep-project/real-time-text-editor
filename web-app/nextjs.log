@@ -1,0 +1,50 @@
+
+> web-app@0.1.0 dev
+> next dev
+
+  ▲ Next.js 14.2.13
+  - Local:        http://localhost:3000
+
+ ✓ Starting...
+ ✓ Ready in 2.1s
+ ○ Compiling /document/[documentId] ...
+ ✓ Compiled /document/[documentId] in 2.7s (376 modules)
+ HEAD /document/1 200 in 2970ms
+ ✓ Compiled /api/documents in 316ms (153 modules)
+ POST /api/documents 201 in 379ms
+ GET /document/2 200 in 74ms
+ ○ Compiling /api/documents/[documentId] ...
+ ✓ Compiled /api/chat/[documentId] in 2.6s (848 modules)
+ GET /api/documents/2/versions 200 in 2177ms
+ GET /api/chat/2 200 in 2173ms
+ GET /api/documents/2 200 in 2268ms
+ GET /api/documents/2/users 404 in 2824ms
+ PUT /api/documents/2 200 in 12ms
+ ⨯ [Error: SQLITE_CONSTRAINT: NOT NULL constraint failed: chat_messages.userId] {
+  errno: 19,
+  code: 'SQLITE_CONSTRAINT',
+  page: '/api/chat/[documentId]'
+}
+ ✓ Compiled /_error in 362ms (600 modules)
+ POST /api/chat/2 500 in 482ms
+ PUT /api/documents/2 200 in 29ms
+ PUT /api/documents/2 200 in 7ms
+ ⨯ [Error: SQLITE_CONSTRAINT: NOT NULL constraint failed: chat_messages.userId] {
+  errno: 19,
+  code: 'SQLITE_CONSTRAINT',
+  page: '/api/chat/[documentId]'
+}
+ POST /api/chat/2 500 in 19ms
+ GET /document/1 200 in 41ms
+ ✓ Compiled /_not-found in 234ms (814 modules)
+ GET /api/documents/1 200 in 16ms
+ GET /api/documents/1/users 404 in 497ms
+ GET /api/chat/1 200 in 23ms
+ ✓ Compiled /api/documents/[documentId]/versions in 113ms (370 modules)
+ GET /api/documents/1/versions 200 in 140ms
+ ○ Compiling / ...
+ ✓ Compiled / in 1955ms (984 modules)
+ GET / 200 in 2226ms
+ ✓ Compiled /api/documents in 240ms (471 modules)
+ GET /api/documents 200 in 262ms
+ GET /api/documents 304 in 5ms
