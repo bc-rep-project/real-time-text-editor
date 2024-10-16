@@ -47,10 +47,10 @@ export default function ChatBox() {
 
   return (
     <div className="space-y-4">
-      <div className="h-64 overflow-y-auto">
+      <div className="h-64 overflow-y-auto bg-gray-100 p-4 rounded-lg">
         {messages.map((msg) => (
           <div key={msg.id} className="mb-2">
-            <p>
+            <p className="font-semibold">
               <strong>User {msg.userId}:</strong> {msg.message}
             </p>
             <p className="text-xs text-gray-500">
@@ -65,8 +65,11 @@ export default function ChatBox() {
           placeholder="Type your message..."
           value={newMessage}
           onChange={(e) => setNewMessage(e.target.value)}
+          className="flex-1"
         />
-        <Button onClick={handleSendMessage}>Send</Button>
+        <Button onClick={handleSendMessage} className="bg-blue-500 text-white">
+          Send
+        </Button>
       </div>
     </div>
   );
