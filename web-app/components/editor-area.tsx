@@ -49,13 +49,13 @@ export default function EditorArea() {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-2xl font-bold">{document.title}</h2>
+      <h2 className="text-2xl font-bold mb-4">{document.title}</h2>
       <Textarea
         value={document.content}
         onChange={handleContentChange}
-        className="w-full h-96"
+        className="w-full h-96 p-4 border border-gray-300 rounded-lg"
       />
-      <button onClick={handleSave} className="btn btn-primary">
+      <button onClick={handleSave} className="btn btn-primary bg-blue-500 text-white px-4 py-2 rounded-lg">
         Save
       </button>
     </div>
