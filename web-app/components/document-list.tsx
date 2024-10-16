@@ -4,6 +4,7 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 type Document = {
   id: number;
@@ -30,7 +31,9 @@ export default function DocumentList() {
           </CardHeader>
           <CardContent>
             <p>Created At: {new Date(document.createdAt).toLocaleString()}</p>
-            <Button href={`/document/${document.id}`}>Open</Button>
+            <Link href={`/document/${document.id}`}>
+              <Button>Open</Button>
+            </Link>
           </CardContent>
         </Card>
       ))}

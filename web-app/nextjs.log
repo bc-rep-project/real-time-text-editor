@@ -48,3 +48,9 @@
  ✓ Compiled /api/documents in 240ms (471 modules)
  GET /api/documents 200 in 262ms
  GET /api/documents 304 in 5ms
+ GET / 200 in 226ms
+ GET /api/documents 200 in 6ms
+ ○ Compiling /favicon.ico ...
+ ✓ Compiled /favicon.ico in 506ms (495 modules)
+ GET /api/documents 304 in 559ms
+ GET /favicon.ico 200 in 805ms
