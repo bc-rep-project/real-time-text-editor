@@ -7,24 +7,11 @@
  ⚠ Port 3002 is in use, trying 3003 instead.
  ⚠ Port 3003 is in use, trying 3004 instead.
  ⚠ Port 3004 is in use, trying 3005 instead.
- ⚠ Port 3005 is in use, trying 3006 instead.
- ⚠ Port 3006 is in use, trying 3007 instead.
   ▲ Next.js 14.2.13
-  - Local:        http://localhost:3007
+  - Local:        http://localhost:3005
 
  ✓ Starting...
- ✓ Ready in 1662ms
- ○ Compiling / ...
- ✓ Compiled / in 4.3s (610 modules)
- HEAD / 200 in 4554ms
- GET / 200 in 44ms
+ ✓ Ready in 2s
  ○ Compiling /_not-found ...
- ✓ Compiled /_not-found in 807ms (644 modules)
- GET /favicon.ico 200 in 1026ms
- GET /api/documents 404 in 853ms
- GET /api/documents 404 in 27ms
- POST /api/documents 404 in 23ms
- POST /api/documents 404 in 27ms
- POST /api/documents 404 in 24ms
- POST /api/documents 404 in 24ms
- POST /api/documents 404 in 24ms
+ ✓ Compiled /_not-found in 2.6s (443 modules)
+ HEAD / 404 in 2758ms
