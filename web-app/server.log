@@ -14,3 +14,17 @@
 
  ✓ Starting...
  ✓ Ready in 1662ms
+ ○ Compiling / ...
+ ✓ Compiled / in 4.3s (610 modules)
+ HEAD / 200 in 4554ms
+ GET / 200 in 44ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 807ms (644 modules)
+ GET /favicon.ico 200 in 1026ms
+ GET /api/documents 404 in 853ms
+ GET /api/documents 404 in 27ms
+ POST /api/documents 404 in 23ms
+ POST /api/documents 404 in 27ms
+ POST /api/documents 404 in 24ms
+ POST /api/documents 404 in 24ms
+ POST /api/documents 404 in 24ms
