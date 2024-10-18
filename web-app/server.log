@@ -148,3 +148,4 @@ Import trace for requested module:
 ./components/EditorArea.tsx
 ./app/page.tsx
  ✓ Compiled /_error in 495ms (475 modules)
+ ✓ Compiled in 228ms (427 modules)
