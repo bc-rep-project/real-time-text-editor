@@ -1,4 +1,5 @@
 
+"use client";
 import EditorArea from '../components/EditorArea';
 import ChatBox from '../components/ChatBox';
 import VersionHistory from '../components/VersionHistory';
