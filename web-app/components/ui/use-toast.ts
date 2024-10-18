@@ -1,6 +1,6 @@
 
 import * as React from "react"
-import { ToastProvider, useToaster, Toast } from "react-hot-toast"
+import { ToastProvider, useToaster, Toaster as HotToaster } from "react-hot-toast"
 
 export function useToast() {
   const toaster = useToaster()
@@ -12,7 +12,7 @@ export function useToast() {
 export function Toaster() {
   return (
     <ToastProvider>
-      <Toast />
+      <HotToaster />
     </ToastProvider>
   )
 }
