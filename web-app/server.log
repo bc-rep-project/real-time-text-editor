@@ -147,3 +147,4 @@ Error:
 Import trace for requested module:
 ./components/EditorArea.tsx
 ./app/page.tsx
+ ✓ Compiled /_error in 495ms (475 modules)

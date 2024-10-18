@@ -1,0 +1,6 @@
+[user]
+	name = Robocoders
+	email = team@blackbox.ai
+[safe]
+	directory = /home/user/web-app
+	directory = /home/user
