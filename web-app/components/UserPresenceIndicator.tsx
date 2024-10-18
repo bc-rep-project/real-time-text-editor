@@ -1,7 +1,7 @@
 
 "use client";
 import { useState, useEffect } from 'react';
-import { WebSocket } from 'ws';
+
 
 const UserPresenceIndicator = ({ documentId }) => {
   const [presentUsers, setPresentUsers] = useState([]);
