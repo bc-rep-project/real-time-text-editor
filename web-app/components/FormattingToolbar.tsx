@@ -1,4 +1,5 @@
 
+"use client";
 const FormattingToolbar = ({ onFormat }) => {
   return (
     <div>
