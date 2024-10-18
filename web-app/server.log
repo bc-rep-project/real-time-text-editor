@@ -1,0 +1,149 @@
+
+> web-app@0.1.0 dev
+> next dev
+
+  ▲ Next.js 14.2.13
+  - Local:        http://localhost:3000
+
+ ✓ Starting...
+Attention: Next.js now collects completely anonymous telemetry regarding usage.
+This information is used to shape Next.js' roadmap and prioritize features.
+You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+https://nextjs.org/telemetry
+
+ ✓ Ready in 3s
+ ○ Compiling / ...
+ ⨯ ./components/ChatBox.tsx
+Error: 
+  [31mx[0m You're importing a component that needs useState. It only works in a Client Component but none of its parents are marked with "use client", so they're Server Components by default.
+  [31m|[0m Learn more: https://nextjs.org/docs/getting-started/react-essentials
+  [31m|[0m 
+  [31m|[0m 
+   ,-[[36;1;4m/home/user/web-app/components/ChatBox.tsx[0m:1:1]
+ [2m1[0m | 
+ [2m2[0m | import { useState, useEffect } from 'react';
+   : [31;1m         ^^^^^^^^[0m
+ [2m3[0m | import { WebSocket } from 'ws';
+ [2m4[0m | 
+ [2m5[0m | const ChatBox = ({ documentId, userId }) => {
+   `----
+
+  [31mx[0m You're importing a component that needs useEffect. It only works in a Client Component but none of its parents are marked with "use client", so they're Server Components by default.
+  [31m|[0m Learn more: https://nextjs.org/docs/getting-started/react-essentials
+  [31m|[0m 
+  [31m|[0m 
+   ,-[[36;1;4m/home/user/web-app/components/ChatBox.tsx[0m:1:1]
+ [2m1[0m | 
+ [2m2[0m | import { useState, useEffect } from 'react';
+   : [31;1m                   ^^^^^^^^^[0m
+ [2m3[0m | import { WebSocket } from 'ws';
+ [2m4[0m | 
+ [2m5[0m | const ChatBox = ({ documentId, userId }) => {
+   `----
+
+Import trace for requested module:
+./components/ChatBox.tsx
+./app/page.tsx
+ ⨯ ./components/ChatBox.tsx
+Error: 
+  [31mx[0m You're importing a component that needs useState. It only works in a Client Component but none of its parents are marked with "use client", so they're Server Components by default.
+  [31m|[0m Learn more: https://nextjs.org/docs/getting-started/react-essentials
+  [31m|[0m 
+  [31m|[0m 
+   ,-[[36;1;4m/home/user/web-app/components/ChatBox.tsx[0m:1:1]
+ [2m1[0m | 
+ [2m2[0m | import { useState, useEffect } from 'react';
+   : [31;1m         ^^^^^^^^[0m
+ [2m3[0m | import { WebSocket } from 'ws';
+ [2m4[0m | 
+ [2m5[0m | const ChatBox = ({ documentId, userId }) => {
+   `----
+
+  [31mx[0m You're importing a component that needs useEffect. It only works in a Client Component but none of its parents are marked with "use client", so they're Server Components by default.
+  [31m|[0m Learn more: https://nextjs.org/docs/getting-started/react-essentials
+  [31m|[0m 
+  [31m|[0m 
+   ,-[[36;1;4m/home/user/web-app/components/ChatBox.tsx[0m:1:1]
+ [2m1[0m | 
+ [2m2[0m | import { useState, useEffect } from 'react';
+   : [31;1m                   ^^^^^^^^^[0m
+ [2m3[0m | import { WebSocket } from 'ws';
+ [2m4[0m | 
+ [2m5[0m | const ChatBox = ({ documentId, userId }) => {
+   `----
+
+Import trace for requested module:
+./components/ChatBox.tsx
+./app/page.tsx
+ ⨯ ./components/ChatBox.tsx
+Error: 
+  [31mx[0m You're importing a component that needs useState. It only works in a Client Component but none of its parents are marked with "use client", so they're Server Components by default.
+  [31m|[0m Learn more: https://nextjs.org/docs/getting-started/react-essentials
+  [31m|[0m 
+  [31m|[0m 
+   ,-[[36;1;4m/home/user/web-app/components/ChatBox.tsx[0m:1:1]
+ [2m1[0m | 
+ [2m2[0m | import { useState, useEffect } from 'react';
+   : [31;1m         ^^^^^^^^[0m
+ [2m3[0m | import { WebSocket } from 'ws';
+ [2m4[0m | 
+ [2m5[0m | const ChatBox = ({ documentId, userId }) => {
+   `----
+
+  [31mx[0m You're importing a component that needs useEffect. It only works in a Client Component but none of its parents are marked with "use client", so they're Server Components by default.
+  [31m|[0m Learn more: https://nextjs.org/docs/getting-started/react-essentials
+  [31m|[0m 
+  [31m|[0m 
+   ,-[[36;1;4m/home/user/web-app/components/ChatBox.tsx[0m:1:1]
+ [2m1[0m | 
+ [2m2[0m | import { useState, useEffect } from 'react';
+   : [31;1m                   ^^^^^^^^^[0m
+ [2m3[0m | import { WebSocket } from 'ws';
+ [2m4[0m | 
+ [2m5[0m | const ChatBox = ({ documentId, userId }) => {
+   `----
+
+Import trace for requested module:
+./components/ChatBox.tsx
+./app/page.tsx
+ HEAD / 500 in 19634ms
+ ⨯ ./components/EditorArea.tsx
+Error: 
+  [31mx[0m You're importing a component that needs useState. It only works in a Client Component but none of its parents are marked with "use client", so they're Server Components by default.
+  [31m|[0m Learn more: https://nextjs.org/docs/getting-started/react-essentials
+  [31m|[0m 
+  [31m|[0m 
+   ,-[[36;1;4m/home/user/web-app/components/EditorArea.tsx[0m:1:1]
+ [2m1[0m | 
+ [2m2[0m | import { useState, useEffect } from 'react';
+   : [31;1m         ^^^^^^^^[0m
+ [2m3[0m | import { useRouter } from 'next/router';
+ [2m4[0m | import { WebSocket } from 'ws';
+   `----
+
+  [31mx[0m You're importing a component that needs useEffect. It only works in a Client Component but none of its parents are marked with "use client", so they're Server Components by default.
+  [31m|[0m Learn more: https://nextjs.org/docs/getting-started/react-essentials
+  [31m|[0m 
+  [31m|[0m 
+   ,-[[36;1;4m/home/user/web-app/components/EditorArea.tsx[0m:1:1]
+ [2m1[0m | 
+ [2m2[0m | import { useState, useEffect } from 'react';
+   : [31;1m                   ^^^^^^^^^[0m
+ [2m3[0m | import { useRouter } from 'next/router';
+ [2m4[0m | import { WebSocket } from 'ws';
+   `----
+
+  [31mx[0m You have a Server Component that imports next/router. Use next/navigation instead.\nLearn more: https://nextjs.org/docs/app/api-reference/functions/use-router
+   ,-[[36;1;4m/home/user/web-app/components/EditorArea.tsx[0m:1:1]
+ [2m1[0m | 
+ [2m2[0m | import { useState, useEffect } from 'react';
+ [2m3[0m | import { useRouter } from 'next/router';
+   : [31;1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+ [2m4[0m | import { WebSocket } from 'ws';
+ [2m5[0m | 
+ [2m6[0m | const EditorArea = ({ documentId }) => {
+   `----
+
+Import trace for requested module:
+./components/EditorArea.tsx
+./app/page.tsx
