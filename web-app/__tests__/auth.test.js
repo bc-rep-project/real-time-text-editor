@@ -28,13 +28,15 @@ describe('Auth Module', () => {
         json: jest.fn(),
       };
 
-      bcrypt.hash.mockResolvedValue('hashedpassword');
+      bcrypt.hash.mockImplementation((password, saltRounds, callback) => {
+        callback(null, 'hashedpassword');
+      });
       db.run.mockImplementation((query, params, callback) => {
-        callback(null, { lastID: 1 });
+        callback.call({lastID: 1});
       });
       jwt.sign.mockReturnValue('newtoken');
 
-      await registerUser(req, res);
+      registerUser(req, res);
 
       expect(bcrypt.hash).toHaveBeenCalledWith('password123', 10, expect.any(Function));
       expect(db.run).toHaveBeenCalledWith(
@@ -58,10 +60,12 @@ describe('Auth Module', () => {
       db.get.mockImplementation((query, params, callback) => {
         callback(null, { id: 1, username: 'existinguser', password: 'hashedpassword' });
       });
-      bcrypt.compare.mockResolvedValue(true);
+      bcrypt.compare.mockImplementation((password, hash, callback) => {
+        callback(null, true);
+      });
       jwt.sign.mockReturnValue('newtoken');
 
-      await loginUser(req, res);
+      loginUser(req, res);
 
       expect(db.get).toHaveBeenCalledWith(
         'SELECT * FROM users WHERE username = ?',

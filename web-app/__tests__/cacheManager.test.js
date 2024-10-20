@@ -13,10 +13,11 @@ describe('Cache Manager', () => {
 
   beforeEach(() => {
     mockRedisClient = {
-      connect: jest.fn(),
+      connect: jest.fn().mockResolvedValue(),
       get: jest.fn(),
       setEx: jest.fn(),
       del: jest.fn(),
+      on: jest.fn(),
     };
 
     redis.createClient.mockReturnValue(mockRedisClient);
@@ -24,11 +25,19 @@ describe('Cache Manager', () => {
     // Reset modules to ensure a fresh instance of cacheManager for each test
     jest.resetModules();
     jest.mock('../cacheManager', () => {
-      const actualCacheManager = jest.requireActual('../cacheManager');
+      const originalModule = jest.requireActual('../cacheManager');
       return {
-        ...actualCacheManager,
+        ...originalModule,
         createClient: jest.fn().mockReturnValue(mockRedisClient),
       };
+    });
+
+    // Re-import cacheManager to use the mocked version
+    const cacheManager = require('../cacheManager');
+    Object.assign(cacheManager, {
+      getCache: jest.fn(cacheManager.getCache),
+      setCache: jest.fn(cacheManager.setCache),
+      deleteCache: jest.fn(cacheManager.deleteCache),
     });
   });
 

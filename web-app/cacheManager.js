@@ -29,8 +29,8 @@ async function connectRedis() {
 }
 
 async function getCache(key) {
+  const client = createClient();
   try {
-    const client = createClient();
     const value = await client.get(key);
     return value ? JSON.parse(value) : null;
   } catch (error) {
@@ -40,8 +40,8 @@ async function getCache(key) {
 }
 
 async function setCache(key, value, expirationInSeconds = 3600) {
+  const client = createClient();
   try {
-    const client = createClient();
     await client.setEx(key, expirationInSeconds, JSON.stringify(value));
   } catch (error) {
     logger.error(`Error setting cache for key ${key}:`, error);
@@ -49,8 +49,8 @@ async function setCache(key, value, expirationInSeconds = 3600) {
 }
 
 async function deleteCache(key) {
+  const client = createClient();
   try {
-    const client = createClient();
     await client.del(key);
   } catch (error) {
     logger.error(`Error deleting cache for key ${key}:`, error);
