@@ -1,36 +1,38 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-## Getting Started
+# Real-time Collaborative Text Editor
 
-First, run the development server:
+This is a real-time collaborative text editor built with Node.js, Express, and WebSockets.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Features
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- Real-time collaborative editing
+- Document creation and retrieval
+- WebSocket communication for instant updates
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Setup
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. Clone the repository
+2. Install dependencies: `npm install`
+3. Start the server: `npm run dev`
 
-## Learn More
+## Usage
 
-To learn more about Next.js, take a look at the following resources:
+1. Open `http://21b4ce6a841c24d7f4.blackbx.ai/client1.html` in one browser window
+2. Open `http://21b4ce6a841c24d7f4.blackbx.ai/client2.html` in another browser window or incognito mode
+3. Start editing the document in either window and see the changes reflect in real-time in the other window
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## API Endpoints
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- GET /api/documents: Retrieve all documents
+- POST /api/documents: Create a new document
+- GET /api/documents/:id: Retrieve a specific document
+- PUT /api/documents/:id: Update a specific document
 
-## Deploy on Vercel
+## Future Improvements
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- Implement user authentication and authorization
+- Add more robust error handling and input validation
+- Implement conflict resolution for simultaneous edits
+- Add a feature to display which users are currently editing the document
+- Implement versioning to allow users to revert to previous versions of the document
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
