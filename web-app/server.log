@@ -2,5 +2,23 @@
 > web-app@0.1.0 dev
 > node server.js
 
-> Ready on http://localhost:3003
-Terminated
+{"level":"info","message":"Connected to the SQLite database.","timestamp":"2024-10-20T21:46:40.279Z"}
+{"level":"info","message":"Documents table created or already exists.","timestamp":"2024-10-20T21:46:40.295Z"}
+{"level":"info","message":"Version column already exists in documents table.","timestamp":"2024-10-20T21:46:40.296Z"}
+{"level":"info","message":"Versions table created or already exists.","timestamp":"2024-10-20T21:46:40.297Z"}
+{"level":"info","message":"Users table created or already exists.","timestamp":"2024-10-20T21:46:40.297Z"}
+{"level":"info","message":"Chat_messages table created or already exists.","timestamp":"2024-10-20T21:46:40.298Z"}
+info  - Disabled SWC as replacement for Babel because of custom Babel configuration ".babelrc" https://nextjs.org/docs/messages/swc-disabled
+event - compiled client and server successfully in 543 ms (173 modules)
+{"level":"info","message":"Server ready on http://localhost:3003","timestamp":"2024-10-20T21:46:41.787Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-20T21:46:46.208Z"}
+wait  - compiling / (client and server)...
+event - compiled client and server successfully in 116 ms (178 modules)
+{"level":"info","message":"New client connected","timestamp":"2024-10-20T21:46:59.117Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-20T21:47:05.516Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-20T21:47:11.795Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-20T21:47:18.955Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-20T21:47:25.520Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-20T21:47:31.618Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-20T21:47:37.552Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-20T21:47:43.205Z"}

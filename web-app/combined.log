@@ -1,0 +1,110 @@
+{"level":"info","message":"Connected to the SQLite database.","timestamp":"2024-10-20T21:37:18.447Z"}
+{"level":"info","message":"Documents table created or already exists.","timestamp":"2024-10-20T21:37:18.455Z"}
+{"level":"info","message":"Version column already exists in documents table.","timestamp":"2024-10-20T21:37:18.456Z"}
+{"level":"error","message":"Error preparing Next.js app: > Couldn't find a `pages` directory. Please create one under the project root","timestamp":"2024-10-20T21:37:18.633Z"}
+{"level":"info","message":"Connected to the SQLite database.","timestamp":"2024-10-20T21:37:37.342Z"}
+{"level":"info","message":"Documents table created or already exists.","timestamp":"2024-10-20T21:37:37.350Z"}
+{"level":"info","message":"Version column already exists in documents table.","timestamp":"2024-10-20T21:37:37.351Z"}
+{"level":"info","message":"Versions table created or already exists.","timestamp":"2024-10-20T21:37:37.513Z"}
+{"level":"info","message":"Users table created or already exists.","timestamp":"2024-10-20T21:37:37.514Z"}
+{"level":"info","message":"Chat_messages table created or already exists.","timestamp":"2024-10-20T21:37:37.515Z"}
+{"level":"info","message":"Server ready on http://localhost:3003","timestamp":"2024-10-20T21:37:43.732Z"}
+{"level":"info","message":"Connected to the SQLite database.","timestamp":"2024-10-20T21:38:26.690Z"}
+{"level":"info","message":"Documents table created or already exists.","timestamp":"2024-10-20T21:38:26.698Z"}
+{"level":"info","message":"Version column already exists in documents table.","timestamp":"2024-10-20T21:38:26.699Z"}
+{"level":"info","message":"Versions table created or already exists.","timestamp":"2024-10-20T21:38:26.862Z"}
+{"level":"info","message":"Users table created or already exists.","timestamp":"2024-10-20T21:38:26.863Z"}
+{"level":"info","message":"Chat_messages table created or already exists.","timestamp":"2024-10-20T21:38:26.864Z"}
+{"level":"info","message":"Server ready on http://localhost:3003","timestamp":"2024-10-20T21:38:28.206Z"}
+{"level":"info","message":"Connected to the SQLite database.","timestamp":"2024-10-20T21:39:08.602Z"}
+{"level":"info","message":"Documents table created or already exists.","timestamp":"2024-10-20T21:39:08.610Z"}
+{"level":"info","message":"Version column already exists in documents table.","timestamp":"2024-10-20T21:39:08.611Z"}
+{"level":"info","message":"Versions table created or already exists.","timestamp":"2024-10-20T21:39:08.770Z"}
+{"level":"info","message":"Users table created or already exists.","timestamp":"2024-10-20T21:39:08.771Z"}
+{"level":"info","message":"Chat_messages table created or already exists.","timestamp":"2024-10-20T21:39:08.772Z"}
+{"level":"info","message":"Server ready on http://localhost:3003","timestamp":"2024-10-20T21:39:13.481Z"}
+{"level":"info","message":"Connected to the SQLite database.","timestamp":"2024-10-20T21:39:25.204Z"}
+{"level":"info","message":"Documents table created or already exists.","timestamp":"2024-10-20T21:39:25.213Z"}
+{"level":"info","message":"Version column already exists in documents table.","timestamp":"2024-10-20T21:39:25.214Z"}
+{"level":"info","message":"Versions table created or already exists.","timestamp":"2024-10-20T21:39:25.376Z"}
+{"level":"info","message":"Users table created or already exists.","timestamp":"2024-10-20T21:39:25.378Z"}
+{"level":"info","message":"Chat_messages table created or already exists.","timestamp":"2024-10-20T21:39:25.379Z"}
+{"level":"info","message":"Server ready on http://localhost:3003","timestamp":"2024-10-20T21:39:30.522Z"}
+{"level":"info","message":"Connected to the SQLite database.","timestamp":"2024-10-20T21:40:06.467Z"}
+{"level":"info","message":"Documents table created or already exists.","timestamp":"2024-10-20T21:40:06.476Z"}
+{"level":"info","message":"Version column already exists in documents table.","timestamp":"2024-10-20T21:40:06.477Z"}
+{"level":"info","message":"Versions table created or already exists.","timestamp":"2024-10-20T21:40:06.637Z"}
+{"level":"info","message":"Users table created or already exists.","timestamp":"2024-10-20T21:40:06.639Z"}
+{"level":"info","message":"Chat_messages table created or already exists.","timestamp":"2024-10-20T21:40:06.640Z"}
+{"level":"info","message":"Server ready on http://localhost:3003","timestamp":"2024-10-20T21:40:07.965Z"}
+{"level":"info","message":"Connected to the SQLite database.","timestamp":"2024-10-20T21:41:08.795Z"}
+{"level":"info","message":"Documents table created or already exists.","timestamp":"2024-10-20T21:41:08.815Z"}
+{"level":"info","message":"Version column already exists in documents table.","timestamp":"2024-10-20T21:41:08.817Z"}
+{"level":"info","message":"Versions table created or already exists.","timestamp":"2024-10-20T21:41:08.818Z"}
+{"level":"info","message":"Users table created or already exists.","timestamp":"2024-10-20T21:41:08.819Z"}
+{"level":"info","message":"Chat_messages table created or already exists.","timestamp":"2024-10-20T21:41:08.820Z"}
+{"level":"info","message":"Server ready on http://localhost:3003","timestamp":"2024-10-20T21:41:10.332Z"}
+{"level":"info","message":"Connected to the SQLite database.","timestamp":"2024-10-20T21:42:17.979Z"}
+{"level":"info","message":"Documents table created or already exists.","timestamp":"2024-10-20T21:42:17.989Z"}
+{"level":"info","message":"Version column already exists in documents table.","timestamp":"2024-10-20T21:42:17.991Z"}
+{"level":"info","message":"Versions table created or already exists.","timestamp":"2024-10-20T21:42:17.992Z"}
+{"level":"info","message":"Users table created or already exists.","timestamp":"2024-10-20T21:42:17.993Z"}
+{"level":"info","message":"Chat_messages table created or already exists.","timestamp":"2024-10-20T21:42:17.994Z"}
+{"level":"info","message":"Server ready on http://localhost:3003","timestamp":"2024-10-20T21:42:19.552Z"}
+{"level":"info","message":"Connected to the SQLite database.","timestamp":"2024-10-20T21:43:01.890Z"}
+{"level":"info","message":"Documents table created or already exists.","timestamp":"2024-10-20T21:43:01.906Z"}
+{"level":"info","message":"Version column already exists in documents table.","timestamp":"2024-10-20T21:43:01.907Z"}
+{"level":"info","message":"Versions table created or already exists.","timestamp":"2024-10-20T21:43:01.908Z"}
+{"level":"info","message":"Users table created or already exists.","timestamp":"2024-10-20T21:43:01.909Z"}
+{"level":"info","message":"Chat_messages table created or already exists.","timestamp":"2024-10-20T21:43:01.910Z"}
+{"level":"info","message":"Server ready on http://localhost:3003","timestamp":"2024-10-20T21:43:03.398Z"}
+{"level":"info","message":"No existing document found. Starting with an empty document.","timestamp":"2024-10-20T21:43:03.400Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-20T21:44:31.185Z"}
+{"level":"info","message":"User undefined disconnected","timestamp":"2024-10-20T21:44:31.645Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-20T21:44:36.688Z"}
+{"level":"info","message":"User undefined disconnected","timestamp":"2024-10-20T21:44:37.196Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-20T21:44:42.538Z"}
+{"level":"info","message":"User undefined disconnected","timestamp":"2024-10-20T21:44:42.957Z"}
+{"level":"info","message":"Connected to the SQLite database.","timestamp":"2024-10-20T21:44:53.505Z"}
+{"level":"info","message":"Documents table created or already exists.","timestamp":"2024-10-20T21:44:53.521Z"}
+{"level":"info","message":"Version column already exists in documents table.","timestamp":"2024-10-20T21:44:53.522Z"}
+{"level":"info","message":"Versions table created or already exists.","timestamp":"2024-10-20T21:44:53.523Z"}
+{"level":"info","message":"Users table created or already exists.","timestamp":"2024-10-20T21:44:53.524Z"}
+{"level":"info","message":"Chat_messages table created or already exists.","timestamp":"2024-10-20T21:44:53.525Z"}
+{"level":"info","message":"Server ready on http://localhost:3003","timestamp":"2024-10-20T21:44:54.997Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-20T21:45:00.871Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-20T21:45:14.508Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-20T21:45:20.869Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-20T21:45:27.754Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-20T21:45:34.518Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-20T21:45:40.719Z"}
+{"level":"info","message":"Connected to the SQLite database.","timestamp":"2024-10-20T21:45:49.122Z"}
+{"level":"info","message":"Documents table created or already exists.","timestamp":"2024-10-20T21:45:49.138Z"}
+{"level":"info","message":"Version column already exists in documents table.","timestamp":"2024-10-20T21:45:49.139Z"}
+{"level":"info","message":"Versions table created or already exists.","timestamp":"2024-10-20T21:45:49.140Z"}
+{"level":"info","message":"Users table created or already exists.","timestamp":"2024-10-20T21:45:49.140Z"}
+{"level":"info","message":"Chat_messages table created or already exists.","timestamp":"2024-10-20T21:45:49.141Z"}
+{"level":"info","message":"Server ready on http://localhost:3003","timestamp":"2024-10-20T21:45:50.674Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-20T21:45:53.530Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-20T21:46:05.529Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-20T21:46:11.666Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-20T21:46:17.529Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-20T21:46:22.976Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-20T21:46:29.208Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-20T21:46:34.637Z"}
+{"level":"info","message":"Connected to the SQLite database.","timestamp":"2024-10-20T21:46:40.279Z"}
+{"level":"info","message":"Documents table created or already exists.","timestamp":"2024-10-20T21:46:40.295Z"}
+{"level":"info","message":"Version column already exists in documents table.","timestamp":"2024-10-20T21:46:40.296Z"}
+{"level":"info","message":"Versions table created or already exists.","timestamp":"2024-10-20T21:46:40.297Z"}
+{"level":"info","message":"Users table created or already exists.","timestamp":"2024-10-20T21:46:40.297Z"}
+{"level":"info","message":"Chat_messages table created or already exists.","timestamp":"2024-10-20T21:46:40.298Z"}
+{"level":"info","message":"Server ready on http://localhost:3003","timestamp":"2024-10-20T21:46:41.787Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-20T21:46:46.208Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-20T21:46:59.117Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-20T21:47:05.516Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-20T21:47:11.795Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-20T21:47:18.955Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-20T21:47:25.520Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-20T21:47:31.618Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-20T21:47:37.552Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-20T21:47:43.205Z"}
