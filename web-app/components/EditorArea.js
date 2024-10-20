@@ -3,16 +3,30 @@ import React, { useState, useEffect } from 'react';
 
 const EditorArea = ({ documentId }) => {
   const [content, setContent] = useState('');
+  const [socket, setSocket] = useState(null);
 
   useEffect(() => {
     if (documentId) {
       fetchDocumentContent();
+      const ws = new WebSocket('ws://21b4ce6a841c24d7f4.blackbx.ai');
+      setSocket(ws);
+
+      ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        if (data.type === 'documentUpdate' && data.documentId === documentId) {
+          setContent(data.content);
+        }
+      };
+
+      return () => {
+        ws.close();
+      };
     }
   }, [documentId]);
 
   const fetchDocumentContent = async () => {
     try {
-      const response = await fetch(`/api/documents/${documentId}`);
+      const response = await fetch(`http://21b4ce6a841c24d7f4.blackbx.ai/api/documents/${documentId}`);
       if (!response.ok) {
         throw new Error('Failed to fetch document content');
       }
@@ -29,30 +43,13 @@ const EditorArea = ({ documentId }) => {
     sendContentUpdate(newContent);
   };
 
-  const sendContentUpdate = async (newContent) => {
-    try {
-      const response = await fetch(`/api/documents/${documentId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ content: newContent }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to update document content');
-      }
-
-      // Send WebSocket update
-      if (window.socket) {
-        window.socket.send(JSON.stringify({
-          type: 'documentUpdate',
-          documentId,
-          content: newContent,
-        }));
-      }
-    } catch (error) {
-      console.error('Error updating document content:', error);
+  const sendContentUpdate = (newContent) => {
+    if (socket && socket.readyState === WebSocket.OPEN) {
+      socket.send(JSON.stringify({
+        type: 'documentUpdate',
+        documentId,
+        content: newContent,
+      }));
     }
   };
 
