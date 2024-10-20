@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { TextOperation } from 'ot-text';
+import { TextField, Paper, Typography } from '@mui/material';
 
 const EditorArea = ({ documentId }) => {
   const [content, setContent] = useState('');
@@ -117,18 +118,23 @@ const EditorArea = ({ documentId }) => {
         setVersion(data.newVersion);
       })
       .catch(error => console.error('Error updating document:', error));
-    }
-  }, [socket, documentId, version]);
+  }, [socket, documentId, version, content, fetchDocumentContent]);
 
   return (
-    <div className="border border-gray-300 p-4">
-      <textarea
+    <Paper elevation={3} sx={{ p: 2, mt: 2 }}>
+      <Typography variant="h6" gutterBottom>
+        Document Editor
+      </Typography>
+      <TextField
+        fullWidth
+        multiline
+        rows={10}
         value={content}
         onChange={handleContentChange}
-        className="w-full h-64 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        variant="outlined"
         placeholder="Start typing your document here..."
       />
-    </div>
+    </Paper>
   );
 };
 

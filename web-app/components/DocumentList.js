@@ -1,5 +1,18 @@
 
 import React, { useState, useEffect } from 'react';
+import { 
+  Paper, 
+  Typography, 
+  TextField, 
+  Select, 
+  MenuItem, 
+  List, 
+  ListItem, 
+  ListItemText,
+  FormControl,
+  InputLabel,
+  Box
+} from '@mui/material';
 
 const DocumentList = () => {
   const [documents, setDocuments] = useState([]);
@@ -32,34 +45,42 @@ const DocumentList = () => {
   };
 
   return (
-    <div className="border border-gray-300 p-4 overflow-y-auto">
-      <h2 className="text-2xl font-bold mb-4">Documents</h2>
-      <div className="mb-4">
-        <input
-          type="text"
+    <Paper elevation={3} sx={{ p: 2, mt: 2, maxHeight: 400, overflow: 'auto' }}>
+      <Typography variant="h5" gutterBottom>
+        Documents
+      </Typography>
+      <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+        <TextField
+          label="Filter documents"
+          variant="outlined"
+          size="small"
           value={filter}
           onChange={handleFilterChange}
-          placeholder="Filter documents"
-          className="border border-gray-300 rounded px-2 py-1 mr-2"
+          sx={{ flexGrow: 1 }}
         />
-        <select
-          value={sort}
-          onChange={handleSortChange}
-          className="border border-gray-300 rounded px-2 py-1"
-        >
-          <option value="updatedAt">Sort by Updated At</option>
-          <option value="title">Sort by Title</option>
-        </select>
-      </div>
-      <ul className="space-y-2">
+        <FormControl variant="outlined" size="small" sx={{ minWidth: 120 }}>
+          <InputLabel>Sort by</InputLabel>
+          <Select
+            value={sort}
+            onChange={handleSortChange}
+            label="Sort by"
+          >
+            <MenuItem value="updatedAt">Updated At</MenuItem>
+            <MenuItem value="title">Title</MenuItem>
+          </Select>
+        </FormControl>
+      </Box>
+      <List>
         {documents.map(doc => (
-          <li key={doc.id} className="border border-gray-200 rounded p-2">
-            <h3 className="font-semibold">{doc.title}</h3>
-            <p className="text-sm text-gray-600">Last updated: {new Date(doc.updatedAt).toLocaleString()}</p>
-          </li>
+          <ListItem key={doc.id} divider>
+            <ListItemText
+              primary={doc.title}
+              secondary={`Last updated: ${new Date(doc.updatedAt).toLocaleString()}`}
+            />
+          </ListItem>
         ))}
-      </ul>
-    </div>
+      </List>
+    </Paper>
   );
 };
 

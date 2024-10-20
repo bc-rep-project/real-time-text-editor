@@ -1,7 +1,8 @@
 
 'use client'
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { Container, Grid, Typography, Box } from '@mui/material';
 import DocumentList from '../components/DocumentList';
 import CreateNewDocumentButton from '../components/CreateNewDocumentButton';
 import EditorArea from '../components/EditorArea';
@@ -31,30 +32,40 @@ export default function Home() {
   }
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-3xl font-bold mb-6">Collaborative Document Editor</h1>
-      <div className="flex">
-        <div className="w-1/4 pr-4">
-          <DocumentList onSelectDocument={handleDocumentSelect} />
-          <CreateNewDocumentButton onDocumentCreated={handleNewDocument} />
-        </div>
-        <div className="w-1/2 px-4">
-          {selectedDocument && (
-            <>
-              <EditorArea documentId={selectedDocument} />
-              <UserPresenceIndicator documentId={selectedDocument} />
-            </>
-          )}
-        </div>
-        <div className="w-1/4 pl-4">
-          {selectedDocument && (
-            <>
-              <ChatBox documentId={selectedDocument} />
-              <VersionHistory documentId={selectedDocument} />
-            </>
-          )}
-        </div>
-      </div>
-    </div>
+    <Container maxWidth="xl">
+      <Box sx={{ my: 4 }}>
+        <Typography variant="h3" component="h1" gutterBottom>
+          Collaborative Document Editor
+        </Typography>
+        <Grid container spacing={3}>
+          <Grid item xs={12} md={3}>
+            <DocumentList onSelectDocument={handleDocumentSelect} />
+            <Box sx={{ mt: 2 }}>
+              <CreateNewDocumentButton onDocumentCreated={handleNewDocument} />
+            </Box>
+          </Grid>
+          <Grid item xs={12} md={6}>
+            {selectedDocument && (
+              <>
+                <EditorArea documentId={selectedDocument} />
+                <Box sx={{ mt: 2 }}>
+                  <UserPresenceIndicator documentId={selectedDocument} />
+                </Box>
+              </>
+            )}
+          </Grid>
+          <Grid item xs={12} md={3}>
+            {selectedDocument && (
+              <>
+                <ChatBox documentId={selectedDocument} />
+                <Box sx={{ mt: 2 }}>
+                  <VersionHistory documentId={selectedDocument} />
+                </Box>
+              </>
+            )}
+          </Grid>
+        </Grid>
+      </Box>
+    </Container>
   );
 }

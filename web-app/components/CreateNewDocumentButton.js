@@ -1,5 +1,14 @@
 
 import React, { useState } from 'react';
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  TextField,
+} from '@mui/material';
 
 const CreateNewDocumentButton = ({ onDocumentCreated }) => {
   const [newDocumentTitle, setNewDocumentTitle] = useState('');
@@ -35,43 +44,41 @@ const CreateNewDocumentButton = ({ onDocumentCreated }) => {
   };
 
   return (
-    <div>
-      <button
+    <>
+      <Button
+        variant="contained"
+        color="primary"
         onClick={() => setIsModalOpen(true)}
-        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
       >
         Create New Document
-      </button>
+      </Button>
 
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
-          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <h3 className="text-lg font-bold mb-4">Create New Document</h3>
-            <input
-              type="text"
-              value={newDocumentTitle}
-              onChange={handleTitleChange}
-              placeholder="Document title"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <div className="mt-4 flex justify-end">
-              <button
-                onClick={() => setIsModalOpen(false)}
-                className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md mr-2"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={createDocument}
-                className="px-4 py-2 bg-blue-500 text-white rounded-md"
-              >
-                Create
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+      <Dialog open={isModalOpen} onClose={() => setIsModalOpen(false)}>
+        <DialogTitle>Create New Document</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Enter a title for your new document:
+          </DialogContentText>
+          <TextField
+            autoFocus
+            margin="dense"
+            id="name"
+            label="Document Title"
+            type="text"
+            fullWidth
+            variant="outlined"
+            value={newDocumentTitle}
+            onChange={handleTitleChange}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setIsModalOpen(false)}>Cancel</Button>
+          <Button onClick={createDocument} variant="contained" color="primary">
+            Create
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
   );
 };
 
