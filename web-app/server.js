@@ -37,13 +37,23 @@ app.prepare().then(() => {
     console.log('WebSocket client connected');
 
     ws.on('message', (message) => {
-      console.log('Received message:', message);
-      // Broadcast the message to all clients
-      wss.clients.forEach((client) => {
-        if (client !== ws && client.readyState === WebSocket.OPEN) {
-          client.send(message);
-        }
-      });
+      console.log('Received message:', message.toString());
+      try {
+        const data = JSON.parse(message);
+        console.log('Parsed message:', data);
+        // Broadcast the message to all clients
+        wss.clients.forEach((client) => {
+          if (client !== ws && client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify(data));
+          }
+        });
+      } catch (error) {
+        console.error('Error parsing message:', error);
+      }
+    });
+
+    ws.on('close', () => {
+      console.log('WebSocket client disconnected');
     });
   });
 
