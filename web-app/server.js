@@ -3,7 +3,8 @@ const express = require('express');
 const next = require('next');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const { server: websocketServer, app: websocketApp } = require('./websocket');
+const WebSocket = require('ws');
+const http = require('http');
 const apiRoutes = require('./api');
 
 const dev = process.env.NODE_ENV !== 'production';
@@ -12,6 +13,8 @@ const handle = app.getRequestHandler();
 
 app.prepare().then(() => {
   const server = express();
+  const httpServer = http.createServer(server);
+  const wss = new WebSocket.Server({ server: httpServer });
 
   // Middleware
   server.use(cors());
@@ -25,17 +28,25 @@ app.prepare().then(() => {
     return handle(req, res);
   });
 
-  const PORT = process.env.PORT || 3003;
+  // WebSocket connection handler
+  wss.on('connection', (ws) => {
+    console.log('WebSocket client connected');
 
-  server.listen(PORT, (err) => {
-    if (err) throw err;
-    console.log(`> Ready on http://localhost:${PORT}`);
+    ws.on('message', (message) => {
+      console.log('Received message:', message);
+      // Broadcast the message to all clients
+      wss.clients.forEach((client) => {
+        if (client !== ws && client.readyState === WebSocket.OPEN) {
+          client.send(message);
+        }
+      });
+    });
   });
 
-  // Set up WebSocket server
-  websocketServer.on('upgrade', (request, socket, head) => {
-    wss.handleUpgrade(request, socket, head, (ws) => {
-      wss.emit('connection', ws, request);
-    });
+  const PORT = process.env.PORT || 3003;
+
+  httpServer.listen(PORT, (err) => {
+    if (err) throw err;
+    console.log(`> Ready on http://localhost:${PORT}`);
   });
 });
