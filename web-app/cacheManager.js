@@ -1,8 +1,6 @@
 
 
 const redis = require('redis');
-const logger = require('./logger');
-
 const REDIS_URL = process.env.REDIS_URL || 'redis://localhost:6379';
 
 let client;
@@ -13,7 +11,15 @@ function createClient() {
       url: REDIS_URL
     });
 
-    client.on('error', (err) => logger.error('Redis Client Error', err));
+    client.on('error', (err) => console.error('Redis Client Error', err));
+  }
+  return client;
+}
+
+async function getConnectedClient() {
+  const client = createClient();
+  if (!client.isReady) {
+    await client.connect().catch((err) => console.error('Redis Connection Error', err));
   }
   return client;
 }
@@ -22,39 +28,45 @@ async function connectRedis() {
   try {
     const client = createClient();
     await client.connect();
-    logger.info('Connected to Redis');
+    console.log('Connected to Redis');
   } catch (error) {
-    logger.error('Failed to connect to Redis:', error);
+    console.error('Failed to connect to Redis:', error);
   }
 }
 
 async function getCache(key) {
-  const client = createClient();
   try {
-    const value = await client.get(key);
-    return value ? JSON.parse(value) : null;
+    const client = await getConnectedClient();
+    return await client.get(key);
   } catch (error) {
-    logger.error(`Error getting cache for key ${key}:`, error);
+    console.error(`Error getting cache for key ${key}:`, error);
     return null;
   }
 }
 
 async function setCache(key, value, expirationInSeconds = 3600) {
-  const client = createClient();
   try {
-    await client.setEx(key, expirationInSeconds, JSON.stringify(value));
+    const client = await getConnectedClient();
+    await client.set(key, JSON.stringify(value), {
+      EX: expirationInSeconds
+    });
   } catch (error) {
-    logger.error(`Error setting cache for key ${key}:`, error);
+    console.error(`Error setting cache for key ${key}:`, error);
   }
 }
 
 async function deleteCache(key) {
-  const client = createClient();
   try {
+    const client = await getConnectedClient();
     await client.del(key);
   } catch (error) {
-    logger.error(`Error deleting cache for key ${key}:`, error);
+    console.error(`Error deleting cache for key ${key}:`, error);
   }
+}
+
+// For testing purposes
+async function _testGetConnectedClient() {
+  return await getConnectedClient();
 }
 
 module.exports = {
@@ -62,6 +74,8 @@ module.exports = {
   getCache,
   setCache,
   deleteCache,
-  createClient
+  createClient,
+  getConnectedClient,
+  _testGetConnectedClient
 };
 
