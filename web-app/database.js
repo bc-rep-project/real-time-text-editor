@@ -17,6 +17,7 @@ db.serialize(() => {
     id INTEGER PRIMARY KEY,
     title TEXT,
     content TEXT,
+    version INTEGER DEFAULT 1,
     createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
   )`, (err) => {
@@ -24,6 +25,16 @@ db.serialize(() => {
       logger.error(`Error creating documents table: ${err.message}`);
     } else {
       logger.info('Documents table created or already exists.');
+    }
+  });
+
+  // Add version column to documents table if it doesn't exist
+  db.run(`ALTER TABLE documents ADD COLUMN version INTEGER DEFAULT 1`, (err) => {
+    if (err) {
+      // Column might already exist, which is fine
+      logger.info('Version column already exists in documents table.');
+    } else {
+      logger.info('Version column added to documents table.');
     }
   });
 

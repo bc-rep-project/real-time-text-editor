@@ -41,7 +41,7 @@ router.post('/documents', (req, res) => {
 
 // GET /api/documents/:documentId
 router.get('/documents/:documentId', (req, res) => {
-  db.get('SELECT * FROM documents WHERE id = ?', [req.params.documentId], (err, row) => {
+  db.get('SELECT id, title, content, version, updatedAt FROM documents WHERE id = ?', [req.params.documentId], (err, row) => {
     if (err) {
       res.status(500).json({ error: err.message });
       return;
@@ -56,20 +56,20 @@ router.get('/documents/:documentId', (req, res) => {
 
 // PUT /api/documents/:documentId
 router.put('/documents/:documentId', (req, res) => {
-  const { content } = req.body;
+  const { content, version } = req.body;
   db.run(
-    'UPDATE documents SET content = ?, updatedAt = CURRENT_TIMESTAMP WHERE id = ?',
-    [content, req.params.documentId],
+    'UPDATE documents SET content = ?, version = version + 1, updatedAt = CURRENT_TIMESTAMP WHERE id = ? AND version = ?',
+    [content, req.params.documentId, version],
     function(err) {
       if (err) {
         res.status(500).json({ error: err.message });
         return;
       }
       if (this.changes === 0) {
-        res.status(404).json({ error: 'Document not found' });
+        res.status(409).json({ error: 'Version mismatch or document not found' });
         return;
       }
-      res.json({ message: 'Document updated successfully' });
+      res.json({ message: 'Document updated successfully', newVersion: version + 1 });
     }
   );
 });

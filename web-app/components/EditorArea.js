@@ -1,9 +1,12 @@
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { TextOperation } from 'ot-text';
 
 const EditorArea = ({ documentId }) => {
   const [content, setContent] = useState('');
   const [socket, setSocket] = useState(null);
+  const [version, setVersion] = useState(0);
+  const pendingOperations = useRef([]);
 
   const fetchDocumentContent = useCallback(async () => {
     try {
@@ -13,6 +16,7 @@ const EditorArea = ({ documentId }) => {
       }
       const data = await response.json();
       setContent(data.content);
+      setVersion(data.version);
     } catch (error) {
       console.error('Error fetching document content:', error);
     }
@@ -24,10 +28,19 @@ const EditorArea = ({ documentId }) => {
       const ws = new WebSocket('ws://21b4ce6a841c24d7f4.blackbx.ai');
       setSocket(ws);
 
+      ws.onopen = () => {
+        ws.send(JSON.stringify({ type: 'joinDocument', documentId }));
+      };
+
       ws.onmessage = (event) => {
         const data = JSON.parse(event.data);
         if (data.type === 'documentUpdate' && data.documentId === documentId) {
-          setContent(data.content);
+          const operation = TextOperation.fromJSON(data.operation);
+          setContent(prevContent => operation.apply(prevContent));
+          setVersion(data.version);
+        } else if (data.type === 'versionMismatch') {
+          console.log('Version mismatch detected. Fetching latest content.');
+          fetchDocumentContent();
         }
       };
 
@@ -39,16 +52,47 @@ const EditorArea = ({ documentId }) => {
 
   const handleContentChange = (e) => {
     const newContent = e.target.value;
+    const operation = TextOperation.fromJSON(generateOperation(content, newContent));
     setContent(newContent);
-    sendContentUpdate(newContent);
+    sendContentUpdate(operation);
   };
 
-  const sendContentUpdate = useCallback((newContent) => {
+  const generateOperation = (oldContent, newContent) => {
+    const operation = new TextOperation();
+    let oldIndex = 0;
+    let newIndex = 0;
+
+    while (oldIndex < oldContent.length || newIndex < newContent.length) {
+      if (oldContent[oldIndex] === newContent[newIndex]) {
+        operation.retain(1);
+        oldIndex++;
+        newIndex++;
+      } else if (oldIndex < oldContent.length && newIndex < newContent.length) {
+        operation.delete(1);
+        operation.insert(newContent[newIndex]);
+        oldIndex++;
+        newIndex++;
+      } else if (oldIndex < oldContent.length) {
+        operation.delete(1);
+        oldIndex++;
+      } else {
+        operation.insert(newContent[newIndex]);
+        newIndex++;
+      }
+    }
+
+    return operation.toJSON();
+  };
+
+  const sendContentUpdate = useCallback((operation) => {
+    pendingOperations.current.push(operation);
+
     if (socket && socket.readyState === WebSocket.OPEN) {
       socket.send(JSON.stringify({
         type: 'documentUpdate',
         documentId,
-        content: newContent,
+        operation: operation.toJSON(),
+        version,
       }));
     }
 
@@ -58,9 +102,23 @@ const EditorArea = ({ documentId }) => {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ content: newContent }),
-    }).catch(error => console.error('Error updating document:', error));
-  }, [socket, documentId]);
+      body: JSON.stringify({ content, version }),
+    })
+      .then(response => {
+        if (response.status === 409) {
+          console.log('Version conflict detected. Fetching latest content.');
+          fetchDocumentContent();
+        } else if (!response.ok) {
+          throw new Error('Failed to update document');
+        }
+        return response.json();
+      })
+      .then(data => {
+        setVersion(data.newVersion);
+      })
+      .catch(error => console.error('Error updating document:', error));
+    }
+  }, [socket, documentId, version]);
 
   return (
     <div className="border border-gray-300 p-4">
