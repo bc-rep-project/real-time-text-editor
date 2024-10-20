@@ -54,4 +54,24 @@ router.get('/documents/:documentId', (req, res) => {
   });
 });
 
+// PUT /api/documents/:documentId
+router.put('/documents/:documentId', (req, res) => {
+  const { content } = req.body;
+  db.run(
+    'UPDATE documents SET content = ?, updatedAt = CURRENT_TIMESTAMP WHERE id = ?',
+    [content, req.params.documentId],
+    function(err) {
+      if (err) {
+        res.status(500).json({ error: err.message });
+        return;
+      }
+      if (this.changes === 0) {
+        res.status(404).json({ error: 'Document not found' });
+        return;
+      }
+      res.json({ message: 'Document updated successfully' });
+    }
+  );
+});
+
 module.exports = router;
