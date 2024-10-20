@@ -3,10 +3,11 @@ const express = require('express');
 const next = require('next');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const apiRoutes = require('./api');
+const { server: websocketServer, app: websocketApp } = require('./web-app/websocket');
+const apiRoutes = require('./web-app/api');
 
 const dev = process.env.NODE_ENV !== 'production';
-const app = next({ dev });
+const app = next({ dev, dir: './web-app' });
 const handle = app.getRequestHandler();
 
 app.prepare().then(() => {
@@ -26,7 +27,8 @@ app.prepare().then(() => {
 
   const PORT = process.env.PORT || 3003;
 
-  server.listen(PORT, (err) => {
+  websocketServer.on('request', server);
+  websocketServer.listen(PORT, (err) => {
     if (err) throw err;
     console.log(`> Ready on http://localhost:${PORT}`);
   });
