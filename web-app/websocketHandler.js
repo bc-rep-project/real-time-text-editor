@@ -2,6 +2,7 @@
 
 
 
+
 const WebSocket = require('ws');
 const db = require('./database');
 const { wsErrorHandler } = require('./errorHandler');
@@ -14,10 +15,10 @@ const setupWebSocket = (server) => {
   wss.on('connection', (ws) => {
     logger.info('A new client connected');
 
-    ws.on('message', (message) => {
+    ws.on('message', async (message) => {
       try {
         const data = JSON.parse(message);
-        handleWebSocketMessage(ws, data);
+        await handleWebSocketMessage(ws, data);
       } catch (error) {
         wsErrorHandler(ws, error);
       }
@@ -120,6 +121,7 @@ const broadcastMessage = (ws, data) => {
 };
 
 module.exports = setupWebSocket;
+
 
 
 

@@ -1,9 +1,14 @@
 
+
+
+
 const WebSocket = require('ws');
 const setupWebSocket = require('../websocketHandler');
 const { getCache, setCache, deleteCache } = require('../cacheManager');
 const db = require('../database');
+const logger = require('../logger');
 
+jest.mock('ws');
 jest.mock('../cacheManager');
 jest.mock('../database');
 jest.mock('../logger');
@@ -11,11 +16,24 @@ jest.mock('../logger');
 describe('WebSocket Handler', () => {
   let wss;
   let mockServer;
+  let mockWs;
 
   beforeEach(() => {
     mockServer = {
       on: jest.fn(),
     };
+    mockWs = {
+      on: jest.fn(),
+      send: jest.fn(),
+    };
+    WebSocket.Server.mockImplementation(() => ({
+      on: (event, callback) => {
+        if (event === 'connection') {
+          callback(mockWs);
+        }
+      },
+      clients: new Set([mockWs]),
+    }));
     wss = setupWebSocket(mockServer);
   });
 
@@ -28,9 +46,6 @@ describe('WebSocket Handler', () => {
   });
 
   test('handleWebSocketMessage should handle documentUpdate', async () => {
-    const mockWs = {
-      send: jest.fn(),
-    };
     const mockData = {
       type: 'documentUpdate',
       documentId: 1,
@@ -38,17 +53,18 @@ describe('WebSocket Handler', () => {
       userId: 1,
     };
 
-    await wss.emit('connection', mockWs);
-    await mockWs.emit('message', JSON.stringify(mockData));
+    deleteCache.mockResolvedValue();
+    db.run.mockImplementation((query, params, callback) => {
+      callback(null);
+    });
+
+    await mockWs.on.mock.calls[0][1](JSON.stringify(mockData));
 
     expect(deleteCache).toHaveBeenCalledWith('document:1');
     expect(db.run).toHaveBeenCalled();
   });
 
   test('handleWebSocketMessage should handle getDocument', async () => {
-    const mockWs = {
-      send: jest.fn(),
-    };
     const mockData = {
       type: 'getDocument',
       documentId: 1,
@@ -59,9 +75,9 @@ describe('WebSocket Handler', () => {
     db.get.mockImplementation((query, params, callback) => {
       callback(null, mockDocument);
     });
+    setCache.mockResolvedValue();
 
-    await wss.emit('connection', mockWs);
-    await mockWs.emit('message', JSON.stringify(mockData));
+    await mockWs.on.mock.calls[0][1](JSON.stringify(mockData));
 
     expect(getCache).toHaveBeenCalledWith('document:1');
     expect(db.get).toHaveBeenCalled();
@@ -72,3 +88,6 @@ describe('WebSocket Handler', () => {
     }));
   });
 });
+
+
+
