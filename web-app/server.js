@@ -25,9 +25,9 @@ app.prepare().then(() => {
     return handle(req, res);
   });
 
-  const PORT = process.env.PORT || 3003;  // Changed to 3003
+  const PORT = process.env.PORT || 3003;
 
-  server.listen(PORT, (err) => {
+  websocketServer.listen(PORT, (err) => {
     if (err) throw err;
     console.log(`> Ready on http://localhost:${PORT}`);
   });
