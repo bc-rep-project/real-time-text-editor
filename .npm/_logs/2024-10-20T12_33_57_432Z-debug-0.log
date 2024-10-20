@@ -11,3 +11,9 @@
 10 verbose logfile /home/user/.npm/_logs/2024-10-20T12_33_57_432Z-debug-0.log
 11 silly logfile start cleaning logs, removing 1 files
 12 silly logfile done cleaning log files
+13 verbose cwd /home/user/web-app
+14 verbose os Linux 6.1.102
+15 verbose node v20.17.0
+16 verbose npm  v10.8.2
+17 verbose exit 143
+18 verbose code 143
