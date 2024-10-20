@@ -1,12 +1,22 @@
-import React from 'react';
+import React, { useState } from 'react';
 import TextEditor from '../components/TextEditor';
+import DocumentList from '../components/DocumentList';
 
 const Home = () => {
+  const [selectedDocument, setSelectedDocument] = useState(null);
+
+  const handleSelectDocument = (documentId) => {
+    setSelectedDocument(documentId);
+  };
+
   return (
     <div>
       <h1>Real-Time Text Editor</h1>
-      <p>Welcome to our collaborative text editing application!</p>
-      <TextEditor />
+      {!selectedDocument ? (
+        <DocumentList onSelectDocument={handleSelectDocument} />
+      ) : (
+        <TextEditor documentId={selectedDocument} />
+      )}
     </div>
   );
 };

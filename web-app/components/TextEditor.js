@@ -1,15 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
 
-const TextEditor = () => {
+const TextEditor = ({ documentId }) => {
   const [text, setText] = useState('');
   const [ws, setWs] = useState(null);
   const [username, setUsername] = useState('');
   const [isConnected, setIsConnected] = useState(false);
-  const [documentId, setDocumentId] = useState('');
   const [error, setError] = useState('');
 
   const connectWebSocket = useCallback(() => {
-    const socket = new WebSocket('ws://c2f5a5dc80377f5147.blackbx.ai');
+    const socket = new WebSocket('ws://0dc9ae2286a79b8954.blackbx.ai');
     
     socket.onopen = () => {
       console.log('WebSocket connection established');
@@ -66,11 +65,6 @@ const TextEditor = () => {
     setUsername(e.target.username.value);
   };
 
-  const handleDocumentSubmit = (e) => {
-    e.preventDefault();
-    setDocumentId(e.target.documentId.value);
-  };
-
   if (!username) {
     return (
       <form onSubmit={handleUsernameSubmit}>
@@ -80,19 +74,10 @@ const TextEditor = () => {
     );
   }
 
-  if (!documentId) {
-    return (
-      <form onSubmit={handleDocumentSubmit}>
-        <input type="text" name="documentId" placeholder="Enter document ID" required />
-        <button type="submit">Join Document</button>
-      </form>
-    );
-  }
-
   return (
     <div>
-      <h1>Real-Time Text Editor</h1>
-      <p>Welcome, {username}! You are editing document: {documentId}</p>
+      <h2>Editing Document: {documentId}</h2>
+      <p>Welcome, {username}!</p>
       {error && <p style={{ color: 'red' }}>{error}</p>}
       {isConnected ? (
         <textarea

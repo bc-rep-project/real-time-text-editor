@@ -22,3 +22,27 @@ event - compiled client and server successfully in 116 ms (178 modules)
 {"level":"info","message":"New client connected","timestamp":"2024-10-20T21:47:31.618Z"}
 {"level":"info","message":"New client connected","timestamp":"2024-10-20T21:47:37.552Z"}
 {"level":"info","message":"New client connected","timestamp":"2024-10-20T21:47:43.205Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-20T21:47:49.667Z"}
+error - uncaughtException: Error: Invalid WebSocket frame: invalid UTF-8 sequence
+    at Receiver.dataMessage (/home/user/real-time-text-editor/web-app/node_modules/next/dist/compiled/ws/index.js:1:18501)
+    at Receiver.getData (/home/user/real-time-text-editor/web-app/node_modules/next/dist/compiled/ws/index.js:1:17671)
+    at Receiver.startLoop (/home/user/real-time-text-editor/web-app/node_modules/next/dist/compiled/ws/index.js:1:14334)
+    at Receiver._write (/home/user/real-time-text-editor/web-app/node_modules/next/dist/compiled/ws/index.js:1:13674)
+    at writeOrBuffer (node:internal/streams/writable:570:12)
+    at _write (node:internal/streams/writable:499:10)
+    at Writable.write (node:internal/streams/writable:508:10)
+    at Socket.socketOnData (/home/user/real-time-text-editor/web-app/node_modules/next/dist/compiled/ws/index.js:1:44508)
+    at Socket.emit (node:events:531:35)
+    at addChunk (node:internal/streams/readable:559:12) {
+  code: 'WS_ERR_INVALID_UTF8',
+  [Symbol(status-code)]: 1007
+}
+{"level":"info","message":"New client connected","timestamp":"2024-10-20T21:47:56.526Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-20T21:48:02.947Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-20T21:48:09.674Z"}
+wait  - compiling...
+event - compiled client and server successfully in 107 ms (173 modules)
+{"level":"info","message":"New client connected","timestamp":"2024-10-20T21:48:15.488Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-20T21:48:21.666Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-20T21:48:28.647Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-20T21:48:34.587Z"}
