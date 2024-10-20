@@ -27,9 +27,15 @@ app.prepare().then(() => {
 
   const PORT = process.env.PORT || 3003;
 
-  websocketServer.on('request', server);
-  websocketServer.listen(PORT, (err) => {
+  server.listen(PORT, (err) => {
     if (err) throw err;
     console.log(`> Ready on http://localhost:${PORT}`);
+  });
+
+  // Set up WebSocket server
+  websocketServer.on('upgrade', (request, socket, head) => {
+    wss.handleUpgrade(request, socket, head, (ws) => {
+      wss.emit('connection', ws, request);
+    });
   });
 });
