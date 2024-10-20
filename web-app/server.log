@@ -3,4 +3,23 @@
 > node server.js
 
 > Ready on http://localhost:3003
-Terminated
+ ⨯ uncaughtException: Error [ERR_HTTP_HEADERS_SENT]: Cannot set headers after they are sent to the client
+    at ServerResponse.setHeader (node:_http_outgoing:659:11)
+    at ServerResponse.header (/home/user/web-app/node_modules/express/lib/response.js:794:10)
+    at ServerResponse.send (/home/user/web-app/node_modules/express/lib/response.js:174:12)
+    at ServerResponse.json (/home/user/web-app/node_modules/express/lib/response.js:278:15)
+    at Statement.<anonymous> (/home/user/web-app/api.js:53:9)
+    at Statement.replacement (/home/user/web-app/node_modules/sqlite3/lib/trace.js:25:27)
+    at Statement.replacement (/home/user/web-app/node_modules/sqlite3/lib/trace.js:25:27) {
+  code: 'ERR_HTTP_HEADERS_SENT'
+}
+ ⨯ uncaughtException: Error [ERR_HTTP_HEADERS_SENT]: Cannot set headers after they are sent to the client
+    at ServerResponse.setHeader (node:_http_outgoing:659:11)
+    at ServerResponse.header (/home/user/web-app/node_modules/express/lib/response.js:794:10)
+    at ServerResponse.send (/home/user/web-app/node_modules/express/lib/response.js:174:12)
+    at ServerResponse.json (/home/user/web-app/node_modules/express/lib/response.js:278:15)
+    at Statement.<anonymous> (/home/user/web-app/api.js:53:9)
+    at Statement.replacement (/home/user/web-app/node_modules/sqlite3/lib/trace.js:25:27)
+    at Statement.replacement (/home/user/web-app/node_modules/sqlite3/lib/trace.js:25:27) {
+  code: 'ERR_HTTP_HEADERS_SENT'
+}
