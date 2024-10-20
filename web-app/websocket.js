@@ -33,7 +33,7 @@ const handleWebSocketMessage = (ws, data) => {
 };
 
 const updateDocument = (data) => {
-  db.run('UPDATE documents SET content = ? WHERE id = ?', [data.content, data.documentId], (err) => {
+  db.run('UPDATE documents SET content = ?, updatedAt = CURRENT_TIMESTAMP WHERE id = ?', [data.content, data.documentId], (err) => {
     if (err) {
       console.error('Error updating document:', err);
     }
