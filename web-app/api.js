@@ -39,4 +39,19 @@ router.post('/documents', (req, res) => {
   });
 });
 
+// GET /api/documents/:documentId
+router.get('/documents/:documentId', (req, res) => {
+  db.get('SELECT * FROM documents WHERE id = ?', [req.params.documentId], (err, row) => {
+    if (err) {
+      res.status(500).json({ error: err.message });
+      return;
+    }
+    if (!row) {
+      res.status(404).json({ error: 'Document not found' });
+      return;
+    }
+    res.json(row);
+  });
+});
+
 module.exports = router;
