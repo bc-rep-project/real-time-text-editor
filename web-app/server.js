@@ -5,6 +5,7 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const WebSocket = require('ws');
 const http = require('http');
+const path = require('path');
 const apiRoutes = require('./api');
 
 const dev = process.env.NODE_ENV !== 'production';
@@ -19,6 +20,9 @@ app.prepare().then(() => {
   // Middleware
   server.use(cors());
   server.use(bodyParser.json());
+
+  // Serve static files from the 'public' directory
+  server.use(express.static(path.join(__dirname, 'public')));
 
   // API routes
   server.use('/api', apiRoutes);
