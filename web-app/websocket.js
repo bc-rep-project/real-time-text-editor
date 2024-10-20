@@ -2,6 +2,7 @@
 const WebSocket = require('ws');
 const http = require('http');
 const express = require('express');
+const db = require('./database');
 
 const app = express();
 const server = http.createServer(app);
@@ -17,24 +18,26 @@ wss.on('connection', (ws) => {
 
   ws.on('close', () => {
     console.log('Client disconnected');
-    broadcastUserPresence();
   });
 });
 
 const handleWebSocketMessage = (ws, data) => {
   switch (data.type) {
     case 'documentUpdate':
+      updateDocument(data);
       broadcastMessage(data);
-      break;
-    case 'chatMessage':
-      broadcastMessage(data);
-      break;
-    case 'userPresence':
-      broadcastUserPresence();
       break;
     default:
       console.log('Unknown message type:', data.type);
   }
+};
+
+const updateDocument = (data) => {
+  db.run('UPDATE documents SET content = ? WHERE id = ?', [data.content, data.documentId], (err) => {
+    if (err) {
+      console.error('Error updating document:', err);
+    }
+  });
 };
 
 const broadcastMessage = (data) => {
@@ -43,20 +46,6 @@ const broadcastMessage = (data) => {
       client.send(JSON.stringify(data));
     }
   });
-};
-
-const broadcastUserPresence = () => {
-  const presenceData = {
-    type: 'userPresence',
-    users: getCurrentUsers(),
-  };
-  broadcastMessage(presenceData);
-};
-
-const getCurrentUsers = () => {
-  // In a real application, you would maintain a list of connected users
-  // For this example, we'll return a static list
-  return ['User1', 'User2'];
 };
 
 module.exports = { server, app };
