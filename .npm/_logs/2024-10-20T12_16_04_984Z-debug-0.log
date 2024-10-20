@@ -10,3 +10,9 @@
 9 verbose logfile logs-max:10 dir:/home/user/.npm/_logs/2024-10-20T12_16_04_984Z-
 10 verbose logfile /home/user/.npm/_logs/2024-10-20T12_16_04_984Z-debug-0.log
 11 silly logfile done cleaning log files
+12 verbose cwd /home/user/web-app
+13 verbose os Linux 6.1.102
+14 verbose node v20.17.0
+15 verbose npm  v10.8.2
+16 verbose exit 143
+17 verbose code 143

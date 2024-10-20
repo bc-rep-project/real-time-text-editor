@@ -3,7 +3,3 @@
 > node server.js
 
 > Ready on http://localhost:3003
- ○ Compiling / ...
- ✓ Compiled / in 4.5s (524 modules)
- HEAD / 200 in 4816ms
- ✓ Compiled in 423ms (249 modules)

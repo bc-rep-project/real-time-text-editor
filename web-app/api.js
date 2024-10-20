@@ -27,6 +27,16 @@ router.get('/documents', (req, res) => {
   });
 });
 
-// Other routes remain the same...
+// POST /api/documents
+router.post('/documents', (req, res) => {
+  const { title, content } = req.body;
+  db.run('INSERT INTO documents (title, content) VALUES (?, ?)', [title, content], function(err) {
+    if (err) {
+      res.status(500).json({ error: err.message });
+      return;
+    }
+    res.json({ id: this.lastID });
+  });
+});
 
 module.exports = router;
