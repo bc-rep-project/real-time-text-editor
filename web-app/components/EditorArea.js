@@ -1,9 +1,22 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 
 const EditorArea = ({ documentId }) => {
   const [content, setContent] = useState('');
   const [socket, setSocket] = useState(null);
+
+  const fetchDocumentContent = useCallback(async () => {
+    try {
+      const response = await fetch(`http://21b4ce6a841c24d7f4.blackbx.ai/api/documents/${documentId}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch document content');
+      }
+      const data = await response.json();
+      setContent(data.content);
+    } catch (error) {
+      console.error('Error fetching document content:', error);
+    }
+  }, [documentId]);
 
   useEffect(() => {
     if (documentId) {
@@ -22,20 +35,7 @@ const EditorArea = ({ documentId }) => {
         ws.close();
       };
     }
-  }, [documentId]);
-
-  const fetchDocumentContent = async () => {
-    try {
-      const response = await fetch(`http://21b4ce6a841c24d7f4.blackbx.ai/api/documents/${documentId}`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch document content');
-      }
-      const data = await response.json();
-      setContent(data.content);
-    } catch (error) {
-      console.error('Error fetching document content:', error);
-    }
-  };
+  }, [documentId, fetchDocumentContent]);
 
   const handleContentChange = (e) => {
     const newContent = e.target.value;
@@ -43,7 +43,7 @@ const EditorArea = ({ documentId }) => {
     sendContentUpdate(newContent);
   };
 
-  const sendContentUpdate = (newContent) => {
+  const sendContentUpdate = useCallback((newContent) => {
     if (socket && socket.readyState === WebSocket.OPEN) {
       socket.send(JSON.stringify({
         type: 'documentUpdate',
@@ -51,7 +51,16 @@ const EditorArea = ({ documentId }) => {
         content: newContent,
       }));
     }
-  };
+
+    // Also send update to the server via HTTP
+    fetch(`http://21b4ce6a841c24d7f4.blackbx.ai/api/documents/${documentId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ content: newContent }),
+    }).catch(error => console.error('Error updating document:', error));
+  }, [socket, documentId]);
 
   return (
     <div className="border border-gray-300 p-4">
