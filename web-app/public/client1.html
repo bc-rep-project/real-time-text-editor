@@ -1,0 +1,53 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Client 1 - Real-time Collaborative Editor</title>
+</head>
+<body>
+    <h1>Client 1 - Real-time Collaborative Editor</h1>
+    <textarea id="editor" rows="10" cols="50"></textarea>
+    <script>
+        const socket = new WebSocket('ws://21b4ce6a841c24d7f4.blackbx.ai');
+        const editor = document.getElementById('editor');
+
+        // Load initial content
+        fetch('http://21b4ce6a841c24d7f4.blackbx.ai/api/documents/1')
+            .then(response => response.json())
+            .then(data => {
+                editor.value = data.content;
+            });
+
+        socket.onopen = () => {
+            console.log('WebSocket connection established');
+        };
+
+        socket.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            if (data.type === 'documentUpdate') {
+                editor.value = data.content;
+            }
+        };
+
+        editor.addEventListener('input', () => {
+            const content = editor.value;
+            socket.send(JSON.stringify({
+                type: 'documentUpdate',
+                documentId: 1,
+                content: content
+            }));
+
+            // Also update via HTTP
+            fetch('http://21b4ce6a841c24d7f4.blackbx.ai/api/documents/1', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ content: content })
+            });
+        });
+    </script>
+</body>
+</html>
