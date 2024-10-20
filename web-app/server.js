@@ -25,7 +25,7 @@ app.prepare().then(() => {
     return handle(req, res);
   });
 
-  const PORT = process.env.PORT || 3002;  // Changed to 3002
+  const PORT = process.env.PORT || 3003;  // Changed to 3003
 
   server.listen(PORT, (err) => {
     if (err) throw err;

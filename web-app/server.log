@@ -2,4 +2,27 @@
 > web-app@0.1.0 dev
 > node server.js
 
-> Ready on http://localhost:3002
+ ⨯ uncaughtException: Error: listen EADDRINUSE: address already in use 0.0.0.0:3002
+    at Server.setupListenHandle [as _listen2] (node:net:1904:16)
+    at listenInCluster (node:net:1961:12)
+    at Server.listen (node:net:2063:7)
+    at Function.listen (/home/user/web-app/node_modules/express/lib/application.js:635:24)
+    at /home/user/web-app/server.js:30:10 {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '0.0.0.0',
+  port: 3002
+}
+ ⨯ uncaughtException: Error: listen EADDRINUSE: address already in use 0.0.0.0:3002
+    at Server.setupListenHandle [as _listen2] (node:net:1904:16)
+    at listenInCluster (node:net:1961:12)
+    at Server.listen (node:net:2063:7)
+    at Function.listen (/home/user/web-app/node_modules/express/lib/application.js:635:24)
+    at /home/user/web-app/server.js:30:10 {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '0.0.0.0',
+  port: 3002
+}
