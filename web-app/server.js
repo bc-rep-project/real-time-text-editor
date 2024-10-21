@@ -40,8 +40,13 @@ app.prepare().then(() => {
   server.post('/api/register', registerUser);
   server.post('/api/login', loginUser);
 
-  // Protected API routes
-  server.use('/api', authenticateUser, apiRoutes);
+// Protected API routes
+server.use('/api', (req, res, next) => {
+  if (req.path === '/documents' && (req.method === 'GET' || req.method === 'POST')) {
+    return next();
+  }
+  return authenticateUser(req, res, next);
+}, apiRoutes);
 
   // Next.js request handler
   server.all('*', (req, res) => {

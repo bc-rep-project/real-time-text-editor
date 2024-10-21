@@ -1,0 +1,33 @@
+
+> web-app@0.1.0 dev
+> node server.js
+
+{"level":"info","message":"Connected to the SQLite database.","timestamp":"2024-10-21T10:05:48.074Z"}
+{"level":"info","message":"Documents table created or already exists.","timestamp":"2024-10-21T10:05:48.088Z"}
+{"level":"info","message":"Version column already exists in documents table.","timestamp":"2024-10-21T10:05:48.090Z"}
+{"level":"info","message":"Versions table created or already exists.","timestamp":"2024-10-21T10:05:48.091Z"}
+{"level":"info","message":"Users table created or already exists.","timestamp":"2024-10-21T10:05:48.092Z"}
+{"level":"info","message":"Chat_messages table created or already exists.","timestamp":"2024-10-21T10:05:48.093Z"}
+info  - Disabled SWC as replacement for Babel because of custom Babel configuration ".babelrc" https://nextjs.org/docs/messages/swc-disabled
+event - compiled client and server successfully in 552 ms (173 modules)
+{"level":"info","message":"Server ready on http://localhost:3003","timestamp":"2024-10-21T10:05:49.592Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T10:05:49.824Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T10:06:01.950Z"}
+wait  - compiling / (client and server)...
+event - compiled client and server successfully in 154 ms (189 modules)
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T10:06:15.807Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T10:06:21.950Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T10:06:28.816Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T10:06:35.266Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T10:06:41.955Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T10:06:48.805Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T10:06:54.747Z"}
+wait  - compiling /_error (client and server)...
+info  - Using external babel configuration from /home/user/real-time-text-editor/web-app/.babelrc
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T10:07:04.524Z"}
+event - compiled client and server successfully in 700 ms (190 modules)
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T10:07:10.475Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T10:07:15.865Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T10:07:22.114Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T10:07:28.837Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T10:07:35.035Z"}

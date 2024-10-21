@@ -1,18 +1,22 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import LoadingSpinner from './LoadingSpinner';
 
 const TextEditor = ({ documentId }) => {
   const [text, setText] = useState('');
   const [ws, setWs] = useState(null);
   const [username, setUsername] = useState('');
   const [isConnected, setIsConnected] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
   const connectWebSocket = useCallback(() => {
+    setIsLoading(true);
     const socket = new WebSocket('ws://0dc9ae2286a79b8954.blackbx.ai');
     
     socket.onopen = () => {
       console.log('WebSocket connection established');
       setIsConnected(true);
+      setIsLoading(false);
       setError('');
       if (username && documentId) {
         socket.send(JSON.stringify({ type: 'join', username, documentId }));
@@ -29,12 +33,14 @@ const TextEditor = ({ documentId }) => {
     socket.onclose = () => {
       console.log('WebSocket connection closed');
       setIsConnected(false);
+      setIsLoading(false);
       setError('Connection lost. Attempting to reconnect...');
       setTimeout(connectWebSocket, 5000);
     };
 
     socket.onerror = (error) => {
       console.error('WebSocket error:', error);
+      setIsLoading(false);
       setError('An error occurred. Please try again later.');
     };
 
@@ -79,7 +85,9 @@ const TextEditor = ({ documentId }) => {
       <h2>Editing Document: {documentId}</h2>
       <p>Welcome, {username}!</p>
       {error && <p style={{ color: 'red' }}>{error}</p>}
-      {isConnected ? (
+      {isLoading ? (
+        <LoadingSpinner />
+      ) : isConnected ? (
         <textarea
           value={text}
           onChange={handleTextChange}

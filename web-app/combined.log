@@ -116,3 +116,132 @@
 {"level":"info","message":"New client connected","timestamp":"2024-10-20T21:48:21.666Z"}
 {"level":"info","message":"New client connected","timestamp":"2024-10-20T21:48:28.647Z"}
 {"level":"info","message":"New client connected","timestamp":"2024-10-20T21:48:34.587Z"}
+{"level":"info","message":"Connected to the SQLite database.","timestamp":"2024-10-21T09:51:58.122Z"}
+{"level":"info","message":"Documents table created or already exists.","timestamp":"2024-10-21T09:51:58.140Z"}
+{"level":"info","message":"Version column already exists in documents table.","timestamp":"2024-10-21T09:51:58.142Z"}
+{"level":"info","message":"Versions table created or already exists.","timestamp":"2024-10-21T09:51:58.143Z"}
+{"level":"info","message":"Users table created or already exists.","timestamp":"2024-10-21T09:51:58.144Z"}
+{"level":"info","message":"Chat_messages table created or already exists.","timestamp":"2024-10-21T09:51:58.145Z"}
+{"level":"info","message":"Server ready on http://localhost:3003","timestamp":"2024-10-21T09:52:03.946Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T09:53:21.074Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T09:53:27.483Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T09:53:34.013Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T09:53:41.263Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T09:53:48.156Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T09:53:54.848Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T09:54:01.214Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T09:54:07.826Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T09:54:14.013Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T09:54:21.212Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T09:54:27.811Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T09:54:34.012Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T09:54:41.051Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T09:54:47.829Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T09:54:54.017Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T09:55:01.052Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T09:55:07.794Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T09:55:13.946Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T09:55:20.013Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T09:55:25.803Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T09:55:32.091Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T09:55:38.803Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T09:55:44.481Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T09:55:50.931Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T09:55:56.802Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T09:56:02.972Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T09:56:10.012Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T09:56:16.822Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T09:56:22.901Z"}
+{"level":"info","message":"Connected to the SQLite database.","timestamp":"2024-10-21T09:56:27.807Z"}
+{"level":"info","message":"Documents table created or already exists.","timestamp":"2024-10-21T09:56:27.822Z"}
+{"level":"info","message":"Version column already exists in documents table.","timestamp":"2024-10-21T09:56:27.823Z"}
+{"level":"info","message":"Versions table created or already exists.","timestamp":"2024-10-21T09:56:27.824Z"}
+{"level":"info","message":"Users table created or already exists.","timestamp":"2024-10-21T09:56:27.825Z"}
+{"level":"info","message":"Chat_messages table created or already exists.","timestamp":"2024-10-21T09:56:27.826Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T09:56:28.801Z"}
+{"level":"info","message":"Connected to the SQLite database.","timestamp":"2024-10-21T09:57:06.377Z"}
+{"level":"info","message":"Documents table created or already exists.","timestamp":"2024-10-21T09:57:06.392Z"}
+{"level":"info","message":"Version column already exists in documents table.","timestamp":"2024-10-21T09:57:06.393Z"}
+{"level":"info","message":"Versions table created or already exists.","timestamp":"2024-10-21T09:57:06.395Z"}
+{"level":"info","message":"Users table created or already exists.","timestamp":"2024-10-21T09:57:06.395Z"}
+{"level":"info","message":"Chat_messages table created or already exists.","timestamp":"2024-10-21T09:57:06.396Z"}
+{"level":"info","message":"Server ready on http://localhost:3003","timestamp":"2024-10-21T09:57:07.902Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T10:00:30.359Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T10:00:36.497Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T10:00:43.226Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T10:00:50.106Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T10:00:56.815Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T10:01:03.087Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T10:01:10.427Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T10:01:16.803Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T10:01:23.065Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T10:01:29.945Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T10:01:35.817Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T10:01:41.928Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T10:01:48.809Z"}
+{"level":"info","message":"Connected to the SQLite database.","timestamp":"2024-10-21T10:01:54.094Z"}
+{"level":"info","message":"Documents table created or already exists.","timestamp":"2024-10-21T10:01:54.109Z"}
+{"level":"info","message":"Version column already exists in documents table.","timestamp":"2024-10-21T10:01:54.110Z"}
+{"level":"info","message":"Versions table created or already exists.","timestamp":"2024-10-21T10:01:54.111Z"}
+{"level":"info","message":"Users table created or already exists.","timestamp":"2024-10-21T10:01:54.112Z"}
+{"level":"info","message":"Chat_messages table created or already exists.","timestamp":"2024-10-21T10:01:54.113Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T10:01:54.836Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T10:02:01.154Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T10:02:07.883Z"}
+{"level":"info","message":"Connected to the SQLite database.","timestamp":"2024-10-21T10:02:17.446Z"}
+{"level":"info","message":"Documents table created or already exists.","timestamp":"2024-10-21T10:02:17.462Z"}
+{"level":"info","message":"Version column already exists in documents table.","timestamp":"2024-10-21T10:02:17.463Z"}
+{"level":"info","message":"Versions table created or already exists.","timestamp":"2024-10-21T10:02:17.464Z"}
+{"level":"info","message":"Users table created or already exists.","timestamp":"2024-10-21T10:02:17.465Z"}
+{"level":"info","message":"Chat_messages table created or already exists.","timestamp":"2024-10-21T10:02:17.466Z"}
+{"level":"info","message":"Server ready on http://localhost:3003","timestamp":"2024-10-21T10:02:18.962Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T10:02:20.029Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T10:02:52.198Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T10:02:58.806Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T10:03:04.916Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T10:03:10.834Z"}
+{"level":"info","message":"Connected to the SQLite database.","timestamp":"2024-10-21T10:03:11.212Z"}
+{"level":"info","message":"Documents table created or already exists.","timestamp":"2024-10-21T10:03:11.229Z"}
+{"level":"info","message":"Version column already exists in documents table.","timestamp":"2024-10-21T10:03:11.230Z"}
+{"level":"info","message":"Versions table created or already exists.","timestamp":"2024-10-21T10:03:11.231Z"}
+{"level":"info","message":"Users table created or already exists.","timestamp":"2024-10-21T10:03:11.233Z"}
+{"level":"info","message":"Chat_messages table created or already exists.","timestamp":"2024-10-21T10:03:11.234Z"}
+{"level":"info","message":"Connected to the SQLite database.","timestamp":"2024-10-21T10:03:56.171Z"}
+{"level":"info","message":"Documents table created or already exists.","timestamp":"2024-10-21T10:03:56.188Z"}
+{"level":"info","message":"Version column already exists in documents table.","timestamp":"2024-10-21T10:03:56.189Z"}
+{"level":"info","message":"Versions table created or already exists.","timestamp":"2024-10-21T10:03:56.190Z"}
+{"level":"info","message":"Users table created or already exists.","timestamp":"2024-10-21T10:03:56.191Z"}
+{"level":"info","message":"Chat_messages table created or already exists.","timestamp":"2024-10-21T10:03:56.192Z"}
+{"level":"info","message":"Server ready on http://localhost:3003","timestamp":"2024-10-21T10:03:57.771Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T10:05:17.918Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T10:05:23.715Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T10:05:30.267Z"}
+{"level":"info","message":"Connected to the SQLite database.","timestamp":"2024-10-21T10:05:34.177Z"}
+{"level":"info","message":"Documents table created or already exists.","timestamp":"2024-10-21T10:05:34.193Z"}
+{"level":"info","message":"Version column already exists in documents table.","timestamp":"2024-10-21T10:05:34.194Z"}
+{"level":"info","message":"Versions table created or already exists.","timestamp":"2024-10-21T10:05:34.195Z"}
+{"level":"info","message":"Users table created or already exists.","timestamp":"2024-10-21T10:05:34.196Z"}
+{"level":"info","message":"Chat_messages table created or already exists.","timestamp":"2024-10-21T10:05:34.197Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T10:05:36.817Z"}
+{"level":"info","message":"Connected to the SQLite database.","timestamp":"2024-10-21T10:05:48.074Z"}
+{"level":"info","message":"Documents table created or already exists.","timestamp":"2024-10-21T10:05:48.088Z"}
+{"level":"info","message":"Version column already exists in documents table.","timestamp":"2024-10-21T10:05:48.090Z"}
+{"level":"info","message":"Versions table created or already exists.","timestamp":"2024-10-21T10:05:48.091Z"}
+{"level":"info","message":"Users table created or already exists.","timestamp":"2024-10-21T10:05:48.092Z"}
+{"level":"info","message":"Chat_messages table created or already exists.","timestamp":"2024-10-21T10:05:48.093Z"}
+{"level":"info","message":"Server ready on http://localhost:3003","timestamp":"2024-10-21T10:05:49.592Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T10:05:49.824Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T10:06:01.950Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T10:06:15.807Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T10:06:21.950Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T10:06:28.816Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T10:06:35.266Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T10:06:41.955Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T10:06:48.805Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T10:06:54.747Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T10:07:04.524Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T10:07:10.475Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T10:07:15.865Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T10:07:22.114Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T10:07:28.837Z"}
+{"level":"info","message":"New client connected","timestamp":"2024-10-21T10:07:35.035Z"}
