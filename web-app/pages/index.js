@@ -16,15 +16,19 @@ const Home = () => {
   };
 
   return (
-    <div>
-      <h1>Real-Time Text Editor</h1>
-      {isLoading ? (
-        <LoadingSpinner />
-      ) : !selectedDocument ? (
-        <DocumentList onSelectDocument={handleSelectDocument} />
-      ) : (
-        <TextEditor documentId={selectedDocument} />
-      )}
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-3xl font-bold mb-6 text-center">Real-Time Text Editor</h1>
+      <div className="bg-white shadow-md rounded-lg p-6">
+        {isLoading ? (
+          <div className="flex justify-center">
+            <LoadingSpinner />
+          </div>
+        ) : !selectedDocument ? (
+          <DocumentList onSelectDocument={handleSelectDocument} />
+        ) : (
+          <TextEditor documentId={selectedDocument} />
+        )}
+      </div>
     </div>
   );
 };
