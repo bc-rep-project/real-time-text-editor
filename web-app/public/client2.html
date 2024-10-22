@@ -1,14 +1,14 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Client 2 - Real-time Collaborative Editor</title>
+    <link href="/styles/tailwind.css" rel="stylesheet">
 </head>
-<body>
-    <h1>Client 2 - Real-time Collaborative Editor</h1>
-    <textarea id="editor" rows="10" cols="50"></textarea>
+<body class="bg-gray-100 min-h-screen flex flex-col items-center justify-center">
+    <h1 class="text-3xl font-bold mb-4">Client 2 - Real-time Collaborative Editor</h1>
+    <textarea id="editor" class="w-full max-w-2xl h-64 p-4 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" rows="10"></textarea>
     <script>
         const socket = new WebSocket('ws://21b4ce6a841c24d7f4.blackbx.ai');
         const editor = document.getElementById('editor');

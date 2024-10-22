@@ -1,7 +1,3 @@
-
-
-
-
 const express = require('express');
 const next = require('next');
 const bodyParser = require('body-parser');
@@ -9,54 +5,39 @@ const cors = require('cors');
 const http = require('http');
 const path = require('path');
 const dotenv = require('dotenv');
-const { expressErrorHandler, createCustomError } = require('./errorHandler');
+const { expressLogger, logger } = require('./logger');
 const setupWebSocket = require('./websocketHandler');
-const apiRoutes = require('./api');
-const logger = require('./logger');
-const { authenticateUser, registerUser, loginUser } = require('./auth');
+const api = require('./api');
 
-// Load environment variables
 dotenv.config();
 
 const dev = process.env.NODE_ENV !== 'production';
 const app = next({ dev });
 const handle = app.getRequestHandler();
 
+const PORT = process.env.PORT || 3000;
+
 app.prepare().then(() => {
   const server = express();
-  const httpServer = http.createServer(server);
 
-  // Set up WebSocket
-  const wss = setupWebSocket(httpServer);
-
-  // Middleware
   server.use(cors());
   server.use(bodyParser.json());
+  server.use(expressLogger);
 
-  // Serve static files from the 'public' directory
+  // Serve static files from the public directory
   server.use(express.static(path.join(__dirname, 'public')));
 
-  // Authentication routes
-  server.post('/api/register', registerUser);
-  server.post('/api/login', loginUser);
+  // Serve Tailwind CSS file
+  server.use('/styles', express.static(path.join(__dirname, 'public/styles')));
 
-// Protected API routes
-server.use('/api', (req, res, next) => {
-  if (req.path === '/documents' && (req.method === 'GET' || req.method === 'POST')) {
-    return next();
-  }
-  return authenticateUser(req, res, next);
-}, apiRoutes);
+  server.use('/api', api);
 
-  // Next.js request handler
   server.all('*', (req, res) => {
     return handle(req, res);
   });
 
-  // Error handling middleware
-  server.use(expressErrorHandler);
-
-  const PORT = process.env.PORT || 3003;
+  const httpServer = http.createServer(server);
+  const wss = setupWebSocket(httpServer);
 
   httpServer.listen(PORT, (err) => {
     if (err) {
@@ -69,6 +50,3 @@ server.use('/api', (req, res, next) => {
   logger.error(`Error preparing Next.js app: ${err.message}`);
   process.exit(1);
 });
-
-
-
