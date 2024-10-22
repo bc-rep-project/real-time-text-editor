@@ -1,3 +1,5 @@
+
+
 const WebSocket = require('ws');
 const logger = require('./logger');
 const fs = require('fs').promises;
@@ -21,6 +23,7 @@ const setupWebSocket = (server) => {
     ws.on('message', async (message) => {
       try {
         const data = JSON.parse(message);
+        logger.info(`Received message: ${JSON.stringify(data)}`);
         if (data.type === 'join') {
           const { username, documentId } = data;
           clients.set(ws, { username, documentId });
@@ -28,34 +31,38 @@ const setupWebSocket = (server) => {
 
           // Load or create document
           if (!documents.has(documentId)) {
-            const documentPath = path.join(DOCUMENTS_DIR, `${documentId}.txt`);
+            const documentPath = path.join(DOCUMENTS_DIR, `${documentId}.json`);
             try {
-              const content = await fs.readFile(documentPath, 'utf8');
-              documents.set(documentId, content);
+              const fileContent = await fs.readFile(documentPath, 'utf8');
+              const { title, content } = JSON.parse(fileContent);
+              documents.set(documentId, { title, content });
             } catch (err) {
               logger.info(`Creating new document ${documentId}`);
-              documents.set(documentId, '');
+              documents.set(documentId, { title: `Document ${documentId}`, content: '' });
             }
           }
 
+          const { title, content } = documents.get(documentId);
           ws.send(JSON.stringify({ 
             type: 'update', 
-            content: documents.get(documentId), 
+            title,
+            content, 
             username: 'Server' 
           }));
         } else if (data.type === 'update') {
-          const { content, username, documentId } = data;
-          documents.set(documentId, content);
+          const { content, title, username, documentId } = data;
+          documents.set(documentId, { title, content });
 
           // Save the updated content to the file
-          const documentPath = path.join(DOCUMENTS_DIR, `${documentId}.txt`);
-          await fs.writeFile(documentPath, content, 'utf8');
+          const documentPath = path.join(DOCUMENTS_DIR, `${documentId}.json`);
+          await fs.writeFile(documentPath, JSON.stringify({ title, content }), 'utf8');
 
           // Broadcast the update to all clients in the same document
           clients.forEach((clientData, client) => {
             if (client !== ws && client.readyState === WebSocket.OPEN && clientData.documentId === documentId) {
               client.send(JSON.stringify({
                 type: 'update',
+                title,
                 content,
                 username
               }));
@@ -81,3 +88,5 @@ const setupWebSocket = (server) => {
 };
 
 module.exports = setupWebSocket;
+
+

@@ -1,28 +1,85 @@
-const express = require('express');
-const bodyParser = require('body-parser');
-const cors = require('cors');
-const http = require('http');
+
+
+
+
+
+
+
+
+const { createServer } = require('http');
+const { parse } = require('url');
+const next = require('next');
+const WebSocket = require('ws');
+const fs = require('fs').promises;
 const path = require('path');
-const setupWebSocket = require('./websocketHandler');
-const api = require('./api');
 
-const app = express();
-const PORT = process.env.PORT || 3000;
+const dev = process.env.NODE_ENV !== 'production';
+const app = next({ dev });
+const handle = app.getRequestHandler();
 
-app.use(cors());
-app.use(bodyParser.json());
+const DOCUMENTS_DIR = path.join(__dirname, 'documents');
 
-// Serve static files from the public directory
-app.use(express.static(path.join(__dirname, 'public')));
+const setupWebSocket = (server) => {
+  const wss = new WebSocket.Server({ server });
+  const clients = new Map();
 
-// Serve Tailwind CSS file
-app.use('/styles', express.static(path.join(__dirname, 'public/styles')));
+  wss.on('connection', (ws) => {
+    console.log('New client connected');
 
-app.use('/api', api);
+    ws.on('message', async (message) => {
+      const data = JSON.parse(message);
+      console.log('Received message:', data);
 
-const httpServer = http.createServer(app);
-const wss = setupWebSocket(httpServer);
+      if (data.type === 'join') {
+        const { documentId } = data;
+        clients.set(ws, { documentId });
+        const documentPath = path.join(DOCUMENTS_DIR, `${documentId}.json`);
+        try {
+          const content = await fs.readFile(documentPath, 'utf-8');
+          ws.send(JSON.stringify({ type: 'update', ...JSON.parse(content) }));
+        } catch (error) {
+          console.error('Error reading document:', error);
+        }
+      } else if (data.type === 'update') {
+        const { documentId, title, content } = data;
+        const documentPath = path.join(DOCUMENTS_DIR, `${documentId}.json`);
+        await fs.writeFile(documentPath, JSON.stringify({ title, content }));
 
-httpServer.listen(PORT, () => {
-  console.log();
+        // Broadcast the update to all clients editing the same document
+        wss.clients.forEach((client) => {
+          if (client !== ws && client.readyState === WebSocket.OPEN && clients.get(client)?.documentId === documentId) {
+            client.send(JSON.stringify({ type: 'update', title, content }));
+          }
+        });
+      }
+    });
+
+    ws.on('close', () => {
+      console.log('Client disconnected');
+      clients.delete(ws);
+    });
+  });
+};
+
+app.prepare().then(() => {
+  const server = createServer((req, res) => {
+    const parsedUrl = parse(req.url, true);
+    handle(req, res, parsedUrl);
+  });
+
+  setupWebSocket(server);
+
+  const port = process.env.PORT || 0;
+  server.listen(port, (err) => {
+    if (err) throw err;
+    const actualPort = server.address().port;
+    console.log(`> Ready on http://localhost:${actualPort}`);
+  });
 });
+
+
+
+
+
+
+

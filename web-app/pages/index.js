@@ -1,23 +1,24 @@
+
+
 import React, { useState } from 'react';
-import TextEditor from '../components/TextEditor';
 import DocumentList from '../components/DocumentList';
+import TextEditor from '../components/TextEditor';
 
 const Home = () => {
   const [selectedDocument, setSelectedDocument] = useState(null);
 
-  const handleSelectDocument = (documentId) => {
-    setSelectedDocument(documentId);
-  };
-
   return (
-    <div className="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6">
-      {!selectedDocument ? (
-        <DocumentList onSelectDocument={handleSelectDocument} />
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-3xl font-bold mb-8">Real-Time Text Editor</h1>
+      {selectedDocument ? (
+        <TextEditor documentId={selectedDocument} onClose={() => setSelectedDocument(null)} />
       ) : (
-        <TextEditor documentId={selectedDocument} />
+        <DocumentList onSelectDocument={setSelectedDocument} />
       )}
     </div>
   );
 };
 
 export default Home;
+
+
