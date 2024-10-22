@@ -1,36 +1,23 @@
-
 import React, { useState, useEffect } from 'react';
 
 const UserPresenceIndicator = ({ documentId }) => {
-  const [presentUsers, setPresentUsers] = useState([]);
-
-  useEffect(() => {
-    if (documentId) {
-      setupWebSocket();
-    }
-  }, [documentId]);
+  const [activeUsers, setActiveUsers] = useState([]);
 
   const setupWebSocket = () => {
-    if (!window.socket) {
-      window.socket = new WebSocket('ws://localhost:3000');
-    }
-
-    window.socket.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      if (data.type === 'userPresence' && data.documentId === documentId) {
-        setPresentUsers(data.users);
-      }
-    };
+    // WebSocket setup logic here
+    setActiveUsers(['User1', 'User2']); // Update this with actual active users
   };
 
+  useEffect(() => {
+    setupWebSocket();
+  }, [documentId]);
+
   return (
-    <div className="p-4">
-      <h3 className="text-lg font-bold mb-2">Currently Editing:</h3>
-      <ul className="list-disc pl-5">
-        {presentUsers.map((user, index) => (
-          <li key={index} className="text-sm text-gray-600">
-            {user}
-          </li>
+    <div className="mt-4">
+      <h3 className="text-lg font-semibold mb-2">Active Users</h3>
+      <ul className="list-disc list-inside">
+        {activeUsers.map((user, index) => (
+          <li key={index}>{user}</li>
         ))}
       </ul>
     </div>
