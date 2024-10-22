@@ -253,3 +253,15 @@
 {"level":"info","message":"New client connected","timestamp":"2024-10-21T10:08:14.905Z"}
 {"level":"info","message":"New client connected","timestamp":"2024-10-21T10:08:21.152Z"}
 {"level":"info","message":"New client connected","timestamp":"2024-10-21T10:08:28.776Z"}
+{"level":"info","message":"Connected to the SQLite database.","timestamp":"2024-10-22T18:06:16.002Z"}
+{"level":"info","message":"Documents table created or already exists.","timestamp":"2024-10-22T18:06:16.013Z"}
+{"level":"info","message":"Version column already exists in documents table.","timestamp":"2024-10-22T18:06:16.015Z"}
+{"level":"info","message":"Versions table created or already exists.","timestamp":"2024-10-22T18:06:16.015Z"}
+{"level":"info","message":"Users table created or already exists.","timestamp":"2024-10-22T18:06:16.016Z"}
+{"level":"info","message":"Chat_messages table created or already exists.","timestamp":"2024-10-22T18:06:16.017Z"}
+{"level":"info","message":"Connected to the SQLite database.","timestamp":"2024-10-22T18:07:09.616Z"}
+{"level":"info","message":"Documents table created or already exists.","timestamp":"2024-10-22T18:07:09.620Z"}
+{"level":"info","message":"Version column already exists in documents table.","timestamp":"2024-10-22T18:07:09.621Z"}
+{"level":"info","message":"Versions table created or already exists.","timestamp":"2024-10-22T18:07:09.621Z"}
+{"level":"info","message":"Users table created or already exists.","timestamp":"2024-10-22T18:07:09.622Z"}
+{"level":"info","message":"Chat_messages table created or already exists.","timestamp":"2024-10-22T18:07:09.623Z"}

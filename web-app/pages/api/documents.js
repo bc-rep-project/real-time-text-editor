@@ -1,36 +1,24 @@
-import fs from 'fs/promises';
-import path from 'path';
+import db from '../../database';
 
-const DOCUMENTS_DIR = path.join(process.cwd(), 'documents');
-
-export default async function handler(req, res) {
+export default function handler(req, res) {
   if (req.method === 'GET') {
-    try {
-      const files = await fs.readdir(DOCUMENTS_DIR);
-      const documents = files
-        .filter(file => file.endsWith('.txt'))
-        .map(file => ({ id: path.parse(file).name }));
-      res.status(200).json(documents);
-    } catch (error) {
-      console.error('Error reading documents:', error);
-      res.status(500).json({ error: 'Failed to fetch documents' });
-    }
-  } else if (req.method === 'POST') {
-    try {
-      const { title } = req.body;
-      if (!title) {
-        return res.status(400).json({ error: 'Title is required' });
+    db.all('SELECT * FROM documents', (err, rows) => {
+      if (err) {
+        res.status(500).json({ error: 'Error fetching documents' });
+      } else {
+        res.status(200).json(rows);
       }
-      const fileName = `${title}.txt`;
-      const filePath = path.join(DOCUMENTS_DIR, fileName);
-      await fs.writeFile(filePath, '');
-      res.status(201).json({ id: title, message: 'Document created successfully' });
-    } catch (error) {
-      console.error('Error creating document:', error);
-      res.status(500).json({ error: 'Failed to create document' });
-    }
+    });
+  } else if (req.method === 'POST') {
+    const { title, content } = req.body;
+    db.run('INSERT INTO documents (title, content) VALUES (?, ?)', [title, content], function(err) {
+      if (err) {
+        res.status(500).json({ error: 'Error creating document' });
+      } else {
+        res.status(201).json({ id: this.lastID, title, content });
+      }
+    });
   } else {
-    res.setHeader('Allow', ['GET', 'POST']);
-    res.status(405).end(`Method ${req.method} Not Allowed`);
+    res.status(405).json({ error: 'Method not allowed' });
   }
 }
