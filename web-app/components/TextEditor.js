@@ -25,10 +25,13 @@ const TextEditor = ({ documentId, onClose }) => {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       import('quill').then((Quill) => {
+        console.log('Quill imported successfully');
         import('quill-image-resize-module-react').then((ImageResize) => {
+          console.log('ImageResize module imported successfully');
           Quill.default.register('modules/imageResize', ImageResize.default);
-        });
-      });
+          console.log('ImageResize module registered successfully');
+        }).catch(error => console.error('Error importing ImageResize:', error));
+      }).catch(error => console.error('Error importing Quill:', error));
     }
   }, []);
 

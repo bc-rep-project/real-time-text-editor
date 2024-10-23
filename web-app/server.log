@@ -2,49 +2,27 @@
 > web-app@0.1.0 dev
 > node server.js
 
-event - compiled client and server successfully in 630 ms (175 modules)
+event - compiled client and server successfully in 1854 ms (175 modules)
 > Ready on http://localhost:3000
 wait  - compiling / (client and server)...
-event - compiled client and server successfully in 2.4s (1180 modules)
+event - compiled client and server successfully in 1927 ms (1180 modules)
 Warning: viewport meta tags should not be used in _document.js's <Head>. https://nextjs.org/docs/messages/no-document-viewport-meta
 Warning: viewport meta tags should not be used in _document.js's <Head>. https://nextjs.org/docs/messages/no-document-viewport-meta
 New client connected
 Client disconnected
 wait  - compiling /_error (client and server)...
-event - compiled client and server successfully in 327 ms (1165 modules)
+event - compiled client and server successfully in 321 ms (1181 modules)
 Warning: viewport meta tags should not be used in _document.js's <Head>. https://nextjs.org/docs/messages/no-document-viewport-meta
 New client connected
 Client disconnected
-wait  - compiling /api/signin...
 New client connected
-event - compiled client and server successfully in 189 ms (1177 modules)
 Client disconnected
 New client connected
 Client disconnected
 wait  - compiling /api/register...
-event - compiled client and server successfully in 59 ms (188 modules)
+event - compiled client and server successfully in 76 ms (187 modules)
 wait  - compiling /api/documents...
-event - compiled client and server successfully in 53 ms (191 modules)
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
+event - compiled client and server successfully in 64 ms (190 modules)
 New client connected
 Client disconnected
 New client connected
