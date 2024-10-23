@@ -62,7 +62,7 @@ app.prepare().then(() => {
 
   setupWebSocket(server);
 
-  const port = 3000;
+  const port = process.env.PORT || 3001;
   server.listen(port, (err) => {
     if (err) throw err;
     console.log(`> Ready on http://localhost:${port}`);

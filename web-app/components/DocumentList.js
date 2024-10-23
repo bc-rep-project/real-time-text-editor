@@ -1,9 +1,7 @@
 
-
-
 import React, { useState, useEffect } from 'react';
 
-const DocumentList = ({ onSelectDocument }) => {
+const DocumentList = ({ onSelectDocument, darkMode }) => {
   const [documents, setDocuments] = useState([]);
   const [newDocumentTitle, setNewDocumentTitle] = useState('');
 
@@ -14,15 +12,18 @@ const DocumentList = ({ onSelectDocument }) => {
   const fetchDocuments = async () => {
     try {
       const response = await fetch('/api/documents');
-      const data = await response.json();
-      setDocuments(data);
+      if (response.ok) {
+        const data = await response.json();
+        setDocuments(data);
+      } else {
+        console.error('Failed to fetch documents');
+      }
     } catch (error) {
       console.error('Error fetching documents:', error);
     }
   };
 
-  const createNewDocument = async (e) => {
-    e.preventDefault();
+  const createDocument = async () => {
     if (!newDocumentTitle.trim()) return;
 
     try {
@@ -33,49 +34,62 @@ const DocumentList = ({ onSelectDocument }) => {
         },
         body: JSON.stringify({ title: newDocumentTitle }),
       });
-      const data = await response.json();
-      setNewDocumentTitle('');
-      fetchDocuments();
-      onSelectDocument(data.id);
+
+      if (response.ok) {
+        const newDocument = await response.json();
+        setDocuments([...documents, newDocument]);
+        setNewDocumentTitle('');
+      } else {
+        console.error('Failed to create document');
+      }
     } catch (error) {
-      console.error('Error creating new document:', error);
+      console.error('Error creating document:', error);
     }
   };
 
   return (
-    <div className="w-full">
-      <h2 className="text-2xl font-semibold mb-4">Documents</h2>
-      <ul className="mb-4">
+    <div className={`p-4 ${darkMode ? 'bg-gray-800 text-white' : 'bg-white text-black'}`}>
+      <h2 className="text-xl font-semibold mb-4">Documents</h2>
+      <ul className="space-y-2">
         {documents.map((doc) => (
-          <li key={doc.id} className="mb-2">
-            <button
-              onClick={() => onSelectDocument(doc.id)}
-              className="text-blue-500 hover:underline"
-            >
-              {doc.title || `Document ${doc.id}`}
-            </button>
+          <li
+            key={doc.id}
+            className={`cursor-pointer p-2 rounded ${
+              darkMode
+                ? 'hover:bg-gray-700 focus:bg-gray-700'
+                : 'hover:bg-gray-100 focus:bg-gray-100'
+            }`}
+            onClick={() => onSelectDocument(doc.id)}
+          >
+            {doc.title}
           </li>
         ))}
       </ul>
-      <form onSubmit={createNewDocument} className="mt-4">
+      <div className="mt-4">
         <input
           type="text"
-          className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className={`w-full p-2 border rounded-md ${
+            darkMode
+              ? 'bg-gray-700 text-white border-gray-600'
+              : 'bg-white text-black border-gray-300'
+          }`}
+          placeholder="New document title"
           value={newDocumentTitle}
           onChange={(e) => setNewDocumentTitle(e.target.value)}
-          placeholder="Enter new document title..."
         />
         <button
-          type="submit"
-          className="mt-2 w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors duration-200"
+          className={`mt-2 px-4 py-2 rounded ${
+            darkMode
+              ? 'bg-blue-600 text-white hover:bg-blue-700'
+              : 'bg-blue-500 text-white hover:bg-blue-600'
+          }`}
+          onClick={createDocument}
         >
           Create New Document
         </button>
-      </form>
+      </div>
     </div>
   );
 };
 
 export default DocumentList;
-
-
