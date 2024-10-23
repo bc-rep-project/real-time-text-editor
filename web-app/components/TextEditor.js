@@ -1,9 +1,11 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 
 const TextEditor = ({ documentId, onClose }) => {
   const [content, setContent] = useState('');
   const [title, setTitle] = useState('');
   const [isConnected, setIsConnected] = useState(false);
+  const [darkMode, setDarkMode] = useState(false);
   const ws = useRef(null);
 
   useEffect(() => {
@@ -72,29 +74,48 @@ const TextEditor = ({ documentId, onClose }) => {
     }
   };
 
+  const toggleDarkMode = () => {
+    setDarkMode(!darkMode);
+  };
+
   return (
-    <div className="w-full">
+    <div className={`w-full ${darkMode ? 'dark bg-gray-800 text-white' : 'bg-white text-black'}`}>
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-2xl font-bold">Real-time Text Editor</h1>
+        <button
+          onClick={toggleDarkMode}
+          className={`px-4 py-2 rounded ${darkMode ? 'bg-yellow-400 text-black' : 'bg-gray-800 text-white'}`}
+        >
+          {darkMode ? 'Light Mode' : 'Dark Mode'}
+        </button>
+      </div>
       {!isConnected && (
-        <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4" role="alert">
+        <div className={`border-l-4 p-4 mb-4 ${darkMode ? 'bg-yellow-900 border-yellow-600 text-yellow-200' : 'bg-yellow-100 border-yellow-500 text-yellow-700'}`} role="alert">
           <p className="font-bold">Disconnected</p>
           <p>Trying to reconnect...</p>
         </div>
       )}
       <input
         type="text"
-        className="w-full text-2xl font-semibold mb-4 p-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white transition-colors duration-200"
+        className={`w-full text-2xl font-semibold mb-4 p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200 ${
+          darkMode ? 'bg-gray-700 text-white border-gray-600' : 'bg-white text-black border-gray-300'
+        }`}
         value={title}
         onChange={handleTitleChange}
         placeholder="Enter document title..."
       />
       <textarea
-        className="w-full h-64 p-4 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white transition-colors duration-200 resize-none"
+        className={`w-full h-64 p-4 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200 resize-none ${
+          darkMode ? 'bg-gray-700 text-white border-gray-600' : 'bg-white text-black border-gray-300'
+        }`}
         value={content}
         onChange={handleContentChange}
         placeholder="Start typing your document here..."
       />
       <button
-        className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors duration-200"
+        className={`mt-4 px-4 py-2 rounded transition-colors duration-200 ${
+          darkMode ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-blue-500 text-white hover:bg-blue-600'
+        }`}
         onClick={onClose}
       >
         Close
