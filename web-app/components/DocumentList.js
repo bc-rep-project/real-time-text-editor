@@ -1,9 +1,12 @@
 
 import React, { useState, useEffect } from 'react';
+import { useTheme } from '@mui/material/styles';
 
 const DocumentList = ({ onSelectDocument }) => {
   const [documents, setDocuments] = useState([]);
   const [newDocumentTitle, setNewDocumentTitle] = useState('');
+  const theme = useTheme();
+  const darkMode = theme.palette.mode === 'dark';
 
   useEffect(() => {
     fetchDocuments();
@@ -11,7 +14,12 @@ const DocumentList = ({ onSelectDocument }) => {
 
   const fetchDocuments = async () => {
     try {
-      const response = await fetch('/api/documents');
+      const token = localStorage.getItem('token');
+      const response = await fetch('/api/documents', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       if (response.ok) {
         const data = await response.json();
         setDocuments(data);
@@ -27,10 +35,12 @@ const DocumentList = ({ onSelectDocument }) => {
     if (!newDocumentTitle.trim()) return;
 
     try {
+      const token = localStorage.getItem('token');
       const response = await fetch('/api/documents', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({ title: newDocumentTitle }),
       });
@@ -48,7 +58,7 @@ const DocumentList = ({ onSelectDocument }) => {
   };
 
   return (
-    <div className={`p-4 'bg-white text-black'`}>
+    <div className={`p-4 ${darkMode ? 'bg-gray-800 text-white' : 'bg-white text-black'}`}>
       <h2 className="text-xl font-semibold mb-4">Documents</h2>
       <ul className="space-y-2">
         {documents.map((doc) => (

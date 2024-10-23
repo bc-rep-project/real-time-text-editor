@@ -8,18 +8,22 @@ import {
   Typography, 
   Paper,
   Snackbar,
-  Alert
+  Alert,
+  Switch,
+  FormControlLabel
 } from '@mui/material';
 
-const LoginForm = ({ onLogin }) => {
+const AuthForm = ({ onLogin }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [isLogin, setIsLogin] = useState(true);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('/api/auth/login', {
+      const endpoint = isLogin ? '/api/login' : '/api/register';
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -27,15 +31,22 @@ const LoginForm = ({ onLogin }) => {
         body: JSON.stringify({ username, password }),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error('Login failed');
+        throw new Error(data.error || `${isLogin ? 'Login' : 'Registration'} failed`);
       }
 
-      const data = await response.json();
-      onLogin(data);
+      if (isLogin) {
+        localStorage.setItem('token', data.token);
+        onLogin({ username, token: data.token });
+      } else {
+        setIsLogin(true);
+        setError('Registration successful. Please log in.');
+      }
     } catch (error) {
-      console.error('Error during login:', error);
-      setError('Login failed. Please try again.');
+      console.error(`Error during ${isLogin ? 'login' : 'registration'}:`, error);
+      setError(error.message || `${isLogin ? 'Login' : 'Registration'} failed. Please try again.`);
     }
   };
 
@@ -49,9 +60,9 @@ const LoginForm = ({ onLogin }) => {
           alignItems: 'center',
         }}
       >
-        <Paper elevation={3} sx={{ padding: 4, width: '100%' }}>
-          <Typography component="h1" variant="h5" align="center" gutterBottom>
-            Login
+        <Paper elevation={3} sx={{ padding: 4, width: '100%', backgroundColor: 'background.paper' }}>
+          <Typography component="h1" variant="h5" align="center" gutterBottom color="text.primary">
+            {isLogin ? 'Login' : 'Register'}
           </Typography>
           <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
             <TextField
@@ -89,15 +100,19 @@ const LoginForm = ({ onLogin }) => {
               fullWidth
               variant="contained"
               sx={{ mt: 3, mb: 2 }}
-              aria-label="Sign In"
+              aria-label={isLogin ? "Sign In" : "Register"}
             >
-              Sign In
+              {isLogin ? 'Sign In' : 'Register'}
             </Button>
+            <FormControlLabel
+              control={<Switch checked={isLogin} onChange={() => setIsLogin(!isLogin)} />}
+              label={isLogin ? "Switch to Register" : "Switch to Login"}
+            />
           </Box>
         </Paper>
       </Box>
       <Snackbar open={!!error} autoHideDuration={6000} onClose={() => setError('')}>
-        <Alert onClose={() => setError('')} severity="error" sx={{ width: '100%' }} aria-live="assertive">
+        <Alert onClose={() => setError('')} severity={error === 'Registration successful. Please log in.' ? "success" : "error"} sx={{ width: '100%' }} aria-live="assertive">
           {error}
         </Alert>
       </Snackbar>
@@ -105,4 +120,4 @@ const LoginForm = ({ onLogin }) => {
   );
 };
 
-export default LoginForm;
+export default AuthForm;

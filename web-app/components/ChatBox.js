@@ -1,58 +1,71 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { useTheme } from '@mui/material/styles';
+import { Paper, Typography, TextField, Button, List, ListItem, ListItemText } from '@mui/material';
 
 const ChatBox = ({ documentId }) => {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
-
-  const fetchChatHistory = () => {
-    // Fetch chat history logic here
-    setMessages([]); // Update this with actual fetched messages
-  };
-
-  const setupWebSocket = () => {
-    // WebSocket setup logic here
-  };
+  const socketRef = useRef(null);
+  const theme = useTheme();
+  const darkMode = theme.palette.mode === 'dark';
 
   useEffect(() => {
-    fetchChatHistory();
-    setupWebSocket();
+    // Connect to WebSocket
+    socketRef.current = new WebSocket(`ws://localhost:8080/chat/${documentId}`);
+
+    socketRef.current.onmessage = (event) => {
+      const message = JSON.parse(event.data);
+      setMessages((prevMessages) => [...prevMessages, message]);
+    };
+
+    // Cleanup on unmount
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.close();
+      }
+    };
   }, [documentId]);
 
-  const handleSendMessage = () => {
-    if (newMessage.trim()) {
-      setMessages([...messages, { user: 'You', text: newMessage }]);
+  const handleSendMessage = (e) => {
+    e.preventDefault();
+    if (newMessage.trim() !== '' && socketRef.current) {
+      const message = { text: newMessage, sender: 'You', documentId };
+      socketRef.current.send(JSON.stringify(message));
       setNewMessage('');
-      // Send message logic here
     }
   };
 
   return (
-    <div className="mt-4">
-      <h3 className="text-lg font-semibold mb-2">Chat</h3>
-      <div className="border rounded-lg p-4 h-48 overflow-y-auto mb-2">
-        {messages.map((msg, index) => (
-          <div key={index} className="mb-2">
-            <span className="font-bold">{msg.user}: </span>
-            {msg.text}
-          </div>
+    <Paper elevation={3} className={`p-4 ${darkMode ? 'bg-gray-800' : 'bg-gray-100'}`}>
+      <Typography variant="h6" component="h2" className={`mb-4 ${darkMode ? 'text-white' : 'text-black'}`}>
+        Chat
+      </Typography>
+      <List className="h-64 overflow-y-auto mb-4">
+        {messages.map((message, index) => (
+          <ListItem key={index}>
+            <ListItemText
+              primary={<strong>{message.sender}:</strong>}
+              secondary={message.text}
+              className={darkMode ? 'text-gray-300' : 'text-gray-700'}
+            />
+          </ListItem>
         ))}
-      </div>
-      <div className="flex">
-        <input
-          type="text"
+      </List>
+      <form onSubmit={handleSendMessage} className="flex">
+        <TextField
+          fullWidth
           value={newMessage}
           onChange={(e) => setNewMessage(e.target.value)}
-          className="flex-grow border rounded-l-lg px-2 py-1"
           placeholder="Type a message..."
+          variant="outlined"
+          size="small"
+          className="mr-2"
         />
-        <button
-          onClick={handleSendMessage}
-          className="bg-blue-500 text-white px-4 py-1 rounded-r-lg"
-        >
+        <Button type="submit" variant="contained" color="primary">
           Send
-        </button>
-      </div>
-    </div>
+        </Button>
+      </form>
+    </Paper>
   );
 };
 

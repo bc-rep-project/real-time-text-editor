@@ -5,12 +5,31 @@ const next = require('next');
 const WebSocket = require('ws');
 const fs = require('fs').promises;
 const path = require('path');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
 
 const dev = process.env.NODE_ENV !== 'production';
 const app = next({ dev });
 const handle = app.getRequestHandler();
 
 const DOCUMENTS_DIR = path.join(__dirname, 'documents');
+const SECRET_KEY = 'your-secret-key'; // In a real application, this should be stored securely
+
+// Mock user database (replace with a real database in production)
+const users = [];
+
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (token == null) return res.status(401).json({ error: 'Unauthorized' });
+
+  jwt.verify(token, SECRET_KEY, (err, user) => {
+    if (err) return res.status(403).json({ error: 'Forbidden' });
+    req.user = user;
+    next();
+  });
+};
 
 const setupWebSocket = (server) => {
   const wss = new WebSocket.Server({ server });
@@ -57,12 +76,64 @@ const setupWebSocket = (server) => {
 app.prepare().then(() => {
   const server = createServer((req, res) => {
     const parsedUrl = parse(req.url, true);
-    handle(req, res, parsedUrl);
+
+    if (parsedUrl.pathname === '/api/register' && req.method === 'POST') {
+      let body = '';
+      req.on('data', chunk => {
+        body += chunk.toString();
+      });
+      req.on('end', () => {
+        const { username, password } = JSON.parse(body);
+        if (users.find(u => u.username === username)) {
+          res.statusCode = 400;
+          res.end(JSON.stringify({ error: 'Username already exists' }));
+        } else {
+          const hashedPassword = bcrypt.hashSync(password, 8);
+          users.push({ username, password: hashedPassword });
+          res.statusCode = 201;
+          res.end(JSON.stringify({ message: 'User registered successfully' }));
+        }
+      });
+    } else if (parsedUrl.pathname === '/api/login' && req.method === 'POST') {
+      let body = '';
+      req.on('data', chunk => {
+        body += chunk.toString();
+      });
+      req.on('end', () => {
+        const { username, password } = JSON.parse(body);
+        const user = users.find(u => u.username === username);
+        if (user && bcrypt.compareSync(password, user.password)) {
+          const token = jwt.sign({ username: user.username }, SECRET_KEY, { expiresIn: '1h' });
+          res.statusCode = 200;
+          res.end(JSON.stringify({ token }));
+        } else {
+          res.statusCode = 401;
+          res.end(JSON.stringify({ error: 'Invalid credentials' }));
+        }
+      });
+    } else if (parsedUrl.pathname.startsWith('/api/documents/') && req.method === 'GET') {
+      const documentId = parsedUrl.pathname.split('/').pop();
+      const documentPath = path.join(DOCUMENTS_DIR, `${documentId}.json`);
+      
+      fs.readFile(documentPath, 'utf-8')
+        .then(content => {
+          res.statusCode = 200;
+          res.setHeader('Content-Type', 'application/json');
+          res.end(content);
+        })
+        .catch(error => {
+          console.error('Error reading document:', error);
+          res.statusCode = 404;
+          res.end(JSON.stringify({ error: 'Document not found' }));
+        });
+    } else {
+      handle(req, res, parsedUrl);
+    }
   });
 
   setupWebSocket(server);
 
-  const port = process.env.PORT || 3001;
+  const port = process.env.PORT || 3002;
   server.listen(port, (err) => {
     if (err) throw err;
     console.log(`> Ready on http://localhost:${port}`);

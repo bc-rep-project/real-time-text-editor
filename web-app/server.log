@@ -2,5 +2,91 @@
 > web-app@0.1.0 dev
 > node server.js
 
-event - compiled client and server successfully in 582 ms (173 modules)
-> Ready on http://localhost:3001
+event - compiled client and server successfully in 1830 ms (173 modules)
+> Ready on http://localhost:3002
+wait  - compiling / (client and server)...
+event - compiled client and server successfully in 1940 ms (1067 modules)
+wait  - compiling /api/documents...
+event - compiled client and server successfully in 242 ms (185 modules)
+wait  - compiling / (client and server)...
+event - compiled client and server successfully in 262 ms (1067 modules)
+New client connected
+Client disconnected
+New client connected
+Client disconnected
+New client connected
+Client disconnected
+New client connected
+Client disconnected
+New client connected
+Client disconnected
+New client connected
+Client disconnected
+wait  - compiling /api/documents...
+event - compiled client and server successfully in 83 ms (185 modules)
+New client connected
+Client disconnected
+New client connected
+Client disconnected
+New client connected
+Client disconnected
+New client connected
+Client disconnected
+New client connected
+Received message: { type: 'join', documentId: '1729672209627' }
+New client connected
+Client disconnected
+New client connected
+Client disconnected
+New client connected
+Client disconnected
+Client disconnected
+New client connected
+Client disconnected
+New client connected
+Received message: { type: 'join', documentId: '1729672209627' }
+New client connected
+Received message: { type: 'join', documentId: '1729672209627' }
+New client connected
+Client disconnected
+Client disconnected
+New client connected
+Client disconnected
+New client connected
+Received message: { type: 'join', documentId: '1729672209627' }
+New client connected
+Client disconnected
+New client connected
+Client disconnected
+New client connected
+Client disconnected
+New client connected
+Client disconnected
+New client connected
+Received message: { type: 'join', documentId: '1729623792794' }
+New client connected
+Client disconnected
+New client connected
+Client disconnected
+New client connected
+Client disconnected
+New client connected
+Client disconnected
+New client connected
+Client disconnected
+New client connected
+Client disconnected
+New client connected
+Client disconnected
+New client connected
+Client disconnected
+New client connected
+Client disconnected
+New client connected
+Client disconnected
+New client connected
+Client disconnected
+New client connected
+Client disconnected
+New client connected
+Client disconnected
