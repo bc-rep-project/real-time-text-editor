@@ -5,6 +5,7 @@ const TextEditor = ({ documentId, onClose, darkMode }) => {
   const [content, setContent] = useState('');
   const [title, setTitle] = useState('');
   const [isConnected, setIsConnected] = useState(false);
+  const [darkMode, setDarkMode] = useState(false);
   const ws = useRef(null);
 
   useEffect(() => {
@@ -73,8 +74,21 @@ const TextEditor = ({ documentId, onClose, darkMode }) => {
     }
   };
 
+  const toggleDarkMode = () => {
+    setDarkMode(!darkMode);
+  };
+
   return (
-    <div className="w-full">
+    <div className={`w-full ${darkMode ? 'dark bg-gray-800 text-white' : 'bg-white text-black'}`}>
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-2xl font-bold">Real-time Text Editor</h1>
+        <button
+          onClick={toggleDarkMode}
+          className={`px-4 py-2 rounded ${darkMode ? 'bg-yellow-400 text-black' : 'bg-gray-800 text-white'}`}
+        >
+          {darkMode ? 'Light Mode' : 'Dark Mode'}
+        </button>
+      </div>
       {!isConnected && (
         <div className={`border-l-4 p-4 mb-4 ${darkMode ? 'bg-yellow-900 border-yellow-600 text-yellow-200' : 'bg-yellow-100 border-yellow-500 text-yellow-700'}`} role="alert">
           <p className="font-bold">Disconnected</p>
