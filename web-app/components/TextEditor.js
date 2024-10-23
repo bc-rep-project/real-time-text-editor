@@ -5,7 +5,7 @@ const TextEditor = ({ documentId, onClose, darkMode }) => {
   const [content, setContent] = useState('');
   const [title, setTitle] = useState('');
   const [isConnected, setIsConnected] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
+  
   const ws = useRef(null);
 
   useEffect(() => {
