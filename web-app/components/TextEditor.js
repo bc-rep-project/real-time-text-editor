@@ -4,11 +4,14 @@ import { useTheme } from '@mui/material/styles';
 import { Button, TextField, Alert, IconButton } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import useTouchDevice from '../hooks/useTouchDevice';
+import useDebounce from '../hooks/useDebounce';
 
 const TextEditor = ({ documentId, onClose }) => {
   const [content, setContent] = useState('');
   const [title, setTitle] = useState('');
   const [isConnected, setIsConnected] = useState(false);
+  const [error, setError] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
   
   const ws = useRef(null);
   const theme = useTheme();
@@ -34,6 +37,10 @@ const TextEditor = ({ documentId, onClose }) => {
           console.log('Received update:', data);
           setContent(data.content);
           setTitle(data.title);
+          setIsSaving(false);
+        } else if (data.type === 'error') {
+          setError(data.message);
+          setIsSaving(false);
         }
       };
 
@@ -60,6 +67,8 @@ const TextEditor = ({ documentId, onClose }) => {
 
   const sendUpdate = (newContent, newTitle) => {
     if (isConnected && ws.current) {
+      setIsSaving(true);
+      setError('');
       const token = localStorage.getItem('token');
       ws.current.send(JSON.stringify({
         type: 'update',
@@ -68,19 +77,24 @@ const TextEditor = ({ documentId, onClose }) => {
         documentId,
         token
       }));
+    } else {
+      setError('Unable to save changes. Please check your connection.');
     }
   };
 
+  const debouncedContent = useDebounce(content, 500);
+  const debouncedTitle = useDebounce(title, 500);
+
+  useEffect(() => {
+    sendUpdate(debouncedContent, debouncedTitle);
+  }, [debouncedContent, debouncedTitle]);
+
   const handleContentChange = (e) => {
-    const newContent = e.target.value;
-    setContent(newContent);
-    sendUpdate(newContent, title);
+    setContent(e.target.value);
   };
 
   const handleTitleChange = (e) => {
-    const newTitle = e.target.value;
-    setTitle(newTitle);
-    sendUpdate(content, newTitle);
+    setTitle(e.target.value);
   };
 
   return (
@@ -104,6 +118,16 @@ const TextEditor = ({ documentId, onClose }) => {
       {!isConnected && (
         <Alert severity="warning" className="mb-4">
           Disconnected. Trying to reconnect...
+        </Alert>
+      )}
+      {error && (
+        <Alert severity="error" className="mb-4">
+          {error}
+        </Alert>
+      )}
+      {isSaving && (
+        <Alert severity="info" className="mb-4">
+          Saving changes...
         </Alert>
       )}
       <TextField

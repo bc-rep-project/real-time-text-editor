@@ -2,116 +2,18 @@
 > web-app@0.1.0 dev
 > node server.js
 
-event - compiled client and server successfully in 2.1s (175 modules)
+event - compiled client and server successfully in 2.8s (175 modules)
+Attention: Next.js now collects completely anonymous telemetry regarding usage.
+This information is used to shape Next.js' roadmap and prioritize features.
+You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+https://nextjs.org/telemetry
+
 > Ready on http://localhost:3002
-wait  - compiling / (client and server)...
-event - compiled client and server successfully in 1488 ms (1085 modules)
-Warning: viewport meta tags should not be used in _document.js's <Head>. https://nextjs.org/docs/messages/no-document-viewport-meta
-Warning: viewport meta tags should not be used in _document.js's <Head>. https://nextjs.org/docs/messages/no-document-viewport-meta
-New client connected
-Client disconnected
-wait  - compiling /_error (client and server)...
-event - compiled client and server successfully in 364 ms (1086 modules)
-Warning: viewport meta tags should not be used in _document.js's <Head>. https://nextjs.org/docs/messages/no-document-viewport-meta
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-wait  - compiling /api/documents...
-event - compiled client and server successfully in 104 ms (187 modules)
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Received message: { type: 'join', documentId: '1729672209627' }
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Received message: { type: 'join', documentId: '1729672209627' }
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Received message: { type: 'join', documentId: '1729672209627' }
-New client connected
-Client disconnected
-Client disconnected
-New client connected
-New client connected
-Client disconnected
-Received message: { type: 'join', documentId: '1729672209627' }
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
+wait  - compiling...
+event - compiled successfully in 274 ms (145 modules)
+wait  - compiling...
+event - compiled successfully in 199 ms (145 modules)
+wait  - compiling...
+event - compiled successfully in 229 ms (145 modules)
+wait  - compiling...
+event - compiled successfully in 192 ms (145 modules)

@@ -18,6 +18,9 @@ const SECRET_KEY = 'your-secret-key'; // In a real application, this should be s
 // Mock user database (replace with a real database in production)
 const users = [];
 
+// Mock messages database (replace with a real database in production)
+const messages = {};
+
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
@@ -35,6 +38,18 @@ const setupWebSocket = (server) => {
   const wss = new WebSocket.Server({ server });
   const clients = new Map();
 
+  const broadcastActiveUsers = (documentId) => {
+    const activeUsers = Array.from(clients.values())
+      .filter(client => client.documentId === documentId)
+      .map(client => client.username);
+    
+    wss.clients.forEach((client) => {
+      if (client.readyState === WebSocket.OPEN && clients.get(client)?.documentId === documentId) {
+        client.send(JSON.stringify({ type: 'userList', users: activeUsers }));
+      }
+    });
+  };
+
   wss.on('connection', (ws) => {
     console.log('New client connected');
 
@@ -43,8 +58,8 @@ const setupWebSocket = (server) => {
       console.log('Received message:', data);
 
       if (data.type === 'join') {
-        const { documentId } = data;
-        clients.set(ws, { documentId });
+        const { documentId, username } = data;
+        clients.set(ws, { documentId, username });
         const documentPath = path.join(DOCUMENTS_DIR, `${documentId}.json`);
         try {
           const content = await fs.readFile(documentPath, 'utf-8');
@@ -52,6 +67,7 @@ const setupWebSocket = (server) => {
         } catch (error) {
           console.error('Error reading document:', error);
         }
+        broadcastActiveUsers(documentId);
       } else if (data.type === 'update') {
         const { documentId, title, content } = data;
         const documentPath = path.join(DOCUMENTS_DIR, `${documentId}.json`);
@@ -63,11 +79,28 @@ const setupWebSocket = (server) => {
             client.send(JSON.stringify({ type: 'update', title, content }));
           }
         });
+      } else if (data.type === 'chat') {
+        const { documentId, sender, text } = data;
+        if (!messages[documentId]) {
+          messages[documentId] = [];
+        }
+        messages[documentId].push({ sender, text });
+        
+        // Broadcast the chat message to all clients in the same document
+        wss.clients.forEach((client) => {
+          if (client.readyState === WebSocket.OPEN && clients.get(client)?.documentId === documentId) {
+            client.send(JSON.stringify({ type: 'message', message: { sender, text } }));
+          }
+        });
       }
     });
 
     ws.on('close', () => {
       console.log('Client disconnected');
+      const client = clients.get(ws);
+      if (client) {
+        broadcastActiveUsers(client.documentId);
+      }
       clients.delete(ws);
     });
   });
@@ -77,7 +110,11 @@ app.prepare().then(() => {
   const server = createServer((req, res) => {
     const parsedUrl = parse(req.url, true);
 
-    if (parsedUrl.pathname === '/api/register' && req.method === 'POST') {
+    if (parsedUrl.pathname.startsWith('/api/messages/') && req.method === 'GET') {
+      const documentId = parsedUrl.pathname.split('/').pop();
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify(messages[documentId] || []));
+    } else if (parsedUrl.pathname === '/api/register' && req.method === 'POST') {
       let body = '';
       req.on('data', chunk => {
         body += chunk.toString();
