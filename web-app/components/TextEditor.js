@@ -8,18 +8,6 @@ import dynamic from 'next/dynamic';
 const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
 
 const TextEditor = ({ documentId, onClose }) => {
-  const [Quill, setQuill] = useState(null);
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      import('quill').then((quill) => {
-        import('quill-image-resize-module-react').then((ImageResize) => {
-          quill.default.register('modules/imageResize', ImageResize.default);
-          setQuill(quill.default);
-        });
-      });
-    }
-  }, []);
   const [content, setContent] = useState('');
   const [title, setTitle] = useState('');
   const [isConnected, setIsConnected] = useState(false);
@@ -33,6 +21,16 @@ const TextEditor = ({ documentId, onClose }) => {
   const theme = useTheme();
   const darkMode = theme.palette.mode === 'dark';
   const isTouchDevice = useTouchDevice();
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      import('quill').then((Quill) => {
+        import('quill-image-resize-module-react').then((ImageResize) => {
+          Quill.default.register('modules/imageResize', ImageResize.default);
+        });
+      });
+    }
+  }, []);
 
   const modules = {
     toolbar: [
