@@ -7,12 +7,14 @@ const fs = require('fs').promises;
 const path = require('path');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const multer = require('multer');
 
 const dev = process.env.NODE_ENV !== 'production';
 const app = next({ dev });
 const handle = app.getRequestHandler();
 
 const DOCUMENTS_DIR = path.join(__dirname, 'documents');
+const UPLOADS_DIR = path.join(__dirname, 'uploads');
 const SECRET_KEY = 'your-secret-key'; // In a real application, this should be stored securely
 
 // Mock user database (replace with a real database in production)
@@ -20,6 +22,9 @@ const users = [];
 
 // Mock messages database (replace with a real database in production)
 const messages = {};
+
+// Configure multer for file uploads
+const upload = multer({ dest: UPLOADS_DIR });
 
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
@@ -88,16 +93,17 @@ const setupWebSocket = (server) => {
           }
         });
       } else if (data.type === 'chat') {
-        const { documentId, sender, text } = data;
+        const { documentId, sender, text, fileUrl } = data;
         if (!messages[documentId]) {
           messages[documentId] = [];
         }
-        messages[documentId].push({ sender, text });
+        const message = { sender, text, fileUrl };
+        messages[documentId].push(message);
         
         // Broadcast the chat message to all clients in the same document
         wss.clients.forEach((client) => {
           if (client.readyState === WebSocket.OPEN && clients.get(client)?.documentId === documentId) {
-            client.send(JSON.stringify({ type: 'message', message: { sender, text } }));
+            client.send(JSON.stringify({ type: 'message', message }));
           }
         });
       } else if (data.type === 'typing') {
@@ -133,6 +139,18 @@ app.prepare().then(() => {
       );
       res.setHeader('Content-Type', 'application/json');
       res.end(JSON.stringify(searchResults));
+    } else if (parsedUrl.pathname === '/api/upload' && req.method === 'POST') {
+      upload.single('file')(req, res, (err) => {
+        if (err) {
+          return res.status(500).json({ error: 'File upload failed' });
+        }
+        const file = req.file;
+        if (!file) {
+          return res.status(400).json({ error: 'No file uploaded' });
+        }
+        const fileUrl = `/uploads/${file.filename}`;
+        res.status(200).json({ fileUrl });
+      });
     } else if (parsedUrl.pathname === '/api/register' && req.method === 'POST') {
       let body = '';
       req.on('data', chunk => {

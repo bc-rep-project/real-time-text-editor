@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useTheme } from '@mui/material/styles';
 import { Paper, Typography, TextField, Button, List, ListItem, ListItemText, IconButton } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
+import AttachFileIcon from '@mui/icons-material/AttachFile';
 import useTouchDevice from '../hooks/useTouchDevice';
 
 const ChatBox = ({ documentId }) => {
@@ -13,9 +14,13 @@ const ChatBox = ({ documentId }) => {
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
   const [searchError, setSearchError] = useState('');
+  const [file, setFile] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState('');
   const socketRef = useRef(null);
   const messagesEndRef = useRef(null);
   const typingTimeoutRef = useRef(null);
+  const fileInputRef = useRef(null);
   const theme = useTheme();
   const darkMode = theme.palette.mode === 'dark';
   const isTouchDevice = useTouchDevice();
@@ -104,12 +109,38 @@ const ChatBox = ({ documentId }) => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  const handleSendMessage = (e) => {
+  const handleSendMessage = async (e) => {
     e.preventDefault();
-    if (newMessage.trim() !== '' && socketRef.current) {
-      const message = { type: 'chat', text: newMessage, sender: 'You', documentId };
+    if ((newMessage.trim() !== '' || file) && socketRef.current) {
+      let fileUrl = '';
+      if (file) {
+        setIsUploading(true);
+        setUploadError('');
+        const formData = new FormData();
+        formData.append('file', file);
+        try {
+          const response = await fetch('/api/upload', {
+            method: 'POST',
+            body: formData,
+          });
+          if (response.ok) {
+            const data = await response.json();
+            fileUrl = data.fileUrl;
+          } else {
+            throw new Error('File upload failed');
+          }
+        } catch (error) {
+          console.error('Error uploading file:', error);
+          setUploadError('Failed to upload file. Please try again.');
+          setIsUploading(false);
+          return;
+        }
+        setIsUploading(false);
+      }
+      const message = { type: 'chat', text: newMessage, sender: 'You', documentId, fileUrl };
       socketRef.current.send(JSON.stringify(message));
       setNewMessage('');
+      setFile(null);
       // Send typing status as false when message is sent
       socketRef.current.send(JSON.stringify({ type: 'typing', documentId, username: 'You', isTyping: false }));
     }
@@ -165,6 +196,18 @@ const ChatBox = ({ documentId }) => {
     setSearchError('');
   };
 
+  const handleFileChange = (e) => {
+    const selectedFile = e.target.files[0];
+    if (selectedFile) {
+      if (selectedFile.size > 5 * 1024 * 1024) { // 5MB limit
+        alert('File size exceeds 5MB limit. Please choose a smaller file.');
+        e.target.value = null; // Reset the file input
+      } else {
+        setFile(selectedFile);
+      }
+    }
+  };
+
   return (
     <Paper elevation={3} className={`p-4 ${darkMode ? 'bg-gray-800' : 'bg-gray-100'} flex flex-col h-full`}>
       <Typography variant="h6" component="h2" className={`mb-2 ${darkMode ? 'text-white' : 'text-black'}`}>
@@ -216,7 +259,18 @@ const ChatBox = ({ documentId }) => {
           <ListItem key={index}>
             <ListItemText
               primary={message.sender}
-              secondary={message.text}
+              secondary={
+                <>
+                  {message.text}
+                  {message.fileUrl && (
+                    <div>
+                      <a href={message.fileUrl} target="_blank" rel="noopener noreferrer">
+                        Attached File
+                      </a>
+                    </div>
+                  )}
+                </>
+              }
               primaryTypographyProps={{ style: { color: darkMode ? 'white' : 'black' } }}
               secondaryTypographyProps={{ style: { color: darkMode ? 'lightgray' : 'gray' } }}
             />
@@ -224,7 +278,16 @@ const ChatBox = ({ documentId }) => {
         ))}
         <div ref={messagesEndRef} />
       </List>
-      <form onSubmit={handleSendMessage} className="flex">
+      <form onSubmit={handleSendMessage} className="flex items-center">
+        <input
+          type="file"
+          ref={fileInputRef}
+          onChange={handleFileChange}
+          style={{ display: 'none' }}
+        />
+        <IconButton onClick={() => fileInputRef.current.click()} color="primary" disabled={isUploading}>
+          <AttachFileIcon />
+        </IconButton>
         <TextField
           fullWidth
           value={newMessage}
@@ -236,17 +299,28 @@ const ChatBox = ({ documentId }) => {
           InputProps={{
             style: { color: darkMode ? 'white' : 'black' }
           }}
+          disabled={isUploading}
         />
         {isTouchDevice ? (
-          <IconButton type="submit" color="primary">
+          <IconButton type="submit" color="primary" disabled={isUploading}>
             <SendIcon />
           </IconButton>
         ) : (
-          <Button type="submit" variant="contained" color="primary">
-            Send
+          <Button type="submit" variant="contained" color="primary" disabled={isUploading}>
+            {isUploading ? 'Uploading...' : 'Send'}
           </Button>
         )}
       </form>
+      {file && (
+        <Typography variant="body2" className="mt-2">
+          File selected: {file.name}
+        </Typography>
+      )}
+      {uploadError && (
+        <Typography variant="body2" className="mt-2 text-red-500">
+          {uploadError}
+        </Typography>
+      )}
     </Paper>
   );
 };
