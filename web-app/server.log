@@ -2,53 +2,24 @@
 > web-app@0.1.0 dev
 > node server.js
 
-event - compiled client and server successfully in 1830 ms (173 modules)
+event - compiled client and server successfully in 2.1s (175 modules)
 > Ready on http://localhost:3002
 wait  - compiling / (client and server)...
-event - compiled client and server successfully in 1940 ms (1067 modules)
-wait  - compiling /api/documents...
-event - compiled client and server successfully in 242 ms (185 modules)
-wait  - compiling / (client and server)...
-event - compiled client and server successfully in 262 ms (1067 modules)
+event - compiled client and server successfully in 1488 ms (1085 modules)
+Warning: viewport meta tags should not be used in _document.js's <Head>. https://nextjs.org/docs/messages/no-document-viewport-meta
+Warning: viewport meta tags should not be used in _document.js's <Head>. https://nextjs.org/docs/messages/no-document-viewport-meta
 New client connected
 Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
+wait  - compiling /_error (client and server)...
+event - compiled client and server successfully in 364 ms (1086 modules)
+Warning: viewport meta tags should not be used in _document.js's <Head>. https://nextjs.org/docs/messages/no-document-viewport-meta
 New client connected
 Client disconnected
 New client connected
 Client disconnected
 wait  - compiling /api/documents...
-event - compiled client and server successfully in 83 ms (185 modules)
+event - compiled client and server successfully in 104 ms (187 modules)
 New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Received message: { type: 'join', documentId: '1729672209627' }
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Received message: { type: 'join', documentId: '1729672209627' }
-New client connected
-Received message: { type: 'join', documentId: '1729672209627' }
-New client connected
-Client disconnected
 Client disconnected
 New client connected
 Client disconnected
@@ -63,7 +34,61 @@ Client disconnected
 New client connected
 Client disconnected
 New client connected
-Received message: { type: 'join', documentId: '1729623792794' }
+Client disconnected
+New client connected
+Client disconnected
+New client connected
+Client disconnected
+New client connected
+Client disconnected
+New client connected
+Client disconnected
+New client connected
+Client disconnected
+New client connected
+Client disconnected
+New client connected
+Client disconnected
+New client connected
+Client disconnected
+New client connected
+Client disconnected
+New client connected
+Client disconnected
+New client connected
+Client disconnected
+New client connected
+Client disconnected
+New client connected
+Client disconnected
+Client disconnected
+New client connected
+Client disconnected
+New client connected
+Received message: { type: 'join', documentId: '1729672209627' }
+New client connected
+Client disconnected
+New client connected
+Client disconnected
+New client connected
+Received message: { type: 'join', documentId: '1729672209627' }
+New client connected
+Client disconnected
+Client disconnected
+New client connected
+New client connected
+Client disconnected
+Received message: { type: 'join', documentId: '1729672209627' }
+New client connected
+Client disconnected
+New client connected
+Client disconnected
+New client connected
+Client disconnected
+New client connected
+Client disconnected
+New client connected
+Client disconnected
 New client connected
 Client disconnected
 New client connected

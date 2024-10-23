@@ -1,6 +1,6 @@
 # Real-time Text Editor with Chat
 
-This project is a real-time text editor with an integrated chat feature.
+This project is a real-time text editor with an integrated chat feature, optimized for both desktop and mobile devices.
 
 ## Prerequisites
 
@@ -46,6 +46,28 @@ This project is a real-time text editor with an integrated chat feature.
 - Real-time text editing
 - User authentication
 - Real-time chat for each document
+- Responsive design for desktop and mobile devices
+- Touch-friendly interface for mobile users
+- Dark mode support
+
+## Mobile Compatibility
+
+This application is designed to work seamlessly on both desktop and mobile devices. The user interface adapts to different screen sizes, providing an optimal experience across various devices.
+
+### Mobile-specific features:
+- Touch-friendly buttons and inputs
+- Swipe gestures for navigation (where applicable)
+- Optimized layout for smaller screens
+
+## Testing
+
+To ensure the best experience across different devices, please test the application on various screen sizes and devices, including:
+
+- Desktop browsers (Chrome, Firefox, Safari, Edge)
+- iOS devices (iPhone, iPad)
+- Android devices (various screen sizes)
+
+If you encounter any issues or have suggestions for improving the mobile experience, please submit an issue or pull request.
 
 ## Contributing
 

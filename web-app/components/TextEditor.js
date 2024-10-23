@@ -1,7 +1,9 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useTheme } from '@mui/material/styles';
-import { Button, TextField, Alert } from '@mui/material';
+import { Button, TextField, Alert, IconButton } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
+import useTouchDevice from '../hooks/useTouchDevice';
 
 const TextEditor = ({ documentId, onClose }) => {
   const [content, setContent] = useState('');
@@ -11,6 +13,7 @@ const TextEditor = ({ documentId, onClose }) => {
   const ws = useRef(null);
   const theme = useTheme();
   const darkMode = theme.palette.mode === 'dark';
+  const isTouchDevice = useTouchDevice();
 
   useEffect(() => {
     const connectWebSocket = () => {
@@ -80,21 +83,23 @@ const TextEditor = ({ documentId, onClose }) => {
     sendUpdate(content, newTitle);
   };
 
-  const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
-  };
-
   return (
-    <div className={`w-full ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
+    <div className={`w-full ${darkMode ? 'bg-gray-800 text-white' : 'bg-white text-black'}`}>
       <div className="flex justify-between items-center mb-4">
-        <h1 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-black'}`}>Real-time Text Editor</h1>
-        <Button
-          onClick={onClose}
-          variant="contained"
-          color="secondary"
-        >
-          Close
-        </Button>
+        <h1 className="text-2xl font-bold">Real-time Text Editor</h1>
+        {isTouchDevice ? (
+          <IconButton onClick={onClose} color="inherit">
+            <CloseIcon />
+          </IconButton>
+        ) : (
+          <Button
+            onClick={onClose}
+            variant="contained"
+            color="secondary"
+          >
+            Close
+          </Button>
+        )}
       </div>
       {!isConnected && (
         <Alert severity="warning" className="mb-4">
@@ -104,19 +109,25 @@ const TextEditor = ({ documentId, onClose }) => {
       <TextField
         fullWidth
         label="Document Title"
-        variant="outlined"
         value={title}
         onChange={handleTitleChange}
         className="mb-4"
+        variant="outlined"
+        InputProps={{
+          style: { color: darkMode ? 'white' : 'black' }
+        }}
       />
       <TextField
         fullWidth
-        multiline
-        rows={20}
         label="Document Content"
-        variant="outlined"
         value={content}
         onChange={handleContentChange}
+        multiline
+        rows={isTouchDevice ? 10 : 20}
+        variant="outlined"
+        InputProps={{
+          style: { color: darkMode ? 'white' : 'black' }
+        }}
       />
     </div>
   );

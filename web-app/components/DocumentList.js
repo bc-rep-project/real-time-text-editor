@@ -1,12 +1,16 @@
 
 import React, { useState, useEffect } from 'react';
 import { useTheme } from '@mui/material/styles';
+import { List, ListItem, ListItemText, TextField, Button, Typography } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+import useTouchDevice from '../hooks/useTouchDevice';
 
 const DocumentList = ({ onSelectDocument }) => {
   const [documents, setDocuments] = useState([]);
   const [newDocumentTitle, setNewDocumentTitle] = useState('');
   const theme = useTheme();
   const darkMode = theme.palette.mode === 'dark';
+  const isTouchDevice = useTouchDevice();
 
   useEffect(() => {
     fetchDocuments();
@@ -59,44 +63,48 @@ const DocumentList = ({ onSelectDocument }) => {
 
   return (
     <div className={`p-4 ${darkMode ? 'bg-gray-800 text-white' : 'bg-white text-black'}`}>
-      <h2 className="text-xl font-semibold mb-4">Documents</h2>
-      <ul className="space-y-2">
+      <Typography variant="h5" component="h2" className="mb-4">
+        Documents
+      </Typography>
+      <List className="space-y-2 mb-4">
         {documents.map((doc) => (
-          <li
+          <ListItem
             key={doc.id}
-            className={`cursor-pointer p-2 rounded ${
+            button
+            onClick={() => onSelectDocument(doc.id)}
+            className={`rounded ${
               darkMode
                 ? 'hover:bg-gray-700 focus:bg-gray-700'
                 : 'hover:bg-gray-100 focus:bg-gray-100'
             }`}
-            onClick={() => onSelectDocument(doc.id)}
           >
-            {doc.title}
-          </li>
+            <ListItemText primary={doc.title} />
+          </ListItem>
         ))}
-      </ul>
+      </List>
       <div className="mt-4">
-        <input
-          type="text"
-          className={`w-full p-2 border rounded-md ${
-            darkMode
-              ? 'bg-gray-700 text-white border-gray-600'
-              : 'bg-white text-black border-gray-300'
-          }`}
-          placeholder="New document title"
+        <TextField
+          fullWidth
+          variant="outlined"
+          size={isTouchDevice ? "medium" : "small"}
+          label="New document title"
           value={newDocumentTitle}
           onChange={(e) => setNewDocumentTitle(e.target.value)}
+          className="mb-2"
+          InputProps={{
+            style: { color: darkMode ? 'white' : 'black' }
+          }}
         />
-        <button
-          className={`mt-2 px-4 py-2 rounded ${
-            darkMode
-              ? 'bg-blue-600 text-white hover:bg-blue-700'
-              : 'bg-blue-500 text-white hover:bg-blue-600'
-          }`}
+        <Button
+          fullWidth
+          variant="contained"
+          color="primary"
+          startIcon={<AddIcon />}
           onClick={createDocument}
+          size={isTouchDevice ? "large" : "medium"}
         >
           Create New Document
-        </button>
+        </Button>
       </div>
     </div>
   );
