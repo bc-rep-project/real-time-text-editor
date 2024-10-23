@@ -1,0 +1,11 @@
+
+> web-app@0.1.0 dev
+> node server.js
+
+event - compiled client and server successfully in 3.1s (175 modules)
+> Ready on http://localhost:3000
+wait  - compiling / (client and server)...
+event - compiled client and server successfully in 2.4s (1181 modules)
+Warning: viewport meta tags should not be used in _document.js's <Head>. https://nextjs.org/docs/messages/no-document-viewport-meta
+wait  - compiling...
+event - compiled client and server successfully in 312 ms (175 modules)

@@ -1,39 +1,22 @@
 
-import fs from 'fs/promises';
-import path from 'path';
+import { v4 as uuidv4 } from 'uuid';
 
-const DOCUMENTS_DIR = path.join(process.cwd(), 'documents');
+// This is a mock database. In a real application, you'd use a proper database.
+let documents = [];
 
-export default async function handler(req, res) {
-  await fs.mkdir(DOCUMENTS_DIR, { recursive: true });
-
+export default function handler(req, res) {
   if (req.method === 'GET') {
-    try {
-      const files = await fs.readdir(DOCUMENTS_DIR);
-      const documents = await Promise.all(
-        files.map(async (file) => {
-          const content = await fs.readFile(path.join(DOCUMENTS_DIR, file), 'utf-8');
-          const { title } = JSON.parse(content);
-          return { id: path.parse(file).name, title };
-        })
-      );
-      res.status(200).json(documents);
-    } catch (error) {
-      console.error('Error reading documents:', error);
-      res.status(500).json({ error: 'Error reading documents' });
-    }
+    res.status(200).json(documents);
   } else if (req.method === 'POST') {
-    try {
-      const { title } = req.body;
-      const id = Date.now().toString();
-      const documentPath = path.join(DOCUMENTS_DIR, `${id}.json`);
-      await fs.writeFile(documentPath, JSON.stringify({ title, content: '' }));
-      res.status(201).json({ id, title });
-    } catch (error) {
-      console.error('Error creating document:', error);
-      res.status(500).json({ error: 'Error creating document' });
-    }
+    const newDocument = {
+      id: uuidv4(),
+      title: req.body.title || 'Untitled Document',
+      content: '',
+    };
+    documents.push(newDocument);
+    res.status(201).json(newDocument);
   } else {
-    res.status(405).end();
+    res.setHeader('Allow', ['GET', 'POST']);
+    res.status(405).end(`Method ${req.method} Not Allowed`);
   }
 }

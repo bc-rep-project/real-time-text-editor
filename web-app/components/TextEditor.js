@@ -4,7 +4,10 @@ import { useTheme } from '@mui/material/styles';
 import { Button, TextField, Alert, IconButton, List, ListItem, ListItemText, Typography } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import useTouchDevice from '../hooks/useTouchDevice';
-import { type, apply } from 'ot-text';
+import dynamic from 'next/dynamic';
+
+const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
+const ImageResize = dynamic(() => import('quill-image-resize-module-react'), { ssr: false });
 
 const TextEditor = ({ documentId, onClose }) => {
   const [content, setContent] = useState('');
@@ -16,55 +19,53 @@ const TextEditor = ({ documentId, onClose }) => {
   const [showHistory, setShowHistory] = useState(false);
   
   const ws = useRef(null);
+  const quillRef = useRef(null);
   const theme = useTheme();
   const darkMode = theme.palette.mode === 'dark';
   const isTouchDevice = useTouchDevice();
 
-  const applyOperation = useCallback((operation) => {
-    setContent((prevContent) => apply(prevContent, operation));
-  }, []);
-
-  const sendOperation = useCallback((operation) => {
-    if (isConnected && ws.current) {
-      const token = localStorage.getItem('token');
-      const username = localStorage.getItem('username');
-      ws.current.send(JSON.stringify({
-        type: 'operation',
-        operation,
-        version,
-        documentId,
-        token,
-        username
-      }));
-      setPendingOperations((prev) => [...prev, operation]);
+  const modules = {
+    toolbar: [
+      [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+      ['bold', 'italic', 'underline', 'strike'],
+      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+      [{ 'script': 'sub'}, { 'script': 'super' }],
+      [{ 'indent': '-1'}, { 'indent': '+1' }],
+      [{ 'direction': 'rtl' }],
+      [{ 'color': [] }, { 'background': [] }],
+      [{ 'font': [] }],
+      [{ 'align': [] }],
+      ['link', 'image', 'video'],
+      ['clean']
+    ],
+    imageResize: {
+      modules: ['Resize', 'DisplaySize']
     }
-  }, [isConnected, documentId, version]);
+  };
 
   useEffect(() => {
     const connectWebSocket = () => {
       const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const host = window.location.host;
+      const host = window.location.hostname;
+      const port = 8082;
       const token = localStorage.getItem('token');
-      ws.current = new WebSocket(`${protocol}//${host}?token=${token}`);
+      ws.current = new WebSocket(`${protocol}//${host}:${port}/chat/${documentId}?token=${token}`);
 
       ws.current.onopen = () => {
         console.log('WebSocket connected');
         setIsConnected(true);
-        ws.current.send(JSON.stringify({ type: 'join', documentId }));
       };
 
       ws.current.onmessage = (event) => {
         const data = JSON.parse(event.data);
+        console.log('Received message:', data);
         if (data.type === 'init') {
           setContent(data.content);
-          setTitle(data.title);
           setVersion(data.version);
-          setHistory(data.history);
         } else if (data.type === 'operation') {
           if (data.version === version + 1) {
-            applyOperation(data.operation);
+            applyOperation(data.delta);
             setVersion(data.version);
-            setHistory((prev) => [...prev, data.historyEntry]);
             if (pendingOperations.length > 0) {
               const newPendingOps = pendingOperations.slice(1);
               setPendingOperations(newPendingOps);
@@ -75,11 +76,6 @@ const TextEditor = ({ documentId, onClose }) => {
           }
         } else if (data.type === 'updateTitle') {
           setTitle(data.title);
-          setHistory((prev) => [...prev, data.historyEntry]);
-        } else if (data.type === 'revert') {
-          setContent(data.content);
-          setVersion(data.version);
-          setHistory((prev) => [...prev, data.historyEntry]);
         }
       };
 
@@ -102,13 +98,37 @@ const TextEditor = ({ documentId, onClose }) => {
         ws.current.close();
       }
     };
-  }, [documentId, version, pendingOperations, applyOperation]);
+  }, [documentId, version, pendingOperations]);
 
-  const handleContentChange = (e) => {
-    const newContent = e.target.value;
-    const operation = type(content, newContent);
-    setContent(newContent);
-    sendOperation(operation);
+  const applyOperation = useCallback((delta) => {
+    if (quillRef.current) {
+      const editor = quillRef.current.getEditor();
+      editor.updateContents(delta);
+    }
+  }, []);
+
+  const sendOperation = useCallback((delta) => {
+    if (isConnected && ws.current) {
+      const token = localStorage.getItem('token');
+      const username = localStorage.getItem('username');
+      const message = JSON.stringify({
+        type: 'operation',
+        delta,
+        version,
+        documentId,
+        token,
+        username
+      });
+      console.log('Sending message:', message);
+      ws.current.send(message);
+      setPendingOperations((prev) => [...prev, delta]);
+    }
+  }, [isConnected, documentId, version]);
+
+  const handleContentChange = (content, delta, source, editor) => {
+    if (source === 'user') {
+      sendOperation(delta);
+    }
   };
 
   const handleTitleChange = (e) => {
@@ -117,45 +137,17 @@ const TextEditor = ({ documentId, onClose }) => {
     if (isConnected && ws.current) {
       const token = localStorage.getItem('token');
       const username = localStorage.getItem('username');
-      ws.current.send(JSON.stringify({
+      const message = JSON.stringify({
         type: 'updateTitle',
         title: newTitle,
         documentId,
         token,
         username
-      }));
+      });
+      console.log('Sending message:', message);
+      ws.current.send(message);
     }
   };
-
-  const handleRevertToVersion = (revertVersion) => {
-    if (isConnected && ws.current) {
-      const token = localStorage.getItem('token');
-      const username = localStorage.getItem('username');
-      ws.current.send(JSON.stringify({
-        type: 'revertToVersion',
-        version: revertVersion,
-        documentId,
-        token,
-        username
-      }));
-    }
-  };
-
-  const HistoryList = () => (
-    <List>
-      {history.map((entry, index) => (
-        <ListItem key={index}>
-          <ListItemText
-            primary={`Version ${entry.version}`}
-            secondary={`${entry.username} - ${new Date(entry.timestamp).toLocaleString()}`}
-          />
-          <Button onClick={() => handleRevertToVersion(entry.version)}>
-            Revert to this version
-          </Button>
-        </ListItem>
-      ))}
-    </List>
-  );
 
   return (
     <div className={`w-full ${darkMode ? 'bg-gray-800 text-white' : 'bg-white text-black'}`}>
@@ -201,30 +193,20 @@ const TextEditor = ({ documentId, onClose }) => {
           style: { color: darkMode ? 'white' : 'black' }
         }}
       />
-      <TextField
-        fullWidth
-        label="Document Content"
+      <ReactQuill
+        ref={quillRef}
+        theme="snow"
         value={content}
         onChange={handleContentChange}
-        multiline
-        rows={isTouchDevice ? 10 : 20}
-        className="mb-4"
-        variant="outlined"
-        InputProps={{
-          style: { color: darkMode ? 'white' : 'black' }
-        }}
+        modules={modules}
+        className={`mb-4 ${darkMode ? 'quill-dark' : ''}`}
       />
       {showHistory && (
         <div className="mt-4">
           <Typography variant="h6" className="mb-2">Version History</Typography>
-          <HistoryList />
+          {/* Add HistoryList component here */}
         </div>
       )}
-        variant="outlined"
-        InputProps={{
-          style: { color: darkMode ? 'white' : 'black' }
-        }}
-      />
     </div>
   );
 };

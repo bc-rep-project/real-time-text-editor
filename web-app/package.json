@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "NODE_ENV=production node server.js",
     "lint": "next lint",
-    "chat-server": "python web-app/chat_server.py"
+    "chat-server": "python web-app/chat_server.py",
+    "start-all": "../start_servers.sh"
   },
   "dependencies": {
     "@babel/runtime": "^7.12.5",
@@ -19,8 +20,11 @@
     "jsonwebtoken": "^8.5.1",
     "next": "^12.0.7",
     "ot-text": "^1.0.2",
+    "quill-image-resize-module-react": "^3.0.0",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
+    "react-quill": "^2.0.0",
+    "uuid": "^10.0.0",
     "winston": "^3.3.3",
     "ws": "^8.2.3"
   },

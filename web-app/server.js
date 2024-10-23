@@ -118,94 +118,33 @@ const setupWebSocket = (server) => {
             document.history.push(historyEntry);
             
             await fs.writeFile(documentPath, JSON.stringify({
-              title,
               content: document.content,
               version: document.version,
-              history: document.history
+              history: document.history,
+              title
             }));
-            
+
             // Broadcast the title update to all clients editing the same document
             wss.clients.forEach((client) => {
               if (client.readyState === WebSocket.OPEN && clients.get(client)?.documentId === documentId) {
-                client.send(JSON.stringify({ type: 'updateTitle', title, historyEntry }));
+                client.send(JSON.stringify({ type: 'updateTitle', title, version: document.version, historyEntry }));
               }
             });
-          } else {
-            console.error('Document not found for title update');
-            ws.send(JSON.stringify({ type: 'error', message: 'Document not found for title update' }));
           }
-        } else if (data.type === 'getHistory') {
-          const { documentId } = data;
-          const document = documents.get(documentId);
-          if (document) {
-            ws.send(JSON.stringify({ type: 'history', history: document.history }));
-          } else {
-            console.error('Document not found for history request');
-            ws.send(JSON.stringify({ type: 'error', message: 'Document not found for history request' }));
-          }
-        } else if (data.type === 'revertToVersion') {
-          const { documentId, version, username } = data;
-          const document = documents.get(documentId);
-          if (document && version <= document.version) {
-            const revertedContent = document.history
-              .filter(entry => entry.version <= version)
-              .reduce((content, entry) => {
-                if (entry.operation) {
-                  return apply(content, entry.operation);
-                }
-                return content;
-              }, '');
-            
-            document.content = revertedContent;
-            document.version++;
-            
-            const historyEntry = {
-              version: document.version,
-              revertedTo: version,
-              timestamp: new Date().toISOString(),
-              username
-            };
-            document.history.push(historyEntry);
-            
-            const documentPath = path.join(DOCUMENTS_DIR, `${documentId}.json`);
-            await fs.writeFile(documentPath, JSON.stringify({
-              content: revertedContent,
-              version: document.version,
-              history: document.history
-            }));
-            
-            // Broadcast the revert operation to all clients editing the same document
-            wss.clients.forEach((client) => {
-              if (client.readyState === WebSocket.OPEN && clients.get(client)?.documentId === documentId) {
-                client.send(JSON.stringify({ type: 'revert', content: revertedContent, version: document.version, historyEntry }));
-              }
-            });
-          } else {
-            console.error('Invalid version for revert operation');
-            ws.send(JSON.stringify({ type: 'error', message: 'Invalid version for revert operation' }));
-          }
-        } else {
-          console.error('Unknown message type:', data.type);
-          ws.send(JSON.stringify({ type: 'error', message: 'Unknown message type' }));
         }
       } catch (error) {
         console.error('Error processing message:', error);
-        ws.send(JSON.stringify({ type: 'error', message: 'Internal server error' }));
       }
     });
 
     ws.on('close', () => {
       console.log('Client disconnected');
-      clients.delete(ws);
       clearInterval(pingInterval);
-    });
-
-    ws.on('error', (error) => {
-      console.error('WebSocket error:', error);
+      clients.delete(ws);
     });
 
     ws.on('pong', () => {
-      console.log('Received pong from client');
+      // Handle pong response
     });
   });
 };
@@ -218,112 +157,8 @@ app.prepare().then(() => {
 
   setupWebSocket(server);
 
-  server.listen(3002, (err) => {
+  server.listen(3000, (err) => {
     if (err) throw err;
-    console.log('> Ready on http://localhost:3002');
-  });
-});
-              content: document.content,
-              version: document.version,
-              history: document.history
-            }));
-            
-            // Broadcast the title update to all clients editing the same document
-            wss.clients.forEach((client) => {
-              if (client.readyState === WebSocket.OPEN && clients.get(client)?.documentId === documentId) {
-                client.send(JSON.stringify({ type: 'updateTitle', title, historyEntry }));
-              }
-            });
-          } else {
-            console.error('Document not found for title update');
-            ws.send(JSON.stringify({ type: 'error', message: 'Document not found for title update' }));
-          }
-        } else if (data.type === 'getHistory') {
-          const { documentId } = data;
-          const document = documents.get(documentId);
-          if (document) {
-            ws.send(JSON.stringify({ type: 'history', history: document.history }));
-          } else {
-            console.error('Document not found for history request');
-            ws.send(JSON.stringify({ type: 'error', message: 'Document not found for history request' }));
-          }
-        } else if (data.type === 'revertToVersion') {
-          const { documentId, version, username } = data;
-          const document = documents.get(documentId);
-          if (document && version <= document.version) {
-            const revertedContent = document.history
-              .filter(entry => entry.version <= version)
-              .reduce((content, entry) => {
-                if (entry.operation) {
-                  return apply(content, entry.operation);
-                }
-                return content;
-              }, '');
-            
-            document.content = revertedContent;
-            document.version++;
-            
-            const historyEntry = {
-              version: document.version,
-              revertedTo: version,
-              timestamp: new Date().toISOString(),
-              username
-            };
-            document.history.push(historyEntry);
-            
-            const documentPath = path.join(DOCUMENTS_DIR, `${documentId}.json`);
-            await fs.writeFile(documentPath, JSON.stringify({
-              content: revertedContent,
-              version: document.version,
-              history: document.history
-            }));
-            
-            // Broadcast the revert operation to all clients editing the same document
-            wss.clients.forEach((client) => {
-              if (client.readyState === WebSocket.OPEN && clients.get(client)?.documentId === documentId) {
-                client.send(JSON.stringify({ type: 'revert', content: revertedContent, version: document.version, historyEntry }));
-              }
-            });
-          } else {
-            console.error('Invalid version for revert operation');
-            ws.send(JSON.stringify({ type: 'error', message: 'Invalid version for revert operation' }));
-          }
-        } else {
-          console.error('Unknown message type:', data.type);
-          ws.send(JSON.stringify({ type: 'error', message: 'Unknown message type' }));
-        }
-      } catch (error) {
-        console.error('Error processing message:', error);
-        ws.send(JSON.stringify({ type: 'error', message: 'Internal server error' }));
-      }
-    });
-
-    ws.on('close', () => {
-      console.log('Client disconnected');
-      clients.delete(ws);
-      clearInterval(pingInterval);
-    });
-
-    ws.on('error', (error) => {
-      console.error('WebSocket error:', error);
-    });
-
-    ws.on('pong', () => {
-      console.log('Received pong from client');
-    });
-  });
-};
-
-app.prepare().then(() => {
-  const server = createServer((req, res) => {
-    const parsedUrl = parse(req.url, true);
-    handle(req, res, parsedUrl);
-  });
-
-  setupWebSocket(server);
-
-  server.listen(3002, (err) => {
-    if (err) throw err;
-    console.log('> Ready on http://localhost:3002');
+    console.log('> Ready on http://localhost:3000');
   });
 });
