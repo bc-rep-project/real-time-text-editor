@@ -50,6 +50,14 @@ const setupWebSocket = (server) => {
     });
   };
 
+  const broadcastTypingStatus = (documentId, username, isTyping) => {
+    wss.clients.forEach((client) => {
+      if (client.readyState === WebSocket.OPEN && clients.get(client)?.documentId === documentId) {
+        client.send(JSON.stringify({ type: 'typing', username, isTyping }));
+      }
+    });
+  };
+
   wss.on('connection', (ws) => {
     console.log('New client connected');
 
@@ -92,6 +100,9 @@ const setupWebSocket = (server) => {
             client.send(JSON.stringify({ type: 'message', message: { sender, text } }));
           }
         });
+      } else if (data.type === 'typing') {
+        const { documentId, username, isTyping } = data;
+        broadcastTypingStatus(documentId, username, isTyping);
       }
     });
 
@@ -114,6 +125,14 @@ app.prepare().then(() => {
       const documentId = parsedUrl.pathname.split('/').pop();
       res.setHeader('Content-Type', 'application/json');
       res.end(JSON.stringify(messages[documentId] || []));
+    } else if (parsedUrl.pathname === '/api/search' && req.method === 'GET') {
+      const { documentId, query } = parsedUrl.query;
+      const documentMessages = messages[documentId] || [];
+      const searchResults = documentMessages.filter(message => 
+        message.text.toLowerCase().includes(query.toLowerCase())
+      );
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify(searchResults));
     } else if (parsedUrl.pathname === '/api/register' && req.method === 'POST') {
       let body = '';
       req.on('data', chunk => {

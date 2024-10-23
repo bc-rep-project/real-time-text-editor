@@ -46,6 +46,7 @@ This project is a real-time text editor with an integrated chat feature, optimiz
 - Real-time text editing
 - User authentication
 - Real-time chat for each document
+- Typing indicators in chat
 - Responsive design for desktop and mobile devices
 - Touch-friendly interface for mobile users
 - Dark mode support
@@ -55,6 +56,7 @@ This project is a real-time text editor with an integrated chat feature, optimiz
 This application is designed to work seamlessly on both desktop and mobile devices. The user interface adapts to different screen sizes, providing an optimal experience across various devices.
 
 ### Mobile-specific features:
+- Typing indicators for real-time feedback
 - Touch-friendly buttons and inputs
 - Swipe gestures for navigation (where applicable)
 - Optimized layout for smaller screens
