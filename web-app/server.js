@@ -1,11 +1,4 @@
 
-
-
-
-
-
-
-
 const { createServer } = require('http');
 const { parse } = require('url');
 const next = require('next');
@@ -69,17 +62,9 @@ app.prepare().then(() => {
 
   setupWebSocket(server);
 
-  const port = process.env.PORT || 0;
+  const port = 3000;
   server.listen(port, (err) => {
     if (err) throw err;
-    const actualPort = server.address().port;
-    console.log(`> Ready on http://localhost:${actualPort}`);
+    console.log(`> Ready on http://localhost:${port}`);
   });
 });
-
-
-
-
-
-
-

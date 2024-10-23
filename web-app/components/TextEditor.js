@@ -1,10 +1,3 @@
-
-
-
-
-
-
-
 import React, { useState, useEffect, useRef } from 'react';
 
 const TextEditor = ({ documentId, onClose }) => {
@@ -111,19 +104,3 @@ const TextEditor = ({ documentId, onClose }) => {
 };
 
 export default TextEditor;
-
-      </button>
-    </div>
-  );
-};
-
-export default TextEditor;
-
-};
-
-export default TextEditor;
-
-
-
-
-
