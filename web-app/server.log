@@ -1,117 +1,14 @@
+/home/user/real-time-text-editor/web-app/server.js:227
+            }));
+            ^
 
-> web-app@0.1.0 dev
-> node server.js
+SyntaxError: Unexpected token '}'
+    at wrapSafe (node:internal/modules/cjs/loader:1378:20)
+    at Module._compile (node:internal/modules/cjs/loader:1428:41)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1548:10)
+    at Module.load (node:internal/modules/cjs/loader:1288:32)
+    at Module._load (node:internal/modules/cjs/loader:1104:12)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:174:12)
+    at node:internal/main/run_main_module:28:49
 
-event - compiled client and server successfully in 2.1s (175 modules)
-> Ready on http://localhost:3002
-wait  - compiling / (client and server)...
-event - compiled client and server successfully in 1488 ms (1085 modules)
-Warning: viewport meta tags should not be used in _document.js's <Head>. https://nextjs.org/docs/messages/no-document-viewport-meta
-Warning: viewport meta tags should not be used in _document.js's <Head>. https://nextjs.org/docs/messages/no-document-viewport-meta
-New client connected
-Client disconnected
-wait  - compiling /_error (client and server)...
-event - compiled client and server successfully in 364 ms (1086 modules)
-Warning: viewport meta tags should not be used in _document.js's <Head>. https://nextjs.org/docs/messages/no-document-viewport-meta
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-wait  - compiling /api/documents...
-event - compiled client and server successfully in 104 ms (187 modules)
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Received message: { type: 'join', documentId: '1729672209627' }
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Received message: { type: 'join', documentId: '1729672209627' }
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Received message: { type: 'join', documentId: '1729672209627' }
-New client connected
-Client disconnected
-Client disconnected
-New client connected
-New client connected
-Client disconnected
-Received message: { type: 'join', documentId: '1729672209627' }
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
-New client connected
-Client disconnected
+Node.js v20.18.0

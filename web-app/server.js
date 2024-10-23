@@ -7,6 +7,7 @@ const fs = require('fs').promises;
 const path = require('path');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const { type, apply } = require('ot-text');
 
 const dev = process.env.NODE_ENV !== 'production';
 const app = next({ dev });
@@ -34,41 +35,177 @@ const authenticateToken = (req, res, next) => {
 const setupWebSocket = (server) => {
   const wss = new WebSocket.Server({ server });
   const clients = new Map();
+  const documents = new Map();
 
   wss.on('connection', (ws) => {
     console.log('New client connected');
+    let pingInterval;
+
+    const sendPing = () => {
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.ping();
+      }
+    };
+
+    pingInterval = setInterval(sendPing, 30000);
 
     ws.on('message', async (message) => {
-      const data = JSON.parse(message);
-      console.log('Received message:', data);
+      try {
+        const data = JSON.parse(message);
+        console.log('Received message:', data);
 
-      if (data.type === 'join') {
-        const { documentId } = data;
-        clients.set(ws, { documentId });
-        const documentPath = path.join(DOCUMENTS_DIR, `${documentId}.json`);
-        try {
-          const content = await fs.readFile(documentPath, 'utf-8');
-          ws.send(JSON.stringify({ type: 'update', ...JSON.parse(content) }));
-        } catch (error) {
-          console.error('Error reading document:', error);
-        }
-      } else if (data.type === 'update') {
-        const { documentId, title, content } = data;
-        const documentPath = path.join(DOCUMENTS_DIR, `${documentId}.json`);
-        await fs.writeFile(documentPath, JSON.stringify({ title, content }));
-
-        // Broadcast the update to all clients editing the same document
-        wss.clients.forEach((client) => {
-          if (client !== ws && client.readyState === WebSocket.OPEN && clients.get(client)?.documentId === documentId) {
-            client.send(JSON.stringify({ type: 'update', title, content }));
+        if (data.type === 'join') {
+          const { documentId } = data;
+          clients.set(ws, { documentId });
+          const documentPath = path.join(DOCUMENTS_DIR, `${documentId}.json`);
+          try {
+            const content = await fs.readFile(documentPath, 'utf-8');
+            const { title, content: documentContent, version, history } = JSON.parse(content);
+            documents.set(documentId, { content: documentContent, version, history: history || [] });
+            ws.send(JSON.stringify({ type: 'init', title, content: documentContent, version, history: history || [] }));
+          } catch (error) {
+            console.error('Error reading document:', error);
+            documents.set(documentId, { content: '', version: 0, history: [] });
+            ws.send(JSON.stringify({ type: 'init', title: '', content: '', version: 0, history: [] }));
           }
-        });
+        } else if (data.type === 'operation') {
+          const { documentId, operation, version, username } = data;
+          const document = documents.get(documentId);
+          
+          if (document && version === document.version) {
+            const newContent = apply(document.content, operation);
+            document.content = newContent;
+            document.version++;
+            
+            // Add to history
+            const historyEntry = {
+              version: document.version,
+              operation,
+              timestamp: new Date().toISOString(),
+              username
+            };
+            document.history.push(historyEntry);
+            
+            const documentPath = path.join(DOCUMENTS_DIR, `${documentId}.json`);
+            await fs.writeFile(documentPath, JSON.stringify({
+              content: newContent,
+              version: document.version,
+              history: document.history
+            }));
+
+            // Broadcast the operation to all clients editing the same document
+            wss.clients.forEach((client) => {
+              if (client.readyState === WebSocket.OPEN && clients.get(client)?.documentId === documentId) {
+                client.send(JSON.stringify({ type: 'operation', operation, version: document.version, historyEntry }));
+              }
+            });
+          } else {
+            console.error('Version mismatch or document not found');
+            ws.send(JSON.stringify({ type: 'error', message: 'Version mismatch or document not found' }));
+          }
+        } else if (data.type === 'updateTitle') {
+          const { documentId, title, username } = data;
+          const documentPath = path.join(DOCUMENTS_DIR, `${documentId}.json`);
+          const document = documents.get(documentId);
+          if (document) {
+            document.version++;
+            const historyEntry = {
+              version: document.version,
+              title,
+              timestamp: new Date().toISOString(),
+              username
+            };
+            document.history.push(historyEntry);
+            
+            await fs.writeFile(documentPath, JSON.stringify({
+              title,
+              content: document.content,
+              version: document.version,
+              history: document.history
+            }));
+            
+            // Broadcast the title update to all clients editing the same document
+            wss.clients.forEach((client) => {
+              if (client.readyState === WebSocket.OPEN && clients.get(client)?.documentId === documentId) {
+                client.send(JSON.stringify({ type: 'updateTitle', title, historyEntry }));
+              }
+            });
+          } else {
+            console.error('Document not found for title update');
+            ws.send(JSON.stringify({ type: 'error', message: 'Document not found for title update' }));
+          }
+        } else if (data.type === 'getHistory') {
+          const { documentId } = data;
+          const document = documents.get(documentId);
+          if (document) {
+            ws.send(JSON.stringify({ type: 'history', history: document.history }));
+          } else {
+            console.error('Document not found for history request');
+            ws.send(JSON.stringify({ type: 'error', message: 'Document not found for history request' }));
+          }
+        } else if (data.type === 'revertToVersion') {
+          const { documentId, version, username } = data;
+          const document = documents.get(documentId);
+          if (document && version <= document.version) {
+            const revertedContent = document.history
+              .filter(entry => entry.version <= version)
+              .reduce((content, entry) => {
+                if (entry.operation) {
+                  return apply(content, entry.operation);
+                }
+                return content;
+              }, '');
+            
+            document.content = revertedContent;
+            document.version++;
+            
+            const historyEntry = {
+              version: document.version,
+              revertedTo: version,
+              timestamp: new Date().toISOString(),
+              username
+            };
+            document.history.push(historyEntry);
+            
+            const documentPath = path.join(DOCUMENTS_DIR, `${documentId}.json`);
+            await fs.writeFile(documentPath, JSON.stringify({
+              content: revertedContent,
+              version: document.version,
+              history: document.history
+            }));
+            
+            // Broadcast the revert operation to all clients editing the same document
+            wss.clients.forEach((client) => {
+              if (client.readyState === WebSocket.OPEN && clients.get(client)?.documentId === documentId) {
+                client.send(JSON.stringify({ type: 'revert', content: revertedContent, version: document.version, historyEntry }));
+              }
+            });
+          } else {
+            console.error('Invalid version for revert operation');
+            ws.send(JSON.stringify({ type: 'error', message: 'Invalid version for revert operation' }));
+          }
+        } else {
+          console.error('Unknown message type:', data.type);
+          ws.send(JSON.stringify({ type: 'error', message: 'Unknown message type' }));
+        }
+      } catch (error) {
+        console.error('Error processing message:', error);
+        ws.send(JSON.stringify({ type: 'error', message: 'Internal server error' }));
       }
     });
 
     ws.on('close', () => {
       console.log('Client disconnected');
       clients.delete(ws);
+      clearInterval(pingInterval);
+    });
+
+    ws.on('error', (error) => {
+      console.error('WebSocket error:', error);
+    });
+
+    ws.on('pong', () => {
+      console.log('Received pong from client');
     });
   });
 };
@@ -76,66 +213,117 @@ const setupWebSocket = (server) => {
 app.prepare().then(() => {
   const server = createServer((req, res) => {
     const parsedUrl = parse(req.url, true);
-
-    if (parsedUrl.pathname === '/api/register' && req.method === 'POST') {
-      let body = '';
-      req.on('data', chunk => {
-        body += chunk.toString();
-      });
-      req.on('end', () => {
-        const { username, password } = JSON.parse(body);
-        if (users.find(u => u.username === username)) {
-          res.statusCode = 400;
-          res.end(JSON.stringify({ error: 'Username already exists' }));
-        } else {
-          const hashedPassword = bcrypt.hashSync(password, 8);
-          users.push({ username, password: hashedPassword });
-          res.statusCode = 201;
-          res.end(JSON.stringify({ message: 'User registered successfully' }));
-        }
-      });
-    } else if (parsedUrl.pathname === '/api/login' && req.method === 'POST') {
-      let body = '';
-      req.on('data', chunk => {
-        body += chunk.toString();
-      });
-      req.on('end', () => {
-        const { username, password } = JSON.parse(body);
-        const user = users.find(u => u.username === username);
-        if (user && bcrypt.compareSync(password, user.password)) {
-          const token = jwt.sign({ username: user.username }, SECRET_KEY, { expiresIn: '1h' });
-          res.statusCode = 200;
-          res.end(JSON.stringify({ token }));
-        } else {
-          res.statusCode = 401;
-          res.end(JSON.stringify({ error: 'Invalid credentials' }));
-        }
-      });
-    } else if (parsedUrl.pathname.startsWith('/api/documents/') && req.method === 'GET') {
-      const documentId = parsedUrl.pathname.split('/').pop();
-      const documentPath = path.join(DOCUMENTS_DIR, `${documentId}.json`);
-      
-      fs.readFile(documentPath, 'utf-8')
-        .then(content => {
-          res.statusCode = 200;
-          res.setHeader('Content-Type', 'application/json');
-          res.end(content);
-        })
-        .catch(error => {
-          console.error('Error reading document:', error);
-          res.statusCode = 404;
-          res.end(JSON.stringify({ error: 'Document not found' }));
-        });
-    } else {
-      handle(req, res, parsedUrl);
-    }
+    handle(req, res, parsedUrl);
   });
 
   setupWebSocket(server);
 
-  const port = process.env.PORT || 3002;
-  server.listen(port, (err) => {
+  server.listen(3002, (err) => {
     if (err) throw err;
-    console.log(`> Ready on http://localhost:${port}`);
+    console.log('> Ready on http://localhost:3002');
+  });
+});
+              content: document.content,
+              version: document.version,
+              history: document.history
+            }));
+            
+            // Broadcast the title update to all clients editing the same document
+            wss.clients.forEach((client) => {
+              if (client.readyState === WebSocket.OPEN && clients.get(client)?.documentId === documentId) {
+                client.send(JSON.stringify({ type: 'updateTitle', title, historyEntry }));
+              }
+            });
+          } else {
+            console.error('Document not found for title update');
+            ws.send(JSON.stringify({ type: 'error', message: 'Document not found for title update' }));
+          }
+        } else if (data.type === 'getHistory') {
+          const { documentId } = data;
+          const document = documents.get(documentId);
+          if (document) {
+            ws.send(JSON.stringify({ type: 'history', history: document.history }));
+          } else {
+            console.error('Document not found for history request');
+            ws.send(JSON.stringify({ type: 'error', message: 'Document not found for history request' }));
+          }
+        } else if (data.type === 'revertToVersion') {
+          const { documentId, version, username } = data;
+          const document = documents.get(documentId);
+          if (document && version <= document.version) {
+            const revertedContent = document.history
+              .filter(entry => entry.version <= version)
+              .reduce((content, entry) => {
+                if (entry.operation) {
+                  return apply(content, entry.operation);
+                }
+                return content;
+              }, '');
+            
+            document.content = revertedContent;
+            document.version++;
+            
+            const historyEntry = {
+              version: document.version,
+              revertedTo: version,
+              timestamp: new Date().toISOString(),
+              username
+            };
+            document.history.push(historyEntry);
+            
+            const documentPath = path.join(DOCUMENTS_DIR, `${documentId}.json`);
+            await fs.writeFile(documentPath, JSON.stringify({
+              content: revertedContent,
+              version: document.version,
+              history: document.history
+            }));
+            
+            // Broadcast the revert operation to all clients editing the same document
+            wss.clients.forEach((client) => {
+              if (client.readyState === WebSocket.OPEN && clients.get(client)?.documentId === documentId) {
+                client.send(JSON.stringify({ type: 'revert', content: revertedContent, version: document.version, historyEntry }));
+              }
+            });
+          } else {
+            console.error('Invalid version for revert operation');
+            ws.send(JSON.stringify({ type: 'error', message: 'Invalid version for revert operation' }));
+          }
+        } else {
+          console.error('Unknown message type:', data.type);
+          ws.send(JSON.stringify({ type: 'error', message: 'Unknown message type' }));
+        }
+      } catch (error) {
+        console.error('Error processing message:', error);
+        ws.send(JSON.stringify({ type: 'error', message: 'Internal server error' }));
+      }
+    });
+
+    ws.on('close', () => {
+      console.log('Client disconnected');
+      clients.delete(ws);
+      clearInterval(pingInterval);
+    });
+
+    ws.on('error', (error) => {
+      console.error('WebSocket error:', error);
+    });
+
+    ws.on('pong', () => {
+      console.log('Received pong from client');
+    });
+  });
+};
+
+app.prepare().then(() => {
+  const server = createServer((req, res) => {
+    const parsedUrl = parse(req.url, true);
+    handle(req, res, parsedUrl);
+  });
+
+  setupWebSocket(server);
+
+  server.listen(3002, (err) => {
+    if (err) throw err;
+    console.log('> Ready on http://localhost:3002');
   });
 });
