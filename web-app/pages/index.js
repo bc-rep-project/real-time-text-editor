@@ -5,22 +5,14 @@ import TextEditor from '../components/TextEditor';
 
 const Home = () => {
   const [selectedDocument, setSelectedDocument] = useState(null);
-  const [darkMode, setDarkMode] = useState(false);
+  
 
-  useEffect(() => {
-    if (darkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, [darkMode]);
+  
 
-  const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
-  };
+  
 
   return (
-    <div className={`min-h-screen ${darkMode ? 'dark:bg-gray-900 dark:text-white' : 'bg-white text-black'}`}>
+    <div className={'min-h-screen bg-white text-black'}>
       <div className="container mx-auto p-4">
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-2xl font-bold">Real-time Text Editor</h1>
@@ -32,9 +24,9 @@ const Home = () => {
           </button>
         </div>
         {selectedDocument ? (
-          <TextEditor documentId={selectedDocument} onClose={() => setSelectedDocument(null)} darkMode={darkMode} />
+          <TextEditor documentId={selectedDocument} onClose={() => setSelectedDocument(null)}  />
         ) : (
-          <DocumentList onSelectDocument={setSelectedDocument} darkMode={darkMode} />
+          <DocumentList onSelectDocument={setSelectedDocument}  />
         )}
       </div>
     </div>

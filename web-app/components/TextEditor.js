@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 
-const TextEditor = ({ documentId, onClose, darkMode }) => {
+const TextEditor = ({ documentId, onClose }) => {
   const [content, setContent] = useState('');
   const [title, setTitle] = useState('');
   const [isConnected, setIsConnected] = useState(false);

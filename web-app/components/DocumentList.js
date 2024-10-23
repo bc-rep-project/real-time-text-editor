@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 
-const DocumentList = ({ onSelectDocument, darkMode }) => {
+const DocumentList = ({ onSelectDocument }) => {
   const [documents, setDocuments] = useState([]);
   const [newDocumentTitle, setNewDocumentTitle] = useState('');
 
@@ -48,7 +48,7 @@ const DocumentList = ({ onSelectDocument, darkMode }) => {
   };
 
   return (
-    <div className={`p-4 ${darkMode ? 'bg-gray-800 text-white' : 'bg-white text-black'}`}>
+    <div className={`p-4 'bg-white text-black'`}>
       <h2 className="text-xl font-semibold mb-4">Documents</h2>
       <ul className="space-y-2">
         {documents.map((doc) => (
