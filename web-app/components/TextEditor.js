@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useTheme } from '@mui/material/styles';
 import { Button, TextField, Alert, IconButton, List, ListItem, ListItemText, Typography } from '@mui/material';
@@ -7,9 +6,20 @@ import useTouchDevice from '../hooks/useTouchDevice';
 import dynamic from 'next/dynamic';
 
 const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
-const ImageResize = dynamic(() => import('quill-image-resize-module-react'), { ssr: false });
 
 const TextEditor = ({ documentId, onClose }) => {
+  const [Quill, setQuill] = useState(null);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      import('quill').then((quill) => {
+        import('quill-image-resize-module-react').then((ImageResize) => {
+          quill.default.register('modules/imageResize', ImageResize.default);
+          setQuill(quill.default);
+        });
+      });
+    }
+  }, []);
   const [content, setContent] = useState('');
   const [title, setTitle] = useState('');
   const [isConnected, setIsConnected] = useState(false);
@@ -107,105 +117,87 @@ const TextEditor = ({ documentId, onClose }) => {
     }
   }, []);
 
-  const sendOperation = useCallback((delta) => {
-    if (isConnected && ws.current) {
-      const token = localStorage.getItem('token');
-      const username = localStorage.getItem('username');
-      const message = JSON.stringify({
-        type: 'operation',
-        delta,
-        version,
-        documentId,
-        token,
-        username
-      });
-      console.log('Sending message:', message);
-      ws.current.send(message);
-      setPendingOperations((prev) => [...prev, delta]);
-    }
-  }, [isConnected, documentId, version]);
-
-  const handleContentChange = (content, delta, source, editor) => {
+  const handleChange = (content, delta, source, editor) => {
     if (source === 'user') {
-      sendOperation(delta);
+      const operation = { delta, version };
+      setPendingOperations([...pendingOperations, operation]);
+      if (pendingOperations.length === 0) {
+        sendOperation(operation);
+      }
     }
   };
 
-  const handleTitleChange = (e) => {
-    const newTitle = e.target.value;
-    setTitle(newTitle);
-    if (isConnected && ws.current) {
-      const token = localStorage.getItem('token');
-      const username = localStorage.getItem('username');
-      const message = JSON.stringify({
-        type: 'updateTitle',
-        title: newTitle,
-        documentId,
-        token,
-        username
-      });
-      console.log('Sending message:', message);
-      ws.current.send(message);
+  const sendOperation = (operation) => {
+    if (ws.current && ws.current.readyState === WebSocket.OPEN) {
+      ws.current.send(JSON.stringify({
+        type: 'operation',
+        delta: operation.delta,
+        version: operation.version
+      }));
     }
+  };
+
+  const handleTitleChange = (event) => {
+    const newTitle = event.target.value;
+    setTitle(newTitle);
+    if (ws.current && ws.current.readyState === WebSocket.OPEN) {
+      ws.current.send(JSON.stringify({
+        type: 'updateTitle',
+        title: newTitle
+      }));
+    }
+  };
+
+  const toggleHistory = () => {
+    setShowHistory(!showHistory);
   };
 
   return (
     <div className={`w-full ${darkMode ? 'bg-gray-800 text-white' : 'bg-white text-black'}`}>
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold">Real-time Text Editor</h1>
-        <div>
-          <Button
-            onClick={() => setShowHistory(!showHistory)}
-            variant="contained"
-            color="primary"
-            className="mr-2"
-          >
-            {showHistory ? 'Hide History' : 'Show History'}
-          </Button>
-          {isTouchDevice ? (
-            <IconButton onClick={onClose} color="inherit">
-              <CloseIcon />
-            </IconButton>
-          ) : (
-            <Button
-              onClick={onClose}
-              variant="contained"
-              color="secondary"
-            >
-              Close
-            </Button>
-          )}
-        </div>
+        <IconButton onClick={onClose} color="inherit">
+          <CloseIcon />
+        </IconButton>
       </div>
-      {!isConnected && (
-        <Alert severity="warning" className="mb-4">
-          Disconnected. Trying to reconnect...
-        </Alert>
-      )}
       <TextField
-        fullWidth
-        label="Document Title"
         value={title}
         onChange={handleTitleChange}
-        className="mb-4"
+        placeholder="Document Title"
         variant="outlined"
-        InputProps={{
-          style: { color: darkMode ? 'white' : 'black' }
-        }}
+        fullWidth
+        className="mb-4"
       />
-      <ReactQuill
-        ref={quillRef}
-        theme="snow"
-        value={content}
-        onChange={handleContentChange}
-        modules={modules}
-        className={`mb-4 ${darkMode ? 'quill-dark' : ''}`}
-      />
+      {Quill && (
+        <ReactQuill
+          ref={quillRef}
+          value={content}
+          onChange={handleChange}
+          modules={modules}
+          theme="snow"
+          placeholder="Start typing..."
+          className={`h-[calc(100vh-200px)] ${darkMode ? 'quill-dark' : ''}`}
+        />
+      )}
+      <div className="mt-4 flex justify-between items-center">
+        <Button onClick={toggleHistory} variant="outlined" color="primary">
+          {showHistory ? 'Hide History' : 'Show History'}
+        </Button>
+        <Alert severity={isConnected ? 'success' : 'error'}>
+          {isConnected ? 'Connected' : 'Disconnected'}
+        </Alert>
+      </div>
       {showHistory && (
-        <div className="mt-4">
-          <Typography variant="h6" className="mb-2">Version History</Typography>
-          {/* Add HistoryList component here */}
-        </div>
+        <List className="mt-4 border rounded">
+          {history.map((item, index) => (
+            <ListItem key={index}>
+              <ListItemText
+                primary={`Version ${item.version}`}
+                secondary={new Date(item.timestamp).toLocaleString()}
+              />
+            </ListItem>
+          ))}
+        </List>
       )}
     </div>
   );

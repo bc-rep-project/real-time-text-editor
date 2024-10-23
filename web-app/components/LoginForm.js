@@ -13,7 +13,7 @@ import {
   FormControlLabel
 } from '@mui/material';
 
-const AuthForm = ({ onLogin }) => {
+const AuthForm = ({ onLogin, onRegister }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -22,25 +22,10 @@ const AuthForm = ({ onLogin }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const endpoint = isLogin ? '/api/login' : '/api/register';
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username, password }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || `${isLogin ? 'Login' : 'Registration'} failed`);
-      }
-
       if (isLogin) {
-        localStorage.setItem('token', data.token);
-        onLogin({ username, token: data.token });
+        await onLogin({ username, password });
       } else {
+        await onRegister({ username, password });
         setIsLogin(true);
         setError('Registration successful. Please log in.');
       }

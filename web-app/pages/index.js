@@ -27,9 +27,52 @@ const Home = () => {
     }
   }, []);
 
-  const handleLogin = (userData) => {
-    setIsAuthenticated(true);
-    localStorage.setItem('token', userData.token);
+const handleLogin = async (userData) => {
+    try {
+      const response = await fetch('/api/signin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData),
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setIsAuthenticated(true);
+        localStorage.setItem('token', data.token);
+      } else {
+        const errorData = await response.json();
+        alert(errorData.error);
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      alert('An error occurred during login');
+    }
+  };
+
+  const handleRegister = async (userData) => {
+    try {
+      const response = await fetch('/api/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData),
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setIsAuthenticated(true);
+        localStorage.setItem('token', data.token);
+      } else {
+        const errorData = await response.json();
+        alert(errorData.error);
+      }
+    } catch (error) {
+      console.error('Registration error:', error);
+      alert('An error occurred during registration');
+    }
   };
 
   const handleLogout = () => {
@@ -44,7 +87,7 @@ const Home = () => {
 
   const renderContent = () => {
     if (!isAuthenticated) {
-      return <AuthForm onLogin={handleLogin} />;
+      return <AuthForm onLogin={handleLogin} onRegister={handleRegister} />;
     }
 
     return (
