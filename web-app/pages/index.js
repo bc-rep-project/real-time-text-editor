@@ -16,6 +16,17 @@ const Home = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const isTouchDevice = useTouchDevice();
 
+  // New state variables for ChatBox
+  const [activeUsers, setActiveUsers] = useState([]);
+  const [typingUsers, setTypingUsers] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchError, setSearchError] = useState('');
+  const [file, setFile] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState('');
+
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
@@ -57,9 +68,28 @@ const Home = () => {
         <SwipeHandler onSwipe={handleSwipe}>
           {mobileView === 'list' && <DocumentList onSelectDocument={setSelectedDocument} />}
           {mobileView === 'editor' && selectedDocument && (
-            <TextEditor documentId={selectedDocument} onClose={() => setSelectedDocument(null)} />
+            <div className="h-screen overflow-y-auto">
+              <TextEditor documentId={selectedDocument} onClose={() => setSelectedDocument(null)} />
+            </div>
           )}
-          {mobileView === 'chat' && selectedDocument && <ChatBox documentId={selectedDocument} />}
+          {mobileView === 'chat' && selectedDocument && (
+            <div className="h-screen overflow-y-auto">
+              <ChatBox
+                documentId={selectedDocument}
+                activeUsers={activeUsers}
+                typingUsers={typingUsers}
+                searchQuery={searchQuery}
+                setSearchQuery={setSearchQuery}
+                searchResults={searchResults}
+                isSearching={isSearching}
+                searchError={searchError}
+                file={file}
+                setFile={setFile}
+                isUploading={isUploading}
+                uploadError={uploadError}
+              />
+            </div>
+          )}
         </SwipeHandler>
       );
     }
@@ -67,12 +97,25 @@ const Home = () => {
     return (
       <>
         {selectedDocument ? (
-          <div className="flex">
-            <div className="w-3/4 pr-4">
+          <div className="flex flex-col md:flex-row h-screen">
+            <div className="w-full md:w-2/3 h-1/2 md:h-full md:pr-4 overflow-y-auto">
               <TextEditor documentId={selectedDocument} onClose={() => setSelectedDocument(null)} />
             </div>
-            <div className="w-1/4">
-              <ChatBox documentId={selectedDocument} />
+            <div className="w-full md:w-1/3 h-1/2 md:h-full overflow-y-auto">
+              <ChatBox
+                documentId={selectedDocument}
+                activeUsers={activeUsers}
+                typingUsers={typingUsers}
+                searchQuery={searchQuery}
+                setSearchQuery={setSearchQuery}
+                searchResults={searchResults}
+                isSearching={isSearching}
+                searchError={searchError}
+                file={file}
+                setFile={setFile}
+                isUploading={isUploading}
+                uploadError={uploadError}
+              />
             </div>
           </div>
         ) : (
@@ -83,52 +126,30 @@ const Home = () => {
   };
 
   return (
-    <div className={`min-h-screen ${darkMode ? 'bg-gray-900 text-white' : 'bg-white text-black'}`}>
-      <div className="container mx-auto px-4">
-        <header className="py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold">Real-Time Text Editor</h1>
-          <div className="flex items-center">
+<div className={`min-h-screen transition-colors duration-300 ${darkMode ? 'bg-gray-900 text-white' : 'bg-white text-black'}`}>
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <header className="py-6 flex flex-col sm:flex-row justify-between items-center">
+          <h1 className="text-3xl font-bold mb-4 sm:mb-0">Real-Time Text Editor</h1>
+          <div className="flex items-center space-x-4">
             {isAuthenticated && (
               <button
                 onClick={handleLogout}
-                className="mr-4 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors duration-300"
               >
                 Logout
               </button>
             )}
             <button
               onClick={toggleDarkMode}
-              className="p-2 rounded-full bg-gray-200 dark:bg-gray-700"
+              className={`px-4 py-2 rounded transition-colors duration-300 ${
+                darkMode ? 'bg-yellow-400 text-gray-900 hover:bg-yellow-300' : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
+              }`}
             >
-              {darkMode ? '🌞' : '🌙'}
+              {darkMode ? 'Light Mode' : 'Dark Mode'}
             </button>
           </div>
         </header>
-        <main className="mt-8">{renderContent()}</main>
-        {isTouchDevice && isAuthenticated && (
-          <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 shadow-lg">
-            <div className="flex justify-around">
-              <button
-                onClick={() => setMobileView('list')}
-                className={`flex-1 py-4 ${mobileView === 'list' ? 'text-blue-500' : ''}`}
-              >
-                List
-              </button>
-              <button
-                onClick={() => setMobileView('editor')}
-                className={`flex-1 py-4 ${mobileView === 'editor' ? 'text-blue-500' : ''}`}
-              >
-                Edit
-              </button>
-              <button
-                onClick={() => setMobileView('chat')}
-                className={`flex-1 py-4 ${mobileView === 'chat' ? 'text-blue-500' : ''}`}
-              >
-                Chat
-              </button>
-            </div>
-          </nav>
-        )}
+        <main className="mt-8 pb-16">{renderContent()}</main>
       </div>
     </div>
   );

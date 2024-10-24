@@ -1,18 +1,22 @@
 import React, { useState, useEffect, useRef } from 'react';
 import useTouchDevice from '../hooks/useTouchDevice';
 
-const ChatBox = ({ documentId }) => {
+const ChatBox = ({
+  documentId,
+  activeUsers,
+  typingUsers,
+  searchQuery,
+  setSearchQuery,
+  searchResults,
+  isSearching,
+  searchError,
+  file,
+  setFile,
+  isUploading,
+  uploadError
+}) => {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
-  const [activeUsers, setActiveUsers] = useState([]);
-  const [typingUsers, setTypingUsers] = useState([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState([]);
-  const [isSearching, setIsSearching] = useState(false);
-  const [searchError, setSearchError] = useState('');
-  const [file, setFile] = useState(null);
-  const [isUploading, setIsUploading] = useState(false);
-const [uploadError, setUploadError] = useState('');
 const socketRef = useRef(null);
 const messagesEndRef = useRef(null);
 const typingTimeoutRef = useRef(null);
@@ -49,6 +53,13 @@ const handleFileChange = (e) => {
 
   return (
     <div className="flex flex-col h-full bg-white dark:bg-gray-800 rounded-lg shadow-md">
+      <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+        <h2 className="text-xl font-bold">Chat</h2>
+        <div className="mt-2">
+          <p>Active Users: {activeUsers.join(', ')}</p>
+          {typingUsers.length > 0 && <p>{typingUsers.join(', ')} is typing...</p>}
+        </div>
+      </div>
       <div className="flex-grow overflow-y-auto p-4">
         {messages.map((message, index) => (
           <div key={index} className="mb-4">
@@ -59,6 +70,25 @@ const handleFileChange = (e) => {
         <div ref={messagesEndRef} />
       </div>
       <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+        <div className="mb-4">
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search messages..."
+            className="w-full px-4 py-2 rounded-full border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+          />
+          {isSearching && <p>Searching...</p>}
+          {searchError && <p className="text-red-500">{searchError}</p>}
+          {searchResults.length > 0 && (
+            <div className="mt-2">
+              <h3>Search Results:</h3>
+              {searchResults.map((result, index) => (
+                <p key={index}>{result}</p>
+              ))}
+            </div>
+          )}
+        </div>
         <form onSubmit={handleSendMessage} className="flex items-center">
           <input
             type="text"
@@ -87,6 +117,13 @@ const handleFileChange = (e) => {
             Attach
           </button>
         </form>
+        {file && (
+          <div className="mt-2">
+            <p>Selected file: {file.name}</p>
+            {isUploading && <p>Uploading...</p>}
+            {uploadError && <p className="text-red-500">{uploadError}</p>}
+          </div>
+        )}
       </div>
     </div>
   );

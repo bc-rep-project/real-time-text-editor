@@ -11,15 +11,25 @@ const MAX_RETRY_ATTEMPTS = 5;
 const RETRY_DELAY = 3000;
 
 const TextEditor = ({ documentId, onClose }) => {
-const [content, setContent] = useState('');
-const [title, setTitle] = useState('');
-const [isConnected, setIsConnected] = useState(false);
-const [error, setError] = useState('');
-const [isSaving, setIsSaving] = useState(false);
-const [retryAttempts, setRetryAttempts] = useState(0);
-const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [content, setContent] = useState('');
+  const [title, setTitle] = useState('');
+  const [isConnected, setIsConnected] = useState(false);
+  const [error, setError] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+  const [retryAttempts, setRetryAttempts] = useState(0);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
-const ws = useRef(null);
+  const ws = useRef(null);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
 const connectWebSocket = () => {
 const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
