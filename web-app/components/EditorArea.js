@@ -1,7 +1,5 @@
-
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { TextOperation } from 'ot-text';
-import { TextField, Paper, Typography } from '@mui/material';
 
 const EditorArea = ({ documentId }) => {
   const [content, setContent] = useState('');
@@ -11,7 +9,7 @@ const EditorArea = ({ documentId }) => {
 
   const fetchDocumentContent = useCallback(async () => {
     try {
-      const response = await fetch(`http://21b4ce6a841c24d7f4.blackbx.ai/api/documents/${documentId}`);
+      const response = await fetch();
       if (!response.ok) {
         throw new Error('Failed to fetch document content');
       }
@@ -59,82 +57,23 @@ const EditorArea = ({ documentId }) => {
   };
 
   const generateOperation = (oldContent, newContent) => {
-    const operation = new TextOperation();
-    let oldIndex = 0;
-    let newIndex = 0;
-
-    while (oldIndex < oldContent.length || newIndex < newContent.length) {
-      if (oldContent[oldIndex] === newContent[newIndex]) {
-        operation.retain(1);
-        oldIndex++;
-        newIndex++;
-      } else if (oldIndex < oldContent.length && newIndex < newContent.length) {
-        operation.delete(1);
-        operation.insert(newContent[newIndex]);
-        oldIndex++;
-        newIndex++;
-      } else if (oldIndex < oldContent.length) {
-        operation.delete(1);
-        oldIndex++;
-      } else {
-        operation.insert(newContent[newIndex]);
-        newIndex++;
-      }
-    }
-
-    return operation.toJSON();
+    // ... (keep the existing generateOperation function)
   };
 
   const sendContentUpdate = useCallback((operation) => {
-    pendingOperations.current.push(operation);
-
-    if (socket && socket.readyState === WebSocket.OPEN) {
-      socket.send(JSON.stringify({
-        type: 'documentUpdate',
-        documentId,
-        operation: operation.toJSON(),
-        version,
-      }));
-    }
-
-    // Also send update to the server via HTTP
-    fetch(`http://21b4ce6a841c24d7f4.blackbx.ai/api/documents/${documentId}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ content, version }),
-    })
-      .then(response => {
-        if (response.status === 409) {
-          console.log('Version conflict detected. Fetching latest content.');
-          fetchDocumentContent();
-        } else if (!response.ok) {
-          throw new Error('Failed to update document');
-        }
-        return response.json();
-      })
-      .then(data => {
-        setVersion(data.newVersion);
-      })
-      .catch(error => console.error('Error updating document:', error));
+    // ... (keep the existing sendContentUpdate function)
   }, [socket, documentId, version, content, fetchDocumentContent]);
 
   return (
-    <Paper elevation={3} sx={{ p: 2, mt: 2 }}>
-      <Typography variant="h6" gutterBottom>
-        Document Editor
-      </Typography>
-      <TextField
-        fullWidth
-        multiline
-        rows={10}
+    <div className="bg-white dark:bg-gray-800 shadow-md rounded-lg p-4 mt-4">
+      <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white">Document Editor</h2>
+      <textarea
         value={content}
         onChange={handleContentChange}
-        variant="outlined"
+        className="w-full h-64 p-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white resize-none"
         placeholder="Start typing your document here..."
       />
-    </Paper>
+    </div>
   );
 };
 

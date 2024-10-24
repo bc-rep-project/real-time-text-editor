@@ -1,17 +1,4 @@
-
 import React, { useState } from 'react';
-import { 
-  Box, 
-  Button, 
-  Container, 
-  TextField, 
-  Typography, 
-  Paper,
-  Snackbar,
-  Alert,
-  Switch,
-  FormControlLabel
-} from '@mui/material';
 
 const AuthForm = ({ onLogin }) => {
   const [username, setUsername] = useState('');
@@ -34,7 +21,7 @@ const AuthForm = ({ onLogin }) => {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || `${isLogin ? 'Login' : 'Registration'} failed`);
+        throw new Error(data.error || );
       }
 
       if (isLogin) {
@@ -45,78 +32,69 @@ const AuthForm = ({ onLogin }) => {
         setError('Registration successful. Please log in.');
       }
     } catch (error) {
-      console.error(`Error during ${isLogin ? 'login' : 'registration'}:`, error);
-      setError(error.message || `${isLogin ? 'Login' : 'Registration'} failed. Please try again.`);
+      console.error(, error);
+      setError(error.message || );
     }
   };
 
   return (
-    <Container component="main" maxWidth="xs">
-      <Box
-        sx={{
-          marginTop: 8,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-        }}
-      >
-        <Paper elevation={3} sx={{ padding: 4, width: '100%', backgroundColor: 'background.paper' }}>
-          <Typography component="h1" variant="h5" align="center" gutterBottom color="text.primary">
-            {isLogin ? 'Login' : 'Register'}
-          </Typography>
-          <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
-            <TextField
-              margin="normal"
-              required
-              fullWidth
+    <div className="container mx-auto max-w-xs mt-8">
+      <div className="bg-white dark:bg-gray-800 shadow-md rounded px-8 pt-6 pb-8 mb-4">
+        <h1 className="text-2xl font-bold mb-6 text-center text-gray-700 dark:text-gray-200">
+          {isLogin ? 'Login' : 'Register'}
+        </h1>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label htmlFor="username" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Username
+            </label>
+            <input
+              type="text"
               id="username"
-              label="Username"
               name="username"
-              autoComplete="username"
+              required
               autoFocus
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              inputProps={{
-                'aria-label': 'Username',
-              }}
+              className="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             />
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              name="password"
-              label="Password"
+          </div>
+          <div>
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Password
+            </label>
+            <input
               type="password"
               id="password"
-              autoComplete="current-password"
+              name="password"
+              required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              inputProps={{
-                'aria-label': 'Password',
-              }}
+              className="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             />
-            <Button
-              type="submit"
-              fullWidth
-              variant="contained"
-              sx={{ mt: 3, mb: 2 }}
-              aria-label={isLogin ? "Sign In" : "Register"}
-            >
-              {isLogin ? 'Sign In' : 'Register'}
-            </Button>
-            <FormControlLabel
-              control={<Switch checked={isLogin} onChange={() => setIsLogin(!isLogin)} />}
-              label={isLogin ? "Switch to Register" : "Switch to Login"}
-            />
-          </Box>
-        </Paper>
-      </Box>
-      <Snackbar open={!!error} autoHideDuration={6000} onClose={() => setError('')}>
-        <Alert onClose={() => setError('')} severity={error === 'Registration successful. Please log in.' ? "success" : "error"} sx={{ width: '100%' }} aria-live="assertive">
-          {error}
-        </Alert>
-      </Snackbar>
-    </Container>
+          </div>
+          <button
+            type="submit"
+            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          >
+            {isLogin ? 'Login' : 'Register'}
+          </button>
+        </form>
+        <div className="mt-4 text-center">
+          <button
+            onClick={() => setIsLogin(!isLogin)}
+            className="text-sm text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
+          >
+            {isLogin ? 'Need to register?' : 'Already have an account?'}
+          </button>
+        </div>
+        {error && (
+          <div className="mt-4 text-center text-red-600 dark:text-red-400">
+            {error}
+          </div>
+        )}
+      </div>
+    </div>
   );
 };
 
