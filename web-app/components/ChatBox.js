@@ -12,14 +12,40 @@ const ChatBox = ({ documentId }) => {
   const [searchError, setSearchError] = useState('');
   const [file, setFile] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
-  const [uploadError, setUploadError] = useState('');
-  const socketRef = useRef(null);
-  const messagesEndRef = useRef(null);
-  const typingTimeoutRef = useRef(null);
-  const fileInputRef = useRef(null);
-  const isTouchDevice = useTouchDevice();
+const [uploadError, setUploadError] = useState('');
+const socketRef = useRef(null);
+const messagesEndRef = useRef(null);
+const typingTimeoutRef = useRef(null);
+const fileInputRef = useRef(null);
+const isTouchDevice = useTouchDevice();
 
-  // ... (keep all the existing useEffect hooks and functions)
+const handleSendMessage = (e) => {
+  e.preventDefault();
+  if (newMessage.trim() !== '') {
+    socketRef.current.emit('chat message', { documentId, message: newMessage });
+    setNewMessage('');
+  }
+};
+
+const handleInputChange = (e) => {
+  setNewMessage(e.target.value);
+  socketRef.current.emit('typing', { documentId, username: socketRef.current.id });
+  if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+  typingTimeoutRef.current = setTimeout(() => {
+    socketRef.current.emit('stop typing', { documentId, username: socketRef.current.id });
+  }, 1000);
+};
+
+const handleFileChange = (e) => {
+  const selectedFile = e.target.files[0];
+  if (selectedFile) {
+    setFile(selectedFile);
+    // You can add additional logic here, such as uploading the file
+    // or emitting a socket event to notify other users about the file
+  }
+};
+
+// ... (keep all the existing useEffect hooks and functions)
 
   return (
     <div className="flex flex-col h-full bg-white dark:bg-gray-800 rounded-lg shadow-md">
