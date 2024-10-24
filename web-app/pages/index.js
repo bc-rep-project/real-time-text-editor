@@ -1,13 +1,5 @@
 
 import React, { useState, useEffect } from 'react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import CssBaseline from '@mui/material/CssBaseline';
-import { IconButton, BottomNavigation, BottomNavigationAction, Drawer } from '@mui/material';
-import Brightness4Icon from '@mui/icons-material/Brightness4';
-import Brightness7Icon from '@mui/icons-material/Brightness7';
-import ListIcon from '@mui/icons-material/List';
-import EditIcon from '@mui/icons-material/Edit';
-import ChatIcon from '@mui/icons-material/Chat';
 import DocumentList from '../components/DocumentList';
 import TextEditor from '../components/TextEditor';
 import AuthForm from '../components/LoginForm';
@@ -23,12 +15,6 @@ const Home = () => {
   const [mobileView, setMobileView] = useState('list');
   const [drawerOpen, setDrawerOpen] = useState(false);
   const isTouchDevice = useTouchDevice();
-
-  const theme = createTheme({
-    palette: {
-      mode: darkMode ? 'dark' : 'light',
-    },
-  });
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -97,47 +83,54 @@ const Home = () => {
   };
 
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <div className={`min-h-screen ${darkMode ? 'bg-gray-900 text-white' : 'bg-white text-black'}`}>
-        <div className="container mx-auto p-4">
-          <div className="flex justify-between items-center mb-4">
-            <h1 className="text-2xl font-bold">Real-time Text Editor</h1>
-            <div>
-              <IconButton onClick={toggleDarkMode} color="inherit">
-                {darkMode ? <Brightness7Icon /> : <Brightness4Icon />}
-              </IconButton>
-              {isAuthenticated && (
-                <button
-                  onClick={handleLogout}
-                  className={`ml-2 px-4 py-2 rounded ${darkMode ? 'bg-gray-700 text-white' : 'bg-gray-200 text-black'}`}
-                >
-                  Logout
-                </button>
-              )}
-            </div>
+    <div className={`min-h-screen ${darkMode ? 'bg-gray-900 text-white' : 'bg-white text-black'}`}>
+      <div className="container mx-auto px-4">
+        <header className="py-4 flex justify-between items-center">
+          <h1 className="text-2xl font-bold">Real-Time Text Editor</h1>
+          <div className="flex items-center">
+            {isAuthenticated && (
+              <button
+                onClick={handleLogout}
+                className="mr-4 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+              >
+                Logout
+              </button>
+            )}
+            <button
+              onClick={toggleDarkMode}
+              className="p-2 rounded-full bg-gray-200 dark:bg-gray-700"
+            >
+              {darkMode ? '🌞' : '🌙'}
+            </button>
           </div>
-          {renderContent()}
-        </div>
+        </header>
+        <main className="mt-8">{renderContent()}</main>
         {isTouchDevice && isAuthenticated && (
-          <BottomNavigation
-            value={mobileView}
-            onChange={(event, newValue) => {
-              setMobileView(newValue);
-            }}
-            showLabels
-            className="fixed bottom-0 left-0 right-0"
-          >
-            <BottomNavigationAction label="Documents" value="list" icon={<ListIcon />} />
-            <BottomNavigationAction label="Editor" value="editor" icon={<EditIcon />} />
-            <BottomNavigationAction label="Chat" value="chat" icon={<ChatIcon />} />
-          </BottomNavigation>
+          <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 shadow-lg">
+            <div className="flex justify-around">
+              <button
+                onClick={() => setMobileView('list')}
+                className={`flex-1 py-4 ${mobileView === 'list' ? 'text-blue-500' : ''}`}
+              >
+                List
+              </button>
+              <button
+                onClick={() => setMobileView('editor')}
+                className={`flex-1 py-4 ${mobileView === 'editor' ? 'text-blue-500' : ''}`}
+              >
+                Edit
+              </button>
+              <button
+                onClick={() => setMobileView('chat')}
+                className={`flex-1 py-4 ${mobileView === 'chat' ? 'text-blue-500' : ''}`}
+              >
+                Chat
+              </button>
+            </div>
+          </nav>
         )}
       </div>
-      <Drawer anchor="left" open={drawerOpen} onClose={() => setDrawerOpen(false)}>
-        {/* Add drawer content here */}
-      </Drawer>
-    </ThemeProvider>
+    </div>
   );
 };
 

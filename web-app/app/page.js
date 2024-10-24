@@ -2,7 +2,6 @@
 'use client'
 
 import React, { useState } from 'react';
-import { Container, Grid, Typography, Box } from '@mui/material';
 import DocumentList from '../components/DocumentList';
 import CreateNewDocumentButton from '../components/CreateNewDocumentButton';
 import EditorArea from '../components/EditorArea';
@@ -32,40 +31,36 @@ export default function Home() {
   }
 
   return (
-    <Container maxWidth="xl">
-      <Box sx={{ my: 4 }}>
-        <Typography variant="h3" component="h1" gutterBottom>
+    <div className="container mx-auto px-4">
+      <div className="my-8">
+        <h1 className="text-3xl font-bold mb-4">
           Collaborative Document Editor
-        </Typography>
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={3}>
+        </h1>
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+          <div className="md:col-span-3">
             <DocumentList onSelectDocument={handleDocumentSelect} />
-            <Box sx={{ mt: 2 }}>
+            <div className="mt-4">
               <CreateNewDocumentButton onDocumentCreated={handleNewDocument} />
-            </Box>
-          </Grid>
-          <Grid item xs={12} md={6}>
-            {selectedDocument && (
-              <>
-                <EditorArea documentId={selectedDocument} />
-                <Box sx={{ mt: 2 }}>
-                  <UserPresenceIndicator documentId={selectedDocument} />
-                </Box>
-              </>
-            )}
-          </Grid>
-          <Grid item xs={12} md={3}>
+            </div>
+          </div>
+          <div className="md:col-span-6">
+            {selectedDocument && <EditorArea documentId={selectedDocument} />}
+          </div>
+          <div className="md:col-span-3">
             {selectedDocument && (
               <>
                 <ChatBox documentId={selectedDocument} />
-                <Box sx={{ mt: 2 }}>
+                <div className="mt-4">
                   <VersionHistory documentId={selectedDocument} />
-                </Box>
+                </div>
+                <div className="mt-4">
+                  <UserPresenceIndicator documentId={selectedDocument} />
+                </div>
               </>
             )}
-          </Grid>
-        </Grid>
-      </Box>
-    </Container>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

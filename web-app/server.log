@@ -2,5 +2,13 @@
 > web-app@0.1.0 dev
 > node server.js
 
-event - compiled client and server successfully in 724 ms (175 modules)
-error - uncaughtException: Error: listen EADDRINUSE: address already in use 0.0.0.0:3002
+event - compiled client and server successfully in 639 ms (175 modules)
+> Ready on http://localhost:3002
+wait  - compiling / (client and server)...
+event - compiled client and server successfully in 462 ms (307 modules)
+Warning: viewport meta tags should not be used in _document.js's <Head>. https://nextjs.org/docs/messages/no-document-viewport-meta
+wait  - compiling /api/register...
+event - compiled client and server successfully in 87 ms (316 modules)
+wait  - compiling /api/login...
+event - compiled client and server successfully in 122 ms (319 modules)
+Warning: viewport meta tags should not be used in _document.js's <Head>. https://nextjs.org/docs/messages/no-document-viewport-meta
