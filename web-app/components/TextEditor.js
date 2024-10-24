@@ -34,19 +34,25 @@ setRetryAttempts(0);
 ws.current.send(JSON.stringify({ type: 'join', documentId }));
 };
 
-ws.current.onmessage = (event) => {
-const data = JSON.parse(event.data);
-if (data.type === 'update') {
-console.log('Received update:', data);
-setContent(data.content);
-setTitle(data.title);
-setIsSaving(false);
-saveDocument({ id: documentId, content: data.content, title: data.title });
-} else if (data.type === 'error') {
-setError(data.message);
-setIsSaving(false);
-setSnackbarOpen(true);
-}
+ws.current.onmessage = async (event) => {
+  let data;
+  if (event.data instanceof Blob) {
+    const text = await event.data.text();
+    data = JSON.parse(text);
+  } else {
+    data = JSON.parse(event.data);
+  }
+  if (data.type === 'update') {
+    console.log('Received update:', data);
+    setContent(data.content);
+    setTitle(data.title);
+    setIsSaving(false);
+    saveDocument({ id: documentId, content: data.content, title: data.title });
+  } else if (data.type === 'error') {
+    setError(data.message);
+    setIsSaving(false);
+    setSnackbarOpen(true);
+  }
 };
 
 ws.current.onclose = () => {
