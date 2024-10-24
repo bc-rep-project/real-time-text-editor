@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Button, CircularProgress } from '@mui/material';
 
 const FileUpload = ({ onFileUpload }) => {
   const [uploading, setUploading] = useState(false);
@@ -35,16 +34,19 @@ const FileUpload = ({ onFileUpload }) => {
   return (
     <div>
       <input
-        accept="image/*"
-        style={{ display: 'none' }}
-        id="raised-button-file"
         type="file"
+        accept="image/*"
+        className="hidden"
+        id="file-upload"
         onChange={handleFileChange}
       />
-      <label htmlFor="raised-button-file">
-        <Button variant="contained" component="span" disabled={uploading}>
-          {uploading ? <CircularProgress size={24} /> : 'Upload Image'}
-        </Button>
+      <label
+        htmlFor="file-upload"
+        className={`inline-block px-4 py-2 bg-blue-500 text-white rounded cursor-pointer hover:bg-blue-600 transition-colors ${
+          uploading ? 'opacity-50 cursor-not-allowed' : ''
+        }`}
+      >
+        {uploading ? 'Uploading...' : 'Upload Image'}
       </label>
     </div>
   );

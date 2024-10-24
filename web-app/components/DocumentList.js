@@ -1,16 +1,8 @@
-
 import React, { useState, useEffect } from 'react';
-import { useTheme } from '@mui/material/styles';
-import { List, ListItem, ListItemText, TextField, Button, Typography } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
-import useTouchDevice from '../hooks/useTouchDevice';
 
 const DocumentList = ({ onSelectDocument }) => {
   const [documents, setDocuments] = useState([]);
   const [newDocumentTitle, setNewDocumentTitle] = useState('');
-  const theme = useTheme();
-  const darkMode = theme.palette.mode === 'dark';
-  const isTouchDevice = useTouchDevice();
 
   useEffect(() => {
     fetchDocuments();
@@ -18,12 +10,7 @@ const DocumentList = ({ onSelectDocument }) => {
 
   const fetchDocuments = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('/api/documents', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
+      const response = await fetch('/api/documents');
       if (response.ok) {
         const data = await response.json();
         setDocuments(data);
@@ -39,12 +26,10 @@ const DocumentList = ({ onSelectDocument }) => {
     if (!newDocumentTitle.trim()) return;
 
     try {
-      const token = localStorage.getItem('token');
       const response = await fetch('/api/documents', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({ title: newDocumentTitle }),
       });
@@ -62,50 +47,34 @@ const DocumentList = ({ onSelectDocument }) => {
   };
 
   return (
-    <div className={`p-4 ${darkMode ? 'bg-gray-800 text-white' : 'bg-white text-black'}`}>
-      <Typography variant="h5" component="h2" className="mb-4">
-        Documents
-      </Typography>
-      <List className="space-y-2 mb-4">
-        {documents.map((doc) => (
-          <ListItem
-            key={doc.id}
-            button
-            onClick={() => onSelectDocument(doc.id)}
-            className={`rounded ${
-              darkMode
-                ? 'hover:bg-gray-700 focus:bg-gray-700'
-                : 'hover:bg-gray-100 focus:bg-gray-100'
-            }`}
-          >
-            <ListItemText primary={doc.title} />
-          </ListItem>
-        ))}
-      </List>
-      <div className="mt-4">
-        <TextField
-          fullWidth
-          variant="outlined"
-          size={isTouchDevice ? "medium" : "small"}
-          label="New document title"
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+      <h2 className="text-2xl font-bold mb-4 dark:text-white">Your Documents</h2>
+      <div className="mb-4 flex">
+        <input
+          type="text"
           value={newDocumentTitle}
           onChange={(e) => setNewDocumentTitle(e.target.value)}
-          className="mb-2"
-          InputProps={{
-            style: { color: darkMode ? 'white' : 'black' }
-          }}
+          placeholder="New document title"
+          className="flex-grow p-2 border rounded-l dark:bg-gray-700 dark:border-gray-600 dark:text-white"
         />
-        <Button
-          fullWidth
-          variant="contained"
-          color="primary"
-          startIcon={<AddIcon />}
+        <button
           onClick={createDocument}
-          size={isTouchDevice ? "large" : "medium"}
+          className="px-4 py-2 bg-blue-500 text-white rounded-r hover:bg-blue-600 transition-colors"
         >
-          Create New Document
-        </Button>
+          Create
+        </button>
       </div>
+      <ul className="space-y-2">
+        {documents.map((doc) => (
+          <li
+            key={doc.id}
+            onClick={() => onSelectDocument(doc.id)}
+            className="p-2 bg-gray-100 dark:bg-gray-700 rounded cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 dark:text-white transition-colors"
+          >
+            {doc.title}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 };
