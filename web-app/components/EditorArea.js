@@ -1,7 +1,6 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { TextOperation } from 'ot-text';
-import { TextField, Paper, Typography } from '@mui/material';
 
 const EditorArea = ({ documentId }) => {
   const [content, setContent] = useState('');
@@ -104,6 +103,41 @@ const EditorArea = ({ documentId }) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ content, version }),
+    }).catch(error => console.error('Error sending update:', error));
+  }, [documentId, content, version, socket]);
+
+  return (
+    <div className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
+      <h2 className="text-2xl font-bold mb-4 text-gray-800 dark:text-white">Document Editor</h2>
+      <textarea
+        className="w-full h-64 p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+        value={content}
+        onChange={handleContentChange}
+        placeholder="Start typing here..."
+      />
+    </div>
+  );
+};
+
+export default EditorArea;
+      body: JSON.stringify({ content, version }),
+    }).catch(error => console.error('Error sending update:', error));
+  }, [documentId, content, version, socket]);
+
+  return (
+    <div className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
+      <h2 className="text-2xl font-bold mb-4 text-gray-800 dark:text-white">Document Editor</h2>
+      <textarea
+        className="w-full h-64 p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+        value={content}
+        onChange={handleContentChange}
+        placeholder="Start typing here..."
+      />
+    </div>
+  );
+};
+
+export default EditorArea;
     })
       .then(response => {
         if (response.status === 409) {

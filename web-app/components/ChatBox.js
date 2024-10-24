@@ -1,8 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useTheme } from '@mui/material/styles';
-import { Paper, Typography, TextField, Button, List, ListItem, ListItemText, IconButton } from '@mui/material';
-import SendIcon from '@mui/icons-material/Send';
-import AttachFileIcon from '@mui/icons-material/AttachFile';
 import useTouchDevice from '../hooks/useTouchDevice';
 
 const ChatBox = ({ documentId }) => {
@@ -21,21 +17,7 @@ const ChatBox = ({ documentId }) => {
   const messagesEndRef = useRef(null);
   const typingTimeoutRef = useRef(null);
   const fileInputRef = useRef(null);
-  const theme = useTheme();
-  const darkMode = theme.palette.mode === 'dark';
   const isTouchDevice = useTouchDevice();
-
-  const fetchPreviousMessages = async () => {
-    try {
-      const response = await fetch(`/api/messages/${documentId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setMessages(data);
-      }
-    } catch (error) {
-      console.error('Error fetching previous messages:', error);
-    }
-  };
 
   useEffect(() => {
     const fetchPreviousMessages = async () => {
@@ -146,8 +128,7 @@ const ChatBox = ({ documentId }) => {
     }
   };
 
-  const handleTyping = (e) => {
-    setNewMessage(e.target.value);
+  const handleTyping = () => {
     if (socketRef.current) {
       // Clear any existing timeout
       if (typingTimeoutRef.current) {
@@ -160,6 +141,78 @@ const ChatBox = ({ documentId }) => {
       // Set a new timeout
       typingTimeoutRef.current = setTimeout(() => {
         socketRef.current.send(JSON.stringify({ type: 'typing', documentId, username: 'You', isTyping: false }));
+      }, 2000); // Stop "typing" after 2 seconds of inactivity
+    }
+  };
+
+  const handleFileChange = (e) => {
+    if (e.target.files[0]) {
+      setFile(e.target.files[0]);
+    }
+  };
+
+  return (
+    <div className="flex flex-col h-full bg-white dark:bg-gray-800">
+      <div className="flex-grow overflow-y-auto p-4">
+        {messages.map((message, index) => (
+          <div key={index} className="mb-4">
+            <p className="font-bold text-gray-700 dark:text-gray-300">{message.sender}</p>
+            <p className="text-gray-600 dark:text-gray-400">{message.text}</p>
+            {message.fileUrl && (
+              <a href={message.fileUrl} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
+                Attached File
+              </a>
+            )}
+          </div>
+        ))}
+        <div ref={messagesEndRef} />
+      </div>
+      <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+        <form onSubmit={handleSendMessage} className="flex items-center">
+          <input
+            type="text"
+            value={newMessage}
+            onChange={(e) => {
+              setNewMessage(e.target.value);
+              handleTyping();
+            }}
+            className="flex-grow mr-2 p-2 border border-gray-300 dark:border-gray-600 rounded"
+            placeholder="Type a message..."
+          />
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            className="hidden"
+          />
+          <button
+            type="button"
+            onClick={() => fileInputRef.current.click()}
+            className="p-2 bg-gray-200 dark:bg-gray-700 rounded-full mr-2"
+          >
+            📎
+          </button>
+          <button
+            type="submit"
+            className="p-2 bg-blue-500 text-white rounded-full"
+          >
+            Send
+          </button>
+        </form>
+        {file && <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">File attached: {file.name}</p>}
+        {isUploading && <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">Uploading file...</p>}
+        {uploadError && <p className="mt-2 text-sm text-red-500">{uploadError}</p>}
+        {typingUsers.length > 0 && (
+          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+            {typingUsers.join(', ')} {typingUsers.length === 1 ? 'is' : 'are'} typing...
+          </p>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default ChatBox;
       }, 1000); // Stop typing indicator after 1 second of inactivity
     }
   };

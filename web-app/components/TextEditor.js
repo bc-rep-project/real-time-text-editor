@@ -1,7 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useTheme } from '@mui/material/styles';
-import { Button, TextField, IconButton, Snackbar } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
 import useTouchDevice from '../hooks/useTouchDevice';
 import useDebounce from '../hooks/useDebounce';
 import { saveDocument, getDocument } from '../utils/indexedDB';
@@ -24,8 +21,6 @@ const TextEditor = ({ documentId, onClose }) => {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   
   const ws = useRef(null);
-  const theme = useTheme();
-  const darkMode = theme.palette.mode === 'dark';
   const isTouchDevice = useTouchDevice();
 
   const connectWebSocket = () => {
@@ -76,6 +71,63 @@ const TextEditor = ({ documentId, onClose }) => {
       setSnackbarOpen(true);
       ws.current.close();
     };
+  };
+
+  // ... (keep the rest of the component logic)
+
+  return (
+    <div className="h-screen flex flex-col">
+      <div className="flex justify-between items-center p-4">
+        <input
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="Document Title"
+          className="flex-grow mr-4 p-2 border rounded"
+        />
+        <button
+          onClick={handleSave}
+          disabled={isSaving}
+          className={`mr-4 px-4 py-2 rounded ${
+            isSaving
+              ? 'bg-gray-400 cursor-not-allowed'
+              : 'bg-blue-500 hover:bg-blue-600 text-white'
+          }`}
+        >
+          {isSaving ? 'Saving...' : 'Save'}
+        </button>
+        <FileUpload onFileUpload={handleFileUpload} />
+        <button onClick={onClose} className="text-gray-600 hover:text-gray-800">
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <ReactQuill
+        theme="snow"
+        value={content}
+        onChange={handleContentChange}
+        className="flex-grow"
+        modules={modules}
+        formats={formats}
+      />
+      {snackbarOpen && (
+        <div className="fixed bottom-4 left-4 bg-red-500 text-white px-4 py-2 rounded shadow-lg flex items-center">
+          <span>{error}</span>
+          <button
+            onClick={() => setSnackbarOpen(false)}
+            className="ml-2 text-white hover:text-gray-200"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default TextEditor;
   };
 
   useEffect(() => {
