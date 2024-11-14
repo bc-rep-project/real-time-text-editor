@@ -1,9 +1,11 @@
 import express from 'express';
 import { DocumentWebSocketServer } from '../lib/websocket';
-import { config } from 'dotenv';
+import * as dotenv from 'dotenv';
 
-// Load environment variables
-config();
+// Load environment variables from .env file in development
+if (process.env.NODE_ENV !== 'production') {
+  dotenv.config();
+}
 
 // Parse port as number
 const PORT = parseInt(process.env.PORT || '8080', 10);
@@ -16,22 +18,19 @@ app.get('/health', (_: express.Request, res: express.Response) => {
   res.send('OK');
 });
 
-// Create WebSocket server
-const wss = new DocumentWebSocketServer(PORT);
-
 // Start express server
-const server = app.listen(PORT, () => {
-  console.log(`WebSocket server is running on port ${PORT}`);
+app.listen(PORT, () => {
+  console.log(`Health check server listening on port ${PORT}`);
 });
+
+// Initialize WebSocket server
+const wss = new DocumentWebSocketServer(PORT + 1);
 
 // Handle graceful shutdown
 const shutdown = () => {
   console.log('Shutting down...');
   wss.close();
-  server.close(() => {
-    console.log('Server closed');
-    process.exit(0);
-  });
+  process.exit(0);
 };
 
 process.on('SIGTERM', shutdown);
