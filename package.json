@@ -13,12 +13,14 @@
     "start:ws": "node dist/server/index.js"
   },
   "dependencies": {
+    "@firebasegen/default-connector": "file:dataconnect-generated/js/default-connector",
     "@tiptap/extension-collaboration": "^2.9.1",
     "@tiptap/extension-collaboration-cursor": "^2.9.1",
     "@tiptap/pm": "^2.9.1",
     "@tiptap/react": "^2.9.1",
     "@tiptap/starter-kit": "^2.9.1",
     "bcrypt": "^5.1.1",
+    "dotenv": "^16.4.1",
     "express": "^4.18.2",
     "firebase": "^10.14.1",
     "firebase-admin": "^12.7.0",
@@ -26,12 +28,12 @@
     "next-auth": "^4.24.5",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "ws": "^8.16.0",
-    "dotenv": "^16.4.1"
+    "ws": "^8.16.0"
   },
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.15",
     "@types/bcrypt": "^5.0.2",
+    "@types/dotenv": "^8.2.0",
     "@types/express": "^4.17.21",
     "@types/node": "^20.11.19",
     "@types/react": "^18.2.55",
@@ -43,7 +45,6 @@
     "postcss": "^8.4.35",
     "tailwindcss": "^3.4.1",
     "tsx": "^4.7.1",
-    "typescript": "^5.3.3",
-    "@types/dotenv": "^8.2.0"
+    "typescript": "^5.3.3"
   }
 }

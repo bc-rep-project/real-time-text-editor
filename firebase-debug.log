@@ -1,0 +1,33 @@
+[debug] [2024-11-15T13:15:43.768Z] ----------------------------------------------------------------------
+[debug] [2024-11-15T13:15:43.775Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\BONGANI\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js deploy
+[debug] [2024-11-15T13:15:43.776Z] CLI Version:   13.25.0
+[debug] [2024-11-15T13:15:43.776Z] Platform:      win32
+[debug] [2024-11-15T13:15:43.776Z] Node Version:  v20.14.0
+[debug] [2024-11-15T13:15:43.777Z] Time:          Fri Nov 15 2024 15:15:43 GMT+0200 (South Africa Standard Time)
+[debug] [2024-11-15T13:15:43.777Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2024-11-15T13:15:44.002Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2024-11-15T13:15:44.003Z] > authorizing via signed-in user (johannderbiel@gmail.com)
+[debug] [2024-11-15T13:15:44.004Z] [iam] checking project real-time-text-editor-be6aa for permissions ["cloudsql.databases.create","cloudsql.databases.update","cloudsql.instances.connect","cloudsql.instances.create","cloudsql.instances.get","cloudsql.instances.list","cloudsql.instances.update","cloudsql.users.create","firebase.projects.get","firebasedataconnect.connectors.create","firebasedataconnect.connectors.delete","firebasedataconnect.connectors.list","firebasedataconnect.connectors.update","firebasedataconnect.operations.get","firebasedataconnect.schemas.create","firebasedataconnect.schemas.delete","firebasedataconnect.schemas.list","firebasedataconnect.schemas.update","firebasedataconnect.services.create","firebasedataconnect.services.delete","firebasedataconnect.services.list","firebasedataconnect.services.update","firebasehosting.sites.update"]
+[debug] [2024-11-15T13:15:44.007Z] Checked if tokens are valid: true, expires at: 1731678595777
+[debug] [2024-11-15T13:15:44.007Z] Checked if tokens are valid: true, expires at: 1731678595777
+[debug] [2024-11-15T13:15:44.010Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/real-time-text-editor-be6aa:testIamPermissions [none]
+[debug] [2024-11-15T13:15:44.011Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/real-time-text-editor-be6aa:testIamPermissions x-goog-quota-user=projects/real-time-text-editor-be6aa
+[debug] [2024-11-15T13:15:44.011Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/real-time-text-editor-be6aa:testIamPermissions {"permissions":["cloudsql.databases.create","cloudsql.databases.update","cloudsql.instances.connect","cloudsql.instances.create","cloudsql.instances.get","cloudsql.instances.list","cloudsql.instances.update","cloudsql.users.create","firebase.projects.get","firebasedataconnect.connectors.create","firebasedataconnect.connectors.delete","firebasedataconnect.connectors.list","firebasedataconnect.connectors.update","firebasedataconnect.operations.get","firebasedataconnect.schemas.create","firebasedataconnect.schemas.delete","firebasedataconnect.schemas.list","firebasedataconnect.schemas.update","firebasedataconnect.services.create","firebasedataconnect.services.delete","firebasedataconnect.services.list","firebasedataconnect.services.update","firebasehosting.sites.update"]}
+[debug] [2024-11-15T13:15:45.997Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/real-time-text-editor-be6aa:testIamPermissions 200
+[debug] [2024-11-15T13:15:45.998Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/real-time-text-editor-be6aa:testIamPermissions {"permissions":["cloudsql.databases.create","cloudsql.databases.update","cloudsql.instances.connect","cloudsql.instances.create","cloudsql.instances.get","cloudsql.instances.list","cloudsql.instances.update","cloudsql.users.create","firebase.projects.get","firebasedataconnect.connectors.create","firebasedataconnect.connectors.delete","firebasedataconnect.connectors.list","firebasedataconnect.connectors.update","firebasedataconnect.operations.get","firebasedataconnect.schemas.create","firebasedataconnect.schemas.delete","firebasedataconnect.schemas.list","firebasedataconnect.schemas.update","firebasedataconnect.services.create","firebasedataconnect.services.delete","firebasedataconnect.services.list","firebasedataconnect.services.update","firebasehosting.sites.update"]}
+[debug] [2024-11-15T13:15:45.999Z] Checked if tokens are valid: true, expires at: 1731678595777
+[debug] [2024-11-15T13:15:45.999Z] Checked if tokens are valid: true, expires at: 1731678595777
+[debug] [2024-11-15T13:15:46.000Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/real-time-text-editor-be6aa [none]
+[debug] [2024-11-15T13:15:46.708Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/real-time-text-editor-be6aa 200
+[debug] [2024-11-15T13:15:46.708Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/real-time-text-editor-be6aa {"projectId":"real-time-text-editor-be6aa","projectNumber":"818233053383","displayName":"real-time-text-editor","name":"projects/real-time-text-editor-be6aa","resources":{"hostingSite":"real-time-text-editor-be6aa"},"state":"ACTIVE","etag":"1_5e82248b-067a-430e-a40b-c3a2ee298afe"}
+[debug] [2024-11-15T13:16:04.597Z] SyntaxError: Unexpected end of JSON input
+    at JSON.parse (<anonymous>)
+    at findDependency (C:\Users\BONGANI\AppData\Roaming\npm\node_modules\firebase-tools\lib\frameworks\utils.js:188:23)
+    at prepareFrameworks (C:\Users\BONGANI\AppData\Roaming\npm\node_modules\firebase-tools\lib\frameworks\index.js:125:64)
+    at deploy (C:\Users\BONGANI\AppData\Roaming\npm\node_modules\firebase-tools\lib\deploy\index.js:58:54)
+    at Command.actionFn (C:\Users\BONGANI\AppData\Roaming\npm\node_modules\firebase-tools\lib\commands\deploy.js:136:32)
+    at C:\Users\BONGANI\AppData\Roaming\npm\node_modules\firebase-tools\lib\command.js:235:25
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+[error] 
+[error] Error: An unexpected error has occurred.
