@@ -1,38 +1,33 @@
 import type { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import { db } from '@/lib/db';
 import { compare } from 'bcrypt';
-import { adminAuth } from '@/lib/firebase-admin';
-
-interface User {
-  id: string;
-  username: string;
-  password: string;
-  email?: string;
-}
+import { adminAuth, adminDb } from '@/lib/firebase-admin';
 
 export const options: NextAuthOptions = {
   providers: [
     CredentialsProvider({
-      name: 'Credentials',
       credentials: {
         username: { label: "Username", type: "text" },
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
-        if (!credentials?.username || !credentials?.password) {
-          return null;
-        }
-
         try {
-          const user = await db.get<User>('users', { 
-            field: 'username', 
-            value: credentials.username 
-          });
+          if (!credentials?.username || !credentials?.password) {
+            throw new Error('Missing credentials');
+          }
 
-          if (!user) {
+          const userSnapshot = await adminDb
+            .collection('users')
+            .where('username', '==', credentials.username)
+            .limit(1)
+            .get();
+
+          if (userSnapshot.empty) {
             return null;
           }
+
+          const userDoc = userSnapshot.docs[0];
+          const user = userDoc.data();
 
           const isPasswordValid = await compare(credentials.password, user.password);
 
@@ -41,7 +36,7 @@ export const options: NextAuthOptions = {
           }
 
           return {
-            id: user.id,
+            id: userDoc.id,
             name: user.username,
             email: user.email
           };
@@ -55,10 +50,6 @@ export const options: NextAuthOptions = {
   pages: {
     signIn: '/login',
     error: '/auth/error',
-  },
-  session: {
-    strategy: 'jwt',
-    maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   callbacks: {
     async jwt({ token, user }) {
