@@ -52,20 +52,18 @@ export const options: NextAuthOptions = {
       }
     })
   ],
+  pages: {
+    signIn: '/login',
+    error: '/auth/error',
+  },
+  session: {
+    strategy: 'jwt',
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+  },
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        // Create or update Firebase user
-        try {
-          await adminAuth.getUser(user.id);
-        } catch (error) {
-          await adminAuth.createUser({
-            uid: user.id,
-            email: user.email || undefined,
-            displayName: user.name || undefined
-          });
-        }
       }
       return token;
     },
@@ -75,12 +73,6 @@ export const options: NextAuthOptions = {
       }
       return session;
     }
-  },
-  pages: {
-    signIn: '/login',
-  },
-  session: {
-    strategy: 'jwt',
   },
   secret: process.env.NEXTAUTH_SECRET,
   debug: process.env.NODE_ENV === 'development',
