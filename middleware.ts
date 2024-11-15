@@ -14,8 +14,8 @@ export default withAuth(
 
 export const config = {
   matcher: [
+    '/documents/:path*',
     '/api/documents/:path*',
     '/api/chat/:path*',
-    '/document/:path*',
   ],
 }; 
