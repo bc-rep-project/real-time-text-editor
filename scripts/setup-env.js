@@ -1,32 +1,29 @@
-import { randomBytes } from 'crypto';
 import { readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
+import { randomBytes } from 'crypto';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
 
-interface ServiceAccount {
-  project_id: string;
-  client_email: string;
-  private_key: string;
-  client_id: string;
-}
+// Get current directory
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 // Function to generate a secure random string
-function generateSecret(length: number = 32): string {
+function generateSecret(length = 32) {
   return randomBytes(length).toString('base64');
 }
 
 // Function to read and format Firebase service account
-function setupEnvironment(): void {
+function setupEnvironment() {
   try {
     // Path to your service account file
     const serviceAccountPath = join(
-      process.cwd(), 
+      dirname(__dirname), 
       'real-time-text-editor-be6aa-firebase-adminsdk-trw0k-ebe22b0163.json'
     );
     
     // Read service account file
-    const serviceAccount: ServiceAccount = JSON.parse(
-      readFileSync(serviceAccountPath, 'utf8')
-    );
+    const serviceAccount = JSON.parse(readFileSync(serviceAccountPath, 'utf8'));
     
     // Generate NextAuth secret
     const nextAuthSecret = generateSecret();
@@ -50,7 +47,7 @@ NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=${serviceAccount.client_id}
 NEXT_PUBLIC_FIREBASE_APP_ID=${serviceAccount.client_id}`;
 
     // Write to .env.local
-    writeFileSync(join(process.cwd(), '.env.local'), envContent);
+    writeFileSync(join(dirname(__dirname), '.env.local'), envContent);
     
     console.log('Environment files created successfully!');
     console.log('\nNextAuth Secret (copy this for Vercel):', nextAuthSecret);
@@ -58,7 +55,10 @@ NEXT_PUBLIC_FIREBASE_APP_ID=${serviceAccount.client_id}`;
     
   } catch (error) {
     console.error('Error setting up environment:', error);
-    console.error('Make sure your service account file exists and is in the correct location.');
+    if (error.code === 'ENOENT') {
+      console.error('\nService account file not found. Make sure it exists at:', serviceAccountPath);
+      console.error('\nYou might need to move it from Downloads to your project directory.');
+    }
   }
 }
 
