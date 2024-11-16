@@ -39,10 +39,12 @@ export async function POST(request: Request) {
   try {
     const session = await getServerSession();
     
-    // Add explicit check for session and user ID
     if (!session?.user?.id) {
-      console.log('Unauthorized: Missing session or user ID', { session });
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      console.log('Unauthorized request:', { session });
+      return NextResponse.json(
+        { error: 'You must be signed in to create documents' }, 
+        { status: 401 }
+      );
     }
 
     const { title } = await request.json();
@@ -50,10 +52,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Title is required' }, { status: 400 });
     }
 
-    // Add logging to debug document creation
-    console.log('Creating document:', { title, userId: session.user.id });
-
-    // Create document in Firebase with explicit userId
+    // Create document in Firebase
     const documentId = await db.add('documents', {
       title,
       content: '',
@@ -61,9 +60,6 @@ export async function POST(request: Request) {
       createdAt: new Date(),
       updatedAt: new Date()
     });
-
-    // Log successful creation
-    console.log('Document created:', { documentId });
 
     // Fetch the created document
     const newDocument = await db.get('documents', {
@@ -78,6 +74,9 @@ export async function POST(request: Request) {
     return NextResponse.json(newDocument);
   } catch (error) {
     console.error('Failed to create document:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to create document' }, 
+      { status: 500 }
+    );
   }
 } 

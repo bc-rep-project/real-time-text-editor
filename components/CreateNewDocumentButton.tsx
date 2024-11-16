@@ -25,13 +25,12 @@ export function CreateNewDocumentButton() {
         credentials: 'include'
       });
       
+      const data = await response.json();
+
       if (!response.ok) {
-        const data = await response.json();
         throw new Error(data.error || 'Failed to create document');
       }
 
-      const data = await response.json();
-      
       if (!data.id) {
         throw new Error('Invalid response from server');
       }

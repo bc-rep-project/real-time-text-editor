@@ -26,24 +26,21 @@ const handler = NextAuth({
             throw new Error('Missing credentials');
           }
 
-          // Get user from database with type annotation
           const user = await db.get<DbUser>('users', {
             field: 'username',
             value: credentials.username
           });
 
-          if (!user) {
+          if (!user || !user.id) {
             return null;
           }
 
-          // Verify password
           const isPasswordValid = await compare(credentials.password, user.password);
 
           if (!isPasswordValid) {
             return null;
           }
 
-          // Return user object
           return {
             id: user.id,
             name: user.username,
@@ -64,11 +61,11 @@ const handler = NextAuth({
       return token;
     },
     async session({ session, token }) {
-      if (session?.user) {
+      if (session.user) {
         session.user.id = token.id as string;
       }
       return session;
-    },
+    }
   },
   pages: {
     signIn: '/login',
