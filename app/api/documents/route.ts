@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { db } from '@/lib/db';
+import { adminDb } from '@/lib/firebase-admin';
 
 // GET /api/documents
 export async function GET(request: Request) {
@@ -39,7 +40,8 @@ export async function POST(request: Request) {
   try {
     const session = await getServerSession();
     
-    if (!session?.user?.id) {
+    // Check if session exists and has user data
+    if (!session?.user?.name) {
       console.log('Unauthorized request:', { session });
       return NextResponse.json(
         { error: 'You must be signed in to create documents' }, 
@@ -53,23 +55,23 @@ export async function POST(request: Request) {
     }
 
     // Create document in Firebase
-    const documentId = await db.add('documents', {
+    const documentRef = await adminDb.collection('documents').add({
       title,
       content: '',
-      userId: session.user.id,
+      userId: session.user.name, // Using name as userId for now
       createdAt: new Date(),
       updatedAt: new Date()
     });
 
-    // Fetch the created document
-    const newDocument = await db.get('documents', {
-      field: 'id',
-      value: documentId
-    });
-
-    if (!newDocument) {
-      throw new Error('Failed to fetch created document');
-    }
+    // Return the created document
+    const newDocument = {
+      id: documentRef.id,
+      title,
+      content: '',
+      userId: session.user.name,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
 
     return NextResponse.json(newDocument);
   } catch (error) {
