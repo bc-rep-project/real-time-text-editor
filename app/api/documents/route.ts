@@ -38,7 +38,10 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const session = await getServerSession();
+    
+    // Add explicit check for session and user ID
     if (!session?.user?.id) {
+      console.log('Unauthorized: Missing session or user ID', { session });
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -46,6 +49,9 @@ export async function POST(request: Request) {
     if (!title) {
       return NextResponse.json({ error: 'Title is required' }, { status: 400 });
     }
+
+    // Add logging to debug document creation
+    console.log('Creating document:', { title, userId: session.user.id });
 
     // Create document in Firebase with explicit userId
     const documentId = await db.add('documents', {
@@ -55,6 +61,9 @@ export async function POST(request: Request) {
       createdAt: new Date(),
       updatedAt: new Date()
     });
+
+    // Log successful creation
+    console.log('Document created:', { documentId });
 
     // Fetch the created document
     const newDocument = await db.get('documents', {

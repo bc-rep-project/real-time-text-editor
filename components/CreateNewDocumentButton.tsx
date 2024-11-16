@@ -22,10 +22,12 @@ export function CreateNewDocumentButton() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ title: newDocumentTitle }),
+        credentials: 'include'
       });
       
       if (!response.ok) {
-        throw new Error('Failed to create document');
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to create document');
       }
 
       const data = await response.json();
@@ -40,7 +42,7 @@ export function CreateNewDocumentButton() {
       router.push(`/document/${data.id}`);
     } catch (error) {
       console.error('Failed to create document:', error);
-      setError('Failed to create document. Please try again.');
+      setError(error instanceof Error ? error.message : 'Failed to create document. Please try again.');
     }
   };
 
