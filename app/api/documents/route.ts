@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { db } from '@/lib/db';
+import { databaseService } from '@/lib/database-service';
+import { authOptions } from '../auth/[...nextauth]/route';
 
 // GET /api/documents
 export async function GET(request: Request) {
   try {
-    const session = await getServerSession();
+    const session = await getServerSession(authOptions);
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -14,19 +15,7 @@ export async function GET(request: Request) {
     const filter = searchParams.get('filter') || '';
     const sort = searchParams.get('sort') || 'updatedAt';
 
-    // Query documents from Firebase
-    const documents = await db.all('documents', {
-      where: filter ? {
-        field: 'title',
-        op: '>=',
-        value: filter
-      } : undefined,
-      orderBy: {
-        field: sort === 'title' ? 'title' : 'updatedAt',
-        direction: 'desc'
-      }
-    });
-
+    const documents = await databaseService.getAllDocuments(filter, sort);
     return NextResponse.json(documents || []);
   } catch (error) {
     console.error('Failed to fetch documents:', error);
@@ -37,38 +26,24 @@ export async function GET(request: Request) {
 // POST /api/documents
 export async function POST(request: Request) {
   try {
-    const session = await getServerSession();
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const session = await getServerSession(authOptions);
+    
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
     }
 
-    const { title } = await request.json();
-    if (!title) {
-      return NextResponse.json({ error: 'Title is required' }, { status: 400 });
-    }
+    const data = await request.json();
+    const documentId = await databaseService.createDocument(data, session.user.id);
 
-    // Create document in Firebase
-    const documentId = await db.add('documents', {
-      title,
-      content: '',
-      userId: session.user.id,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    });
-
-    // Fetch the created document
-    const newDocument = await db.get('documents', {
-      field: 'id',
-      value: documentId
-    });
-
-    if (!newDocument) {
-      throw new Error('Failed to fetch created document');
-    }
-
-    return NextResponse.json(newDocument);
+    return NextResponse.json({ documentId }, { status: 200 });
   } catch (error) {
     console.error('Failed to create document:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to create document' },
+      { status: 500 }
+    );
   }
 } 

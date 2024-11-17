@@ -8,9 +8,12 @@ import {
   deleteDoc,
   query,
   where,
-  serverTimestamp
+  serverTimestamp,
+  DocumentData,
+  getDocs,
+  orderBy as firestoreOrderBy
 } from 'firebase/firestore';
-import { COLLECTIONS, Document, User, UserPresence } from '../types/database';
+import { COLLECTIONS, Document, User, UserPresence } from '@/types/database';
 
 export class DatabaseService {
   // User operations
@@ -24,14 +27,23 @@ export class DatabaseService {
   }
 
   // Document operations
-  async createDocument(documentData: Partial<Document>): Promise<string> {
+  async createDocument(documentData: Partial<Document>, userId: string): Promise<string> {
+    if (!userId) {
+      throw new Error('User ID is required to create a document');
+    }
+
     const docRef = doc(collection(db, COLLECTIONS.DOCUMENTS));
-    await setDoc(docRef, {
+    const newDocument = {
       ...documentData,
       id: docRef.id,
+      userId: userId,
+      content: documentData.content || '',
+      title: documentData.title || 'Untitled',
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp()
-    });
+    };
+
+    await setDoc(docRef, newDocument);
     return docRef.id;
   }
 
@@ -54,6 +66,24 @@ export class DatabaseService {
       lastActive: serverTimestamp(),
       isOnline: true
     }, { merge: true });
+  }
+
+  // Add method to fetch documents
+  async getAllDocuments(filter?: string, sort: string = 'updatedAt') {
+    const documentsRef = collection(db, COLLECTIONS.DOCUMENTS);
+    let q = query(documentsRef);
+
+    if (filter) {
+      q = query(q, where('title', '>=', filter));
+    }
+
+    q = query(q, firestoreOrderBy(sort === 'title' ? 'title' : 'updatedAt', 'desc'));
+
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
   }
 }
 
