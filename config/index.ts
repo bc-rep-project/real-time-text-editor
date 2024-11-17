@@ -9,7 +9,18 @@ const config = {
     cacheSizeBytes: 50000000,
     experimentalForceLongPolling: false,
     experimentalAutoDetectLongPolling: true,
-    ignoreUndefinedProperties: true
+    ignoreUndefinedProperties: true,
+    collections: {
+      users: 'users',
+      documents: 'documents',
+      versions: 'versions',
+      chatMessages: 'chat_messages'
+    },
+    indexes: {
+      documents: ['title', 'updatedAt'],
+      chatMessages: ['documentId', 'createdAt'],
+      versions: ['documentId', 'createdAt']
+    }
   }
 };
 
