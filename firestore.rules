@@ -9,33 +9,55 @@ service cloud.firestore {
     function isOwner(userId) {
       return request.auth.uid == userId;
     }
-
-    match /documents/{documentId} {
-      allow read: if isSignedIn();
-      allow create: if isSignedIn() && 
-                      request.resource.data.userId == request.auth.uid;
-      allow update: if isSignedIn() && 
-                      resource.data.userId == request.auth.uid;
-      allow delete: if isSignedIn() && 
-                      resource.data.userId == request.auth.uid;
+    
+    function hasValidFields(requiredFields) {
+      return request.resource.data.keys().hasAll(requiredFields);
     }
     
+    function isValidTimestamp() {
+      return request.time == request.resource.data.updatedAt;
+    }
+
+    // Document rules
+    match /documents/{documentId} {
+      allow read: if isSignedIn() && (
+        isOwner(resource.data.userId) || 
+        resource.data.collaborators[request.auth.uid] == true
+      );
+      allow create: if isSignedIn() && 
+                      isOwner(request.resource.data.userId) && 
+                      hasValidFields(['title', 'content', 'userId', 'userEmail', 'createdAt', 'updatedAt']);
+      allow update: if isSignedIn() && (
+        isOwner(resource.data.userId) || 
+        resource.data.collaborators[request.auth.uid] == true
+      );
+      allow delete: if isSignedIn() && isOwner(resource.data.userId);
+    }
+    
+    // User rules
     match /users/{userId} {
       allow read: if isSignedIn();
-      allow write: if isSignedIn() && isOwner(userId);
+      allow create: if isSignedIn() && isOwner(userId);
+      allow update: if isSignedIn() && isOwner(userId);
+      allow delete: if isSignedIn() && isOwner(userId);
     }
 
+    // Document versions rules
     match /documentVersions/{versionId} {
-      allow read: if isSignedIn();
+      allow read: if isSignedIn() && (
+        isOwner(resource.data.userId) || 
+        get(/databases/$(database)/documents/documents/$(resource.data.documentId)).data.collaborators[request.auth.uid] == true
+      );
       allow create: if isSignedIn() && 
-                      request.resource.data.userId == request.auth.uid;
+                      isOwner(request.resource.data.userId) &&
+                      hasValidFields(['documentId', 'content', 'userId', 'createdAt']);
     }
 
+    // Chat rules
     match /chats/{chatId} {
-      allow read: if isSignedIn();
-      allow create: if isSignedIn();
-      allow update: if isSignedIn() && 
-                      resource.data.participants[request.auth.uid] == true;
+      allow read: if isSignedIn() && resource.data.participants[request.auth.uid] == true;
+      allow create: if isSignedIn() && request.resource.data.participants[request.auth.uid] == true;
+      allow update: if isSignedIn() && resource.data.participants[request.auth.uid] == true;
     }
   }
-} 
+}

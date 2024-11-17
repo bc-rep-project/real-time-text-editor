@@ -7,6 +7,7 @@ declare module 'next-auth' {
       name?: string | null;
       email?: string | null;
       image?: string | null;
+      customToken?: string;
     };
   }
 
@@ -15,5 +16,10 @@ declare module 'next-auth' {
     name?: string | null;
     email?: string | null;
     image?: string | null;
+    customToken?: string;
+  }
+
+  interface JWT {
+    customToken?: string;
   }
 } 

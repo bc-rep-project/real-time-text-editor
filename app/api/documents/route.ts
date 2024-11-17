@@ -7,7 +7,7 @@ import { adminDb } from '@/lib/firebase-admin';
 export async function GET(request: Request) {
   try {
     const session = await getServerSession();
-    if (!session?.user?.email) {
+    if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -17,7 +17,7 @@ export async function GET(request: Request) {
 
     // Query documents from Firebase
     const querySnapshot = await adminDb.collection('documents')
-      .where('userId', '==', session.user.email)
+      .where('userId', '==', session.user.id)
       .orderBy(sort === 'title' ? 'title' : 'updatedAt', 'desc')
       .get();
 
@@ -38,7 +38,7 @@ export async function POST(request: Request) {
   try {
     const session = await getServerSession();
     
-    if (!session?.user?.email) {
+    if (!session?.user?.id) {
       console.log('Unauthorized request:', { session });
       return NextResponse.json(
         { error: 'You must be signed in to create documents' }, 
@@ -55,7 +55,8 @@ export async function POST(request: Request) {
     const docRef = await adminDb.collection('documents').add({
       title,
       content: '',
-      userId: session.user.email,
+      userId: session.user.id,
+      userEmail: session.user.email,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     });
@@ -64,7 +65,8 @@ export async function POST(request: Request) {
       id: docRef.id,
       title,
       content: '',
-      userId: session.user.email,
+      userId: session.user.id,
+      userEmail: session.user.email,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };

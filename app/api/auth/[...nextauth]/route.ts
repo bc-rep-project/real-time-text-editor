@@ -1,16 +1,10 @@
 import NextAuth from 'next-auth';
+import type { JWT } from 'next-auth/jwt';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import { compare } from 'bcrypt';
-import { db } from '@/lib/db';
+import { adminAuth } from '@/lib/firebase-admin';
 
-// Add interface for user type
-interface DbUser {
-  id: string;
-  username: string;
-  password: string;
-  email?: string;
-  createdAt: Date;
-  updatedAt: Date;
+interface CustomToken extends JWT {
+  customToken?: string;
 }
 
 const handler = NextAuth({
@@ -21,30 +15,32 @@ const handler = NextAuth({
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
+        if (!credentials?.username || !credentials?.password) {
+          throw new Error('Missing credentials');
+        }
+
         try {
-          if (!credentials?.username || !credentials?.password) {
-            throw new Error('Missing credentials');
+          // Create or get Firebase user
+          let firebaseUser;
+          try {
+            firebaseUser = await adminAuth.getUserByEmail(credentials.username);
+          } catch (error) {
+            // If user doesn't exist, create one
+            firebaseUser = await adminAuth.createUser({
+              email: credentials.username,
+              password: credentials.password,
+              displayName: credentials.username,
+            });
           }
 
-          const user = await db.get<DbUser>('users', {
-            field: 'username',
-            value: credentials.username
-          });
-
-          if (!user || !user.id) {
-            return null;
-          }
-
-          const isPasswordValid = await compare(credentials.password, user.password);
-
-          if (!isPasswordValid) {
-            return null;
-          }
+          // Create custom token for Firebase
+          const customToken = await adminAuth.createCustomToken(firebaseUser.uid);
 
           return {
-            id: user.id,
-            name: user.username,
-            email: user.email
+            id: firebaseUser.uid,
+            name: firebaseUser.displayName,
+            email: firebaseUser.email,
+            customToken,
           };
         } catch (error) {
           console.error('Auth error:', error);
@@ -56,22 +52,25 @@ const handler = NextAuth({
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.id = user.id;
+        // Explicitly type the token
+        const customToken = token as CustomToken;
+        customToken.sub = user.id;
+        customToken.customToken = user.customToken;
+        return customToken;
       }
       return token;
     },
     async session({ session, token }) {
-      if (session.user) {
-        session.user.id = token.id as string;
+      if (session?.user) {
+        const customToken = token as CustomToken;
+        session.user.id = customToken.sub as string;
+        session.user.customToken = customToken.customToken;
       }
       return session;
     }
   },
   pages: {
-    signIn: '/login',
-  },
-  session: {
-    strategy: 'jwt',
+    signIn: '/auth/signin',
   },
 });
 
