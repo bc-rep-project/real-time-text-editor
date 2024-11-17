@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState } from 'react';
-import { auth, firestore } from '@/lib/firebase-client';
+import { auth, db as firestore } from '@/lib/firebase-client';
 
 export const FirebaseContext = createContext<{
   initialized: boolean;

@@ -1,9 +1,9 @@
 export interface User {
   id: string;
-  username: string;
-  email?: string;
-  createdAt: Date;
-  updatedAt: Date;
+  email: string;
+  displayName: string;
+  createdAt: FirebaseFirestore.Timestamp;
+  updatedAt: FirebaseFirestore.Timestamp;
 }
 
 export interface Document {
@@ -11,30 +11,20 @@ export interface Document {
   title: string;
   content: string;
   userId: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: FirebaseFirestore.Timestamp;
+  updatedAt: FirebaseFirestore.Timestamp;
 }
 
-export interface Version {
-  id: string;
-  documentId: string;
-  content: string;
+export interface UserPresence {
   userId: string;
-  createdAt: Date;
+  documentId: string;
+  lastActive: FirebaseFirestore.Timestamp;
+  isOnline: boolean;
 }
 
-export interface ChatMessage {
-  id: string;
-  documentId: string;
-  userId: string;
-  message: string;
-  createdAt: Date;
-}
-
-export interface DocumentVersion {
-  id: string;
-  documentId: string;
-  content: string;
-  userId: string;
-  createdAt: Date;
-} 
+// Collection names as constants
+export const COLLECTIONS = {
+  USERS: 'users',
+  DOCUMENTS: 'documents',
+  USER_PRESENCE: 'userPresence'
+} as const; 
