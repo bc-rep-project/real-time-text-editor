@@ -7,7 +7,7 @@ import { adminDb } from '@/lib/firebase-admin';
 export async function GET(request: Request) {
   try {
     const session = await getServerSession();
-    if (!session) {
+    if (!session?.user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -16,17 +16,15 @@ export async function GET(request: Request) {
     const sort = searchParams.get('sort') || 'updatedAt';
 
     // Query documents from Firebase
-    const documents = await db.all('documents', {
-      where: filter ? {
-        field: 'title',
-        op: '>=',
-        value: filter
-      } : undefined,
-      orderBy: {
-        field: sort === 'title' ? 'title' : 'updatedAt',
-        direction: 'desc'
-      }
-    });
+    const querySnapshot = await adminDb.collection('documents')
+      .where('userId', '==', session.user.email)
+      .orderBy(sort === 'title' ? 'title' : 'updatedAt', 'desc')
+      .get();
+
+    const documents = querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
 
     return NextResponse.json(documents || []);
   } catch (error) {
@@ -40,8 +38,7 @@ export async function POST(request: Request) {
   try {
     const session = await getServerSession();
     
-    // Check if session exists and has user data
-    if (!session?.user?.name) {
+    if (!session?.user?.email) {
       console.log('Unauthorized request:', { session });
       return NextResponse.json(
         { error: 'You must be signed in to create documents' }, 
@@ -55,22 +52,21 @@ export async function POST(request: Request) {
     }
 
     // Create document in Firebase
-    const documentRef = await adminDb.collection('documents').add({
+    const docRef = await adminDb.collection('documents').add({
       title,
       content: '',
-      userId: session.user.name, // Using name as userId for now
-      createdAt: new Date(),
-      updatedAt: new Date()
+      userId: session.user.email,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
     });
 
-    // Return the created document
     const newDocument = {
-      id: documentRef.id,
+      id: docRef.id,
       title,
       content: '',
-      userId: session.user.name,
-      createdAt: new Date(),
-      updatedAt: new Date()
+      userId: session.user.email,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
     };
 
     return NextResponse.json(newDocument);
