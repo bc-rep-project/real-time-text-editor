@@ -1,11 +1,24 @@
-import { initializeApp, getApps } from 'firebase/app';
+import { initializeApp, getApps, FirebaseApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
-import { getAuth } from 'firebase/auth';
 import config from '../config';
 
-// Initialize Firebase
-const app = getApps().length === 0 ? initializeApp(config.firebase) : getApps()[0];
+let app: FirebaseApp;
 
-// Initialize Firestore and Auth
+// Initialize Firebase
+if (!getApps().length) {
+  app = initializeApp(config.firebase);
+} else {
+  app = getApps()[0];
+}
+
+// Initialize Firestore
 export const db = getFirestore(app);
-export const auth = getAuth(app); 
+
+// Lazy load auth only on client side
+export const getFirebaseAuth = async () => {
+  if (typeof window !== 'undefined') {
+    const { getAuth } = await import('firebase/auth');
+    return getAuth(app);
+  }
+  return null;
+}; 

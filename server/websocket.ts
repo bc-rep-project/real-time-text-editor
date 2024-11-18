@@ -1,34 +1,29 @@
-import { DocumentWebSocketServer } from '@/lib/websocket';
+import { createServer } from 'http';
 import express from 'express';
+import { DocumentWebSocketServer } from '../lib/websocket';
+import config from '../config';
 
-// Parse port as number
-const PORT = parseInt(process.env.PORT || '8080', 10);
-
-// Create express app for health checks
 const app = express();
+const PORT = parseInt(process.env.PORT || '8081', 10);
 
-// Health check endpoint
-app.get('/health', (_: express.Request, res: express.Response) => {
-  res.send('OK');
-});
-
-// Start express server
-app.listen(PORT, () => {
-  console.log(`Health check server listening on port ${PORT}`);
-});
+// Create HTTP server
+const server = createServer(app);
 
 // Initialize WebSocket server
-const wss = new DocumentWebSocketServer(PORT + 1);
+const wss = new DocumentWebSocketServer(server);
 
 // Handle graceful shutdown
 process.on('SIGTERM', () => {
-  console.log('SIGTERM received. Closing WebSocket server...');
-  wss.close();
-  process.exit(0);
+  console.log('SIGTERM received. Closing server...');
+  server.close(() => {
+    console.log('Server closed');
+    process.exit(0);
+  });
 });
 
-process.on('SIGINT', () => {
-  console.log('SIGINT received. Closing WebSocket server...');
-  wss.close();
-  process.exit(0);
-}); 
+// Start the server
+server.listen(PORT, () => {
+  console.log(`WebSocket server is running on ws://localhost:${PORT}`);
+});
+
+export default server; 

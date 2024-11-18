@@ -13,7 +13,8 @@ import {
   getDocs,
   orderBy as firestoreOrderBy
 } from 'firebase/firestore';
-import { COLLECTIONS, Document, User, UserPresence } from '@/types/database';
+import { Document, User, UserPresence } from '../types/database';
+import { COLLECTIONS } from '../constants/collections';
 
 export class DatabaseService {
   // User operations

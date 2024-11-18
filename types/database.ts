@@ -22,4 +22,10 @@ export interface UserPresence {
   documentId: string;
   lastActive: Timestamp;
   isOnline: boolean;
-} 
+}
+
+export const COLLECTIONS = {
+  USERS: 'users',
+  DOCUMENTS: 'documents',
+  USER_PRESENCE: 'userPresence'
+} as const; 

@@ -1,78 +1,30 @@
-import type { NextAuthOptions } from 'next-auth';
-import CredentialsProvider from 'next-auth/providers/credentials';
-import { compare } from 'bcrypt';
-import { adminAuth, adminDb } from '@/lib/firebase-admin';
+import type { AuthOptions } from 'next-auth';
+import GoogleProvider from 'next-auth/providers/google';
 
-if (!process.env.NEXTAUTH_SECRET) {
-  throw new Error('Please provide process.env.NEXTAUTH_SECRET');
-}
-
-export const options: NextAuthOptions = {
+export const authOptions: AuthOptions = {
   providers: [
-    CredentialsProvider({
-      credentials: {
-        username: { label: "Username", type: "text" },
-        password: { label: "Password", type: "password" }
-      },
-      async authorize(credentials) {
-        try {
-          if (!credentials?.username || !credentials?.password) {
-            throw new Error('Missing credentials');
-          }
-
-          const userSnapshot = await adminDb
-            .collection('users')
-            .where('username', '==', credentials.username)
-            .limit(1)
-            .get();
-
-          if (userSnapshot.empty) {
-            return null;
-          }
-
-          const userDoc = userSnapshot.docs[0];
-          const user = userDoc.data();
-
-          const isPasswordValid = await compare(credentials.password, user.password);
-
-          if (!isPasswordValid) {
-            return null;
-          }
-
-          return {
-            id: userDoc.id,
-            name: user.username,
-            email: user.email
-          };
-        } catch (error) {
-          console.error('Auth error:', error);
-          return null;
-        }
-      }
-    })
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    }),
   ],
-  pages: {
-    signIn: '/login',
-    error: '/auth/error',
-  },
   callbacks: {
-    async jwt({ token, user }) {
+    session: async ({ session, token }) => {
+      if (session?.user) {
+        session.user.id = token.sub as string;
+      }
+      return session;
+    },
+    jwt: async ({ token, user }) => {
       if (user) {
-        token.id = user.id;
+        token.sub = user.id;
       }
       return token;
     },
-    async session({ session, token }) {
-      if (session.user) {
-        (session.user as any).id = token.id;
-      }
-      return session;
-    }
+  },
+  pages: {
+    signIn: '/auth/signin',
+    error: '/auth/error',
   },
   secret: process.env.NEXTAUTH_SECRET,
-  debug: process.env.NODE_ENV === 'development',
-  session: {
-    strategy: 'jwt',
-    maxAge: 30 * 24 * 60 * 60, // 30 days
-  },
 }; 

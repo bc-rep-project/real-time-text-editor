@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState } from 'react';
-import { auth, db as firestore } from '@/lib/firebase-client';
+import { getFirebaseAuth } from '@/lib/firebase-client';
 
 export const FirebaseContext = createContext<{
   initialized: boolean;
@@ -13,7 +13,20 @@ export function FirebaseProvider({ children }: { children: React.ReactNode }) {
   const [initialized, setInitialized] = useState(false);
 
   useEffect(() => {
-    setInitialized(true);
+    const initAuth = async () => {
+      try {
+        const auth = await getFirebaseAuth();
+        if (auth) {
+          setInitialized(true);
+        }
+      } catch (error) {
+        console.error('Failed to initialize Firebase Auth:', error);
+      }
+    };
+    
+    if (typeof window !== 'undefined') {
+      initAuth();
+    }
   }, []);
 
   return (

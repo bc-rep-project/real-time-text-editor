@@ -1,28 +1,28 @@
 'use client';
 
-import { DocumentList } from '@/components/DocumentList';
-import { CreateNewDocumentButton } from '@/components/CreateNewDocumentButton';
 import { useSession } from 'next-auth/react';
-import { redirect } from 'next/navigation';
+import Link from 'next/link';
 
 export default function Home() {
-  const { data: session, status } = useSession();
-
-  if (status === 'loading') {
-    return <div>Loading...</div>;
-  }
-
-  if (!session) {
-    redirect('/login');
-  }
+  const { data: session } = useSession();
 
   return (
-    <main className="container mx-auto p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">My Documents</h1>
-        <CreateNewDocumentButton />
-      </div>
-      <DocumentList />
+    <main className="container mx-auto px-4 py-8">
+      <h1 className="text-4xl font-bold mb-8">Welcome to Collaborative Text Editor</h1>
+      {session ? (
+        <Link href="/documents" className="btn">
+          View Documents
+        </Link>
+      ) : (
+        <div className="space-x-4">
+          <Link href="/login" className="btn">
+            Login
+          </Link>
+          <Link href="/register" className="btn">
+            Register
+          </Link>
+        </div>
+      )}
     </main>
   );
 } 

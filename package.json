@@ -9,7 +9,8 @@
     "lint": "next lint",
     "setup-env": "node scripts/setup-env.js",
     "move-service-account": "node scripts/move-service-account.js",
-    "ws": "node dist/server/websocket.js"
+    "ws": "ts-node server/index.ts",
+    "dev:all": "concurrently \"npm run dev\" \"npm run ws\""
   },
   "dependencies": {
     "@tiptap/extension-collaboration": "^2.9.1",
@@ -27,7 +28,10 @@
     "next-auth": "^4.24.5",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "ws": "^8.16.0"
+    "ws": "^8.16.0",
+    "concurrently": "^8.2.2",
+    "yjs": "^13.6.12",
+    "y-websocket": "^1.5.4"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
@@ -42,6 +46,10 @@
     "postcss": "^8",
     "tailwindcss": "^3.3.0",
     "typescript": "^5",
-    "@tailwindcss/typography": "^0.5.10"
+    "@tailwindcss/typography": "^0.5.10",
+    "ts-node": "^10.9.2"
+  },
+  "engines": {
+    "node": "18.x"
   }
 }

@@ -1,45 +1,49 @@
 import { useEffect, useRef, useCallback } from 'react';
-import { useSession } from 'next-auth/react';
 import config from '@/config';
-
-interface WebSocketMessage {
-  type: 'documentUpdate' | 'chatMessage' | 'userPresence';
-  documentId: string;
-  data: any;
-}
+import { WebSocketMessage } from '@/types/websocket';
 
 export function useWebSocket(documentId: string) {
-  const { data: session } = useSession();
   const wsRef = useRef<WebSocket | null>(null);
 
   const sendMessage = useCallback((message: WebSocketMessage) => {
     if (wsRef.current?.readyState === WebSocket.OPEN) {
-      wsRef.current.send(JSON.stringify(message));
+      wsRef.current.send(JSON.stringify({
+        ...message,
+        timestamp: Date.now()
+      }));
     }
   }, []);
 
   useEffect(() => {
-    if (!session || !documentId) return;
-
     const ws = new WebSocket(`${config.websocketUrl}?documentId=${documentId}`);
     wsRef.current = ws;
 
     ws.onopen = () => {
-      console.log('WebSocket connected');
+      console.log('Connected to WebSocket');
     };
 
-    ws.onclose = () => {
-      console.log('WebSocket disconnected');
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data) as WebSocketMessage;
+        // Handle incoming messages
+        console.log('Received message:', data);
+      } catch (error) {
+        console.error('Error parsing message:', error);
+      }
     };
 
     ws.onerror = (error) => {
       console.error('WebSocket error:', error);
     };
 
+    ws.onclose = () => {
+      console.log('Disconnected from WebSocket');
+    };
+
     return () => {
       ws.close();
     };
-  }, [session, documentId]);
+  }, [documentId]);
 
   return { sendMessage };
 } 

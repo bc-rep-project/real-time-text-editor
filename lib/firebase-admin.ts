@@ -1,29 +1,16 @@
-import { initializeApp, getApps, cert } from 'firebase-admin/app';
+import { getApps, initializeApp, cert } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
-import { getAuth } from 'firebase-admin/auth';
 
-function formatPrivateKey(key: string) {
-  // Handle newlines and quotes in the private key
-  return key.replace(/\\n/g, '\n').replace(/\"/g, '');
-}
+const apps = getApps();
 
-if (!getApps().length) {
-  try {
-    const privateKey = formatPrivateKey(process.env.FIREBASE_PRIVATE_KEY || '');
-    
-    initializeApp({
+const firebaseAdminApp = apps.length === 0
+  ? initializeApp({
       credential: cert({
         projectId: process.env.FIREBASE_PROJECT_ID,
         clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-        privateKey: privateKey,
+        privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
       }),
-    });
-    console.log('Firebase Admin initialized successfully');
-  } catch (error) {
-    console.error('Firebase Admin initialization error:', error);
-    throw error;
-  }
-}
+    })
+  : apps[0];
 
-export const adminDb = getFirestore();
-export const adminAuth = getAuth(); 
+export const adminDb = getFirestore(firebaseAdminApp); 
