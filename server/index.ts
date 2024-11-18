@@ -1,33 +1,69 @@
 import express from 'express';
-import { DocumentWebSocketServer } from '../lib/websocket';
+import cors from 'cors';
+import { DocumentWebSocketServer } from './websocket';
+import { createHealthRouter } from './routes/health';
 import * as dotenv from 'dotenv';
-import { createServer } from 'http';
-import config from '../config';
+import { config } from './config';
 
-// Load environment variables from .env file in development
-dotenv.config();
+// Load environment variables
+if (process.env.NODE_ENV !== 'production') {
+  dotenv.config();
+}
 
-const app = express();
-const PORT = parseInt(process.env.PORT || '8081', 10);
+async function startServer() {
+  try {
+    // Create express app for health checks
+    const app = express();
 
-// Create HTTP server
-const server = createServer(app);
+    // Initialize WebSocket server
+    const wss = new DocumentWebSocketServer(config.server.wsPort);
 
-// Initialize WebSocket server
-const wss = new DocumentWebSocketServer(server);
+    // Add CORS middleware with typed configuration
+    app.use(cors({
+      origin: config.cors.origin,
+      methods: config.cors.methods,
+      allowedHeaders: config.cors.allowedHeaders,
+      credentials: true, // Allow credentials
+      maxAge: 86400, // Cache preflight requests for 24 hours
+    }));
 
-// Handle graceful shutdown
-process.on('SIGTERM', () => {
-  console.log('SIGTERM received. Closing server...');
-  server.close(() => {
-    console.log('Server closed');
-    process.exit(0);
-  });
-});
+    // Add health check routes
+    app.use(createHealthRouter(wss));
 
-// Start the server
-server.listen(PORT, () => {
-  console.log(`WebSocket server is running on ws://localhost:${PORT}`);
-});
+    // Start HTTP server
+    const server = app.listen(config.server.port, () => {
+      console.log(`HTTP server listening on port ${config.server.port}`);
+      console.log(`WebSocket server listening on port ${config.server.wsPort}`);
+    });
 
-export default server; 
+    // Handle graceful shutdown
+    const shutdown = async () => {
+      console.log('Shutting down servers...');
+      
+      await new Promise<void>((resolve) => {
+        server.close(() => {
+          console.log('HTTP server closed');
+          resolve();
+        });
+      });
+
+      await wss.close();
+      console.log('WebSocket server closed');
+      
+      process.exit(0);
+    };
+
+    // Handle shutdown signals
+    process.on('SIGTERM', shutdown);
+    process.on('SIGINT', shutdown);
+
+  } catch (error) {
+    console.error('Failed to start server:', error);
+    process.exit(1);
+  }
+}
+
+startServer().catch((error) => {
+  console.error('Server startup error:', error);
+  process.exit(1);
+}); 

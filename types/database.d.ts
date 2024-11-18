@@ -1,11 +1,9 @@
-import { Timestamp } from 'firebase/firestore';
-
 export interface User {
   id: string;
-  email: string;
-  displayName: string;
-  createdAt: Timestamp;
-  updatedAt: Timestamp;
+  username: string;
+  email?: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface Document {
@@ -13,13 +11,30 @@ export interface Document {
   title: string;
   content: string;
   userId: string;
-  createdAt: Timestamp;
-  updatedAt: Timestamp;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
-export interface UserPresence {
-  userId: string;
+export interface Version {
+  id: string;
   documentId: string;
-  lastActive: Timestamp;
-  isOnline: boolean;
+  content: string;
+  userId: string;
+  createdAt: Date;
+}
+
+export interface ChatMessage {
+  id: string;
+  documentId: string;
+  userId: string;
+  message: string;
+  createdAt: Date;
+}
+
+export interface DocumentVersion {
+  id: string;
+  documentId: string;
+  content: string;
+  userId: string;
+  createdAt: Date;
 } 

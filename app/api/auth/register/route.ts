@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { hash } from 'bcrypt';
-import { adminDb } from '@/lib/firebase-admin';
+import { db } from '@/lib/db';
 
 export async function POST(request: Request) {
   try {
@@ -13,13 +13,13 @@ export async function POST(request: Request) {
       );
     }
 
-    // Check if user exists
-    const userSnapshot = await adminDb
-      .collection('users')
-      .where('username', '==', username)
-      .get();
+    // Check if username already exists
+    const existingUser = await db.get('users', {
+      field: 'username',
+      value: username
+    });
 
-    if (!userSnapshot.empty) {
+    if (existingUser) {
       return NextResponse.json(
         { error: 'Username already exists' },
         { status: 400 }
@@ -30,15 +30,13 @@ export async function POST(request: Request) {
     const hashedPassword = await hash(password, 12);
 
     // Create user
-    const userRef = await adminDb.collection('users').add({
+    const userId = await db.add('users', {
       username,
-      password: hashedPassword,
-      createdAt: new Date(),
-      updatedAt: new Date()
+      password: hashedPassword
     });
 
     return NextResponse.json(
-      { message: 'User created successfully', userId: userRef.id },
+      { message: 'User created successfully', userId },
       { status: 201 }
     );
   } catch (error) {

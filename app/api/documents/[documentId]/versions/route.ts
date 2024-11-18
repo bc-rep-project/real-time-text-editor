@@ -36,8 +36,7 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Get versions from Firebase
-    const versions = await db.all<Version>('versions', {
+    const versions = await db.query<Version>('versions', {
       where: {
         field: 'documentId',
         op: '==',
@@ -49,13 +48,10 @@ export async function GET(
       }
     });
 
-    // Get user details for each version
-    const versionsWithUserDetails = await Promise.all(
-      versions.map(async (version) => {
-        const user = await db.get<User>('users', {
-          field: 'id',
-          value: version.userId
-        });
+    // Get usernames for each version
+    const versionsWithUsernames = await Promise.all(
+      versions.map(async (version: Version) => {
+        const user = await db.get<User>('users', version.userId);
         return {
           ...version,
           username: user?.username || 'Unknown User'
@@ -63,10 +59,13 @@ export async function GET(
       })
     );
 
-    return NextResponse.json(versionsWithUserDetails);
+    return NextResponse.json(versionsWithUsernames);
   } catch (error) {
     console.error('Failed to fetch versions:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Internal Server Error' },
+      { status: 500 }
+    );
   }
 }
 
@@ -87,20 +86,14 @@ export async function POST(
     }
 
     // Get the version to revert to
-    const version = await db.get('versions', {
-      field: 'id',
-      value: versionId
-    }) as Version | null;
+    const version = await db.get<Version>('versions', versionId);
 
     if (!version) {
       return NextResponse.json({ error: 'Version not found' }, { status: 404 });
     }
 
     // Get current document
-    const currentDoc = await db.get('documents', {
-      field: 'id',
-      value: params.documentId
-    }) as Document | null;
+    const currentDoc = await db.get<Document>('documents', params.documentId);
 
     if (!currentDoc) {
       return NextResponse.json({ error: 'Document not found' }, { status: 404 });
@@ -121,10 +114,7 @@ export async function POST(
     });
 
     // Get updated document
-    const updatedDocument = await db.get('documents', {
-      field: 'id',
-      value: params.documentId
-    });
+    const updatedDocument = await db.get<Document>('documents', params.documentId);
 
     return NextResponse.json(updatedDocument);
   } catch (error) {

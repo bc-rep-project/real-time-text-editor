@@ -1,13 +1,19 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { db } from '@/lib/db';
-import type { ChatMessage, ChatMessageWithUser } from '@/types/chat';
+
+interface ChatMessage {
+  id: string;
+  documentId: string;
+  userId: string;
+  message: string;
+  createdAt: Date;
+  username?: string;
+}
 
 interface User {
   id: string;
   username: string;
-  password: string;
-  email?: string;
 }
 
 // GET /api/chat/[documentId]
@@ -17,12 +23,11 @@ export async function GET(
 ) {
   try {
     const session = await getServerSession();
-    if (!session) {
+    if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Get messages from Firebase
-    const messages = await db.all<ChatMessage>('chat_messages', {
+    const messages = await db.query<ChatMessage>('chat_messages', {
       where: {
         field: 'documentId',
         op: '==',
@@ -30,29 +35,29 @@ export async function GET(
       },
       orderBy: {
         field: 'createdAt',
-        direction: 'desc'
+        direction: 'asc'
       },
       limit: 100
     });
 
-    // Get user details for each message
-    const messagesWithUserDetails = await Promise.all(
+    // Get usernames for messages
+    const messagesWithUsernames = await Promise.all(
       messages.map(async (message) => {
-        const user = await db.get<User>('users', {
-          field: 'id',
-          value: message.userId
-        });
+        const user = await db.get<User>('users', message.userId);
         return {
           ...message,
           username: user?.username || 'Unknown User'
-        } as ChatMessageWithUser;
+        };
       })
     );
 
-    return NextResponse.json(messagesWithUserDetails);
+    return NextResponse.json(messagesWithUsernames);
   } catch (error) {
     console.error('Failed to fetch chat messages:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Internal Server Error' },
+      { status: 500 }
+    );
   }
 }
 
@@ -68,36 +73,39 @@ export async function POST(
     }
 
     const { message } = await request.json();
-    if (!message) {
-      return NextResponse.json({ error: 'Message is required' }, { status: 400 });
+    if (!message?.trim()) {
+      return NextResponse.json(
+        { error: 'Message is required' },
+        { status: 400 }
+      );
     }
 
-    // Add message to Firebase
+    // Create chat message
     const messageId = await db.add('chat_messages', {
       documentId: params.documentId,
       userId: session.user.id,
-      message,
+      message: message.trim(),
       createdAt: new Date()
     });
 
-    // Get the created message with user details
-    const user = await db.get<User>('users', {
-      field: 'id',
-      value: session.user.id
-    });
+    // Get the created message with username
+    const newMessage = await db.get<ChatMessage>('chat_messages', messageId);
+    if (!newMessage) {
+      throw new Error('Failed to create message');
+    }
 
-    const newMessage: ChatMessageWithUser = {
-      id: messageId,
-      documentId: params.documentId,
-      userId: session.user.id,
-      message,
-      createdAt: new Date(),
+    const user = await db.get<User>('users', session.user.id);
+    const messageWithUsername = {
+      ...newMessage,
       username: user?.username || 'Unknown User'
     };
 
-    return NextResponse.json(newMessage);
+    return NextResponse.json(messageWithUsername);
   } catch (error) {
-    console.error('Failed to create chat message:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    console.error('Failed to send chat message:', error);
+    return NextResponse.json(
+      { error: 'Internal Server Error' },
+      { status: 500 }
+    );
   }
 } 

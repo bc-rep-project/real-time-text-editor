@@ -1,34 +1,26 @@
-const config = {
-  websocketUrl: process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8081',
-  allowedOrigins: [
-    'http://localhost:3000',
-    process.env.NEXT_PUBLIC_APP_URL || 'https://your-vercel-domain.vercel.app'
-  ],
+interface Config {
+  websocket: {
+    url: string;
+    reconnectDelay: number;
+  };
   firebase: {
-    apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-    authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-    storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-    messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-    appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID
+    cacheSizeBytes?: number;
+    experimentalForceLongPolling: boolean;
+    experimentalAutoDetectLongPolling: boolean;
+    ignoreUndefinedProperties: boolean;
+  };
+}
+
+const config: Config = {
+  websocket: {
+    url: process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8081',
+    reconnectDelay: 3000, // 3 seconds
   },
-  server: {
-    port: process.env.PORT || 8081,
-    host: process.env.HOST || 'localhost'
+  firebase: {
+    experimentalForceLongPolling: true,
+    experimentalAutoDetectLongPolling: true,
+    ignoreUndefinedProperties: true,
   }
 };
-
-// Validate required environment variables
-const requiredEnvVars = [
-  'NEXT_PUBLIC_FIREBASE_API_KEY',
-  'NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN',
-  'NEXT_PUBLIC_FIREBASE_PROJECT_ID'
-] as const;
-
-requiredEnvVars.forEach(envVar => {
-  if (!process.env[envVar]) {
-    throw new Error(`Missing required environment variable: ${envVar}`);
-  }
-});
 
 export default config; 

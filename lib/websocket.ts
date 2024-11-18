@@ -1,100 +1,109 @@
-import WebSocket from 'ws';
-import { Server } from 'http';
-import * as Y from 'yjs';
-import config from '../config';
-import { WebSocketMessage, SyncMessage } from '@/types/websocket';
+import { WebSocket, WebSocketServer, Server } from 'ws';
+import { Server as HttpServer } from 'http';
+import type { WebSocketClient } from '@/types/websocket';
+import { adminDb } from './firebase-admin';
 
 export class DocumentWebSocketServer {
-  private wss: WebSocket.Server;
-  private rooms: Map<string, Set<WebSocket>> = new Map();
-  private docs: Map<string, Y.Doc> = new Map();
+  private wss: WebSocketServer;
+  private pingInterval!: NodeJS.Timeout;
 
-  constructor(server: Server) {
-    this.wss = new WebSocket.Server({ 
-      server,
-      path: '/ws'
-    });
-
-    this.init();
+  constructor(port: number) {
+    this.wss = new WebSocketServer({ port });
+    this.setupWebSocketServer();
+    console.log(`WebSocket server initialized on port ${port}`);
   }
 
-  private init() {
-    this.wss.on('connection', (ws: WebSocket, req: any) => {
-      const url = new URL(req.url, `http://${req.headers.host}`);
-      const documentId = url.searchParams.get('documentId');
-
-      if (documentId) {
-        this.addToRoom(documentId, ws);
-        
-        if (!this.docs.has(documentId)) {
-          this.docs.set(documentId, new Y.Doc());
-        }
-        
-        const doc = this.docs.get(documentId)!;
-        
-        const update = Y.encodeStateAsUpdate(doc);
-        const message: SyncMessage = {
-          type: 'sync',
-          documentId,
-          data: Array.from(update),
-          timestamp: Date.now()
-        };
-        ws.send(JSON.stringify(message));
+  private setupWebSocketServer() {
+    this.wss.on('connection', (ws: WebSocketClient, req) => {
+      const origin = req.headers.origin;
+      if (origin && !ALLOWED_ORIGINS.includes(origin)) {
+        console.log(`Rejected connection from unauthorized origin: ${origin}`);
+        ws.close();
+        return;
       }
 
-      ws.on('message', (message: WebSocket.RawData) => {
+      ws.isAlive = true;
+      console.log('Client connected');
+
+      ws.on('pong', () => {
+        ws.isAlive = true;
+      });
+
+      ws.on('message', async (data) => {
         try {
-          const data = JSON.parse(message.toString()) as WebSocketMessage;
-          if (data.type === 'sync' && data.documentId) {
-            const syncMessage = data as SyncMessage;
-            const doc = this.docs.get(syncMessage.documentId);
-            if (doc && syncMessage.data) {
-              Y.applyUpdate(doc, new Uint8Array(syncMessage.data));
-              this.broadcastToRoom(syncMessage.documentId, syncMessage, ws);
-            }
-          } else if (data.type === 'awareness') {
-            this.broadcastToRoom(data.documentId, data, ws);
-          }
+          await this.handleMessage(ws, data);
         } catch (error) {
           console.error('Error handling message:', error);
         }
       });
 
       ws.on('close', () => {
-        if (documentId) {
-          this.removeFromRoom(documentId, ws);
-        }
+        this.handleDisconnect(ws);
       });
+    });
+
+    this.setupPingInterval();
+  }
+
+  private setupPingInterval() {
+    this.pingInterval = setInterval(() => {
+      this.wss.clients.forEach((client: WebSocket) => {
+        const wsClient = client as WebSocketClient;
+        if (!wsClient.isAlive) {
+          console.log('Client disconnected due to inactivity');
+          this.handleDisconnect(wsClient);
+          return;
+        }
+        wsClient.isAlive = false;
+        wsClient.ping();
+      });
+    }, 30000);
+  }
+
+  private async handleMessage(ws: WebSocketClient, data: Buffer | ArrayBuffer | Buffer[]) {
+    try {
+      const message = JSON.parse(data.toString());
+      console.log('Received message:', message.type);
+
+      if (message.type === 'documentUpdate') {
+        await adminDb.collection('documents')
+          .doc(message.documentId)
+          .update({
+            content: message.content,
+            updatedAt: new Date()
+          });
+      }
+
+      this.broadcastMessage(ws, message);
+    } catch (error) {
+      console.error('Error handling message:', error);
+    }
+  }
+
+  private broadcastMessage(sender: WebSocketClient, message: any) {
+    this.wss.clients.forEach((client: WebSocket) => {
+      const wsClient = client as WebSocketClient;
+      if (wsClient !== sender && 
+          wsClient.readyState === WebSocket.OPEN && 
+          wsClient.documentId === sender.documentId) {
+        wsClient.send(JSON.stringify(message));
+      }
     });
   }
 
-  private addToRoom(documentId: string, ws: WebSocket) {
-    if (!this.rooms.has(documentId)) {
-      this.rooms.set(documentId, new Set());
-    }
-    this.rooms.get(documentId)?.add(ws);
+  private handleDisconnect(ws: WebSocketClient) {
+    console.log('Client disconnected');
+    ws.terminate();
   }
 
-  private removeFromRoom(documentId: string, ws: WebSocket) {
-    this.rooms.get(documentId)?.delete(ws);
-    if (this.rooms.get(documentId)?.size === 0) {
-      this.rooms.delete(documentId);
-      this.docs.delete(documentId);
-    }
-  }
-
-  private broadcastToRoom(documentId: string, data: any, sender: WebSocket) {
-    const room = this.rooms.get(documentId);
-    if (room) {
-      room.forEach((client) => {
-        if (client !== sender && client.readyState === WebSocket.OPEN) {
-          client.send(JSON.stringify(data));
-        }
-      });
-    }
+  public close() {
+    console.log('Closing WebSocket server...');
+    clearInterval(this.pingInterval);
+    this.wss.close();
   }
 }
 
-export function setupWebSocketServer(server: Server) {
-  return new DocumentWebSocketServer(server);
-} 
+const ALLOWED_ORIGINS = [
+  'http://localhost:3000',
+  process.env.NEXT_PUBLIC_APP_URL,
+].filter(Boolean) as string[]; 

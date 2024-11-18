@@ -2,20 +2,20 @@ FROM node:18-alpine
 
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
-
 # Install dependencies
-RUN npm ci --only=production
+COPY package*.json ./
+RUN npm ci
 
 # Copy source code
 COPY . .
 
-# Build TypeScript
-RUN npm run build:ws
+# Build TypeScript (if running in production)
+RUN if [ "$NODE_ENV" = "production" ]; then npm run build && npm run build:server; fi
 
-# Expose port
+# Expose ports
+EXPOSE 3000
 EXPOSE 8080
+EXPOSE 8081
 
-# Start the WebSocket server
-CMD ["node", "dist/server/index.js"] 
+# Start command will be provided by docker-compose
+CMD ["npm", "run", "dev"] 

@@ -1,90 +1,107 @@
-import { db } from './firebase-client';
-import { 
-  collection, 
-  doc, 
-  setDoc, 
-  getDoc, 
-  updateDoc, 
-  deleteDoc,
-  query,
-  where,
-  serverTimestamp,
-  DocumentData,
-  getDocs,
-  orderBy as firestoreOrderBy
-} from 'firebase/firestore';
-import { Document, User, UserPresence } from '../types/database';
-import { COLLECTIONS } from '../constants/collections';
+import { adminDb } from './firebase-admin';
+import type { User, Document, Version, ChatMessage } from '@/types/database';
 
 export class DatabaseService {
-  // User operations
-  async createUser(userId: string, userData: Partial<User>): Promise<void> {
-    const userRef = doc(db, COLLECTIONS.USERS, userId);
-    await setDoc(userRef, {
+  // Users Collection
+  async createUser(userData: Omit<User, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
+    const now = new Date();
+    const userRef = await adminDb.collection('users').add({
       ...userData,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp()
+      createdAt: now,
+      updatedAt: now
     });
+    return userRef.id;
   }
 
-  // Document operations
-  async createDocument(documentData: Partial<Document>, userId: string): Promise<string> {
-    if (!userId) {
-      throw new Error('User ID is required to create a document');
-    }
-
-    const docRef = doc(collection(db, COLLECTIONS.DOCUMENTS));
-    const newDocument = {
+  // Documents Collection
+  async createDocument(documentData: Omit<Document, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
+    const now = new Date();
+    const docRef = await adminDb.collection('documents').add({
       ...documentData,
-      id: docRef.id,
-      userId: userId,
-      content: documentData.content || '',
-      title: documentData.title || 'Untitled',
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp()
-    };
-
-    await setDoc(docRef, newDocument);
+      createdAt: now,
+      updatedAt: now
+    });
     return docRef.id;
   }
 
-  async updateDocument(documentId: string, data: Partial<Document>): Promise<void> {
-    const docRef = doc(db, COLLECTIONS.DOCUMENTS, documentId);
-    await updateDoc(docRef, {
-      ...data,
-      updatedAt: serverTimestamp()
+  // Versions Collection
+  async createVersion(versionData: Omit<Version, 'id' | 'createdAt'>): Promise<string> {
+    const versionRef = await adminDb.collection('versions').add({
+      ...versionData,
+      createdAt: new Date()
     });
+    return versionRef.id;
   }
 
-  // User presence operations
-  async updateUserPresence(presenceData: Partial<UserPresence>): Promise<void> {
-    const presenceRef = doc(
-      collection(db, COLLECTIONS.USER_PRESENCE), 
-      `${presenceData.userId}_${presenceData.documentId}`
-    );
-    await setDoc(presenceRef, {
-      ...presenceData,
-      lastActive: serverTimestamp(),
-      isOnline: true
-    }, { merge: true });
+  // Chat Messages Collection
+  async createChatMessage(messageData: Omit<ChatMessage, 'id' | 'createdAt'>): Promise<string> {
+    const messageRef = await adminDb.collection('chat_messages').add({
+      ...messageData,
+      createdAt: new Date()
+    });
+    return messageRef.id;
   }
 
-  // Add method to fetch documents
-  async getAllDocuments(filter?: string, sort: string = 'updatedAt') {
-    const documentsRef = collection(db, COLLECTIONS.DOCUMENTS);
-    let q = query(documentsRef);
+  // Query Helpers
+  async getDocumentVersions(documentId: string): Promise<Version[]> {
+    const versionsSnapshot = await adminDb
+      .collection('versions')
+      .where('documentId', '==', documentId)
+      .orderBy('createdAt', 'desc')
+      .get();
 
-    if (filter) {
-      q = query(q, where('title', '>=', filter));
-    }
-
-    q = query(q, firestoreOrderBy(sort === 'title' ? 'title' : 'updatedAt', 'desc'));
-
-    const snapshot = await getDocs(q);
-    return snapshot.docs.map(doc => ({
+    return versionsSnapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data()
-    }));
+    } as Version));
+  }
+
+  async getDocumentChatMessages(documentId: string, limit = 100): Promise<ChatMessage[]> {
+    const messagesSnapshot = await adminDb
+      .collection('chat_messages')
+      .where('documentId', '==', documentId)
+      .orderBy('createdAt', 'desc')
+      .limit(limit)
+      .get();
+
+    return messagesSnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    } as ChatMessage));
+  }
+
+  // Batch Operations
+  async createDocumentWithInitialVersion(
+    documentData: Omit<Document, 'id' | 'createdAt' | 'updatedAt'>,
+    userId: string
+  ): Promise<{ documentId: string; versionId: string }> {
+    const batch = adminDb.batch();
+    
+    // Create document reference
+    const documentRef = adminDb.collection('documents').doc();
+    const now = new Date();
+    
+    batch.set(documentRef, {
+      ...documentData,
+      createdAt: now,
+      updatedAt: now
+    });
+
+    // Create initial version reference
+    const versionRef = adminDb.collection('versions').doc();
+    batch.set(versionRef, {
+      documentId: documentRef.id,
+      content: documentData.content,
+      userId,
+      createdAt: now
+    });
+
+    await batch.commit();
+
+    return {
+      documentId: documentRef.id,
+      versionId: versionRef.id
+    };
   }
 }
 
