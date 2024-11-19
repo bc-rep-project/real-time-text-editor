@@ -14,7 +14,8 @@
     "start:server": "node dist/server/index.js",
     "dev:server": "ts-node-dev --respawn --transpile-only server/index.ts",
     "generate-secret": "node scripts/generate-secret.js",
-    "setup": "node scripts/setup-env.js"
+    "setup": "node scripts/setup-env.js",
+    "init-firestore": "node scripts/init-firestore.js"
   },
   "dependencies": {
     "@tiptap/extension-collaboration": "^2.9.1",
