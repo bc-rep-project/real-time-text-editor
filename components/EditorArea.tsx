@@ -1,11 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-import { useWebSocket } from '@/hooks/useWebSocket';
-import { useDebounce } from '@/hooks/useDebounce';
+import { useEffect, useCallback, useState } from 'react';
 import { useSession } from 'next-auth/react';
+import { useWebSocket } from '@/hooks/useWebSocket';
+import { LoadingSpinner } from './LoadingSpinner';
+import { ErrorMessage } from './ErrorMessage';
 
 interface EditorProps {
   documentId: string;
@@ -14,75 +15,112 @@ interface EditorProps {
 
 export function EditorArea({ documentId, initialContent }: EditorProps) {
   const { data: session } = useSession();
-  const [content, setContent] = useState(initialContent);
-  const debouncedContent = useDebounce(content, 1000);
-  const { sendMessage } = useWebSocket(documentId);
+  const { sendMessage, addMessageListener } = useWebSocket(documentId);
   const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const editor = useEditor({
     extensions: [
-      StarterKit,
+      StarterKit.configure({
+        history: false // Disable history as we'll handle versions through our backend
+      })
     ],
     content: initialContent,
     onUpdate: ({ editor }) => {
-      const html = editor.getHTML();
-      setContent(html);
-      sendMessage({
-        type: 'documentUpdate',
-        documentId,
-        data: { content: html }
-      });
-    },
-    editorProps: {
-      attributes: {
-        class: 'prose prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto focus:outline-none',
-      },
+      const content = editor.getHTML();
+      handleContentChange(content);
     },
   });
 
-  // Handle incoming WebSocket messages
-  useEffect(() => {
-    const ws = new WebSocket(`ws://localhost:8080?documentId=${documentId}`);
+  const handleContentChange = useCallback((content: string) => {
+    // Send update to other users immediately
+    sendMessage({
+      type: 'documentUpdate',
+      documentId,
+      data: { content }
+    });
 
-    ws.onmessage = (event) => {
-      const message = JSON.parse(event.data);
-      if (message.type === 'documentUpdate' && message.data.content !== content) {
-        editor?.commands.setContent(message.data.content);
+    // Save to database with debounce
+    saveContentWithDelay(content);
+  }, [documentId, sendMessage]);
+
+  const saveContent = async (content: string) => {
+    try {
+      setIsSaving(true);
+      setError(null);
+      
+      const response = await fetch(`/api/documents/${documentId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save document');
       }
-    };
+    } catch (error) {
+      console.error('Failed to save document:', error);
+      setError('Failed to save changes');
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
-    return () => ws.close();
-  }, [documentId, editor, content]);
+  const saveContentWithDelay = useCallback((content: string) => {
+    const timeoutId = setTimeout(() => {
+      saveContent(content);
+    }, 1000);
 
-  // Save to database
+    return () => clearTimeout(timeoutId);
+  }, []);
+
+  // Handle incoming updates from other users
   useEffect(() => {
-    const saveContent = async () => {
-      if (debouncedContent !== initialContent) {
-        setIsSaving(true);
-        try {
-          await fetch(`/api/documents/${documentId}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ content: debouncedContent }),
-          });
-        } catch (error) {
-          console.error('Failed to save document:', error);
-        } finally {
-          setIsSaving(false);
+    if (!editor) return;
+
+    const cleanup = addMessageListener((event: MessageEvent) => {
+      try {
+        const message = JSON.parse(event.data);
+        if (message.type === 'documentUpdate' && message.data.content) {
+          // Store current cursor position
+          const currentPos = editor.state.selection.$head.pos;
+          
+          // Update content
+          editor.commands.setContent(message.data.content, false);
+          
+          // Restore cursor position
+          editor.commands.setTextSelection(currentPos);
         }
+      } catch (error) {
+        console.error('Error handling editor update:', error);
       }
-    };
+    });
 
-    saveContent();
-  }, [debouncedContent, documentId, initialContent]);
+    return cleanup;
+  }, [editor, addMessageListener]);
+
+  // Initialize editor content
+  useEffect(() => {
+    if (editor && initialContent) {
+      editor.commands.setContent(initialContent);
+    }
+  }, [editor, initialContent]);
+
+  if (!editor) {
+    return (
+      <div className="border rounded-lg bg-white p-4">
+        <LoadingSpinner />
+      </div>
+    );
+  }
 
   return (
     <div className="border rounded-lg bg-white">
       <div className="border-b p-2 flex justify-between items-center">
         <div className="flex space-x-2">
           <button
-            onClick={() => editor?.chain().focus().toggleBold().run()}
-            className={`p-2 rounded ${editor?.isActive('bold') ? 'bg-gray-200' : ''}`}
+            onClick={() => editor.chain().focus().toggleBold().run()}
+            className={`p-2 rounded ${editor.isActive('bold') ? 'bg-gray-200' : ''}`}
             title="Bold"
           >
             <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -90,8 +128,8 @@ export function EditorArea({ documentId, initialContent }: EditorProps) {
             </svg>
           </button>
           <button
-            onClick={() => editor?.chain().focus().toggleItalic().run()}
-            className={`p-2 rounded ${editor?.isActive('italic') ? 'bg-gray-200' : ''}`}
+            onClick={() => editor.chain().focus().toggleItalic().run()}
+            className={`p-2 rounded ${editor.isActive('italic') ? 'bg-gray-200' : ''}`}
             title="Italic"
           >
             <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -99,28 +137,24 @@ export function EditorArea({ documentId, initialContent }: EditorProps) {
             </svg>
           </button>
           <button
-            onClick={() => editor?.chain().focus().toggleHeading({ level: 1 }).run()}
-            className={`p-2 rounded ${editor?.isActive('heading', { level: 1 }) ? 'bg-gray-200' : ''}`}
+            onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+            className={`p-2 rounded ${editor.isActive('heading', { level: 1 }) ? 'bg-gray-200' : ''}`}
             title="Heading 1"
           >
             H1
           </button>
-          <button
-            onClick={() => editor?.chain().focus().toggleBulletList().run()}
-            className={`p-2 rounded ${editor?.isActive('bulletList') ? 'bg-gray-200' : ''}`}
-            title="Bullet List"
-          >
-            •
-          </button>
         </div>
-        <div className="text-sm text-gray-500">
-          {isSaving ? 'Saving...' : 'Saved'}
+        <div className="flex items-center gap-2 text-sm text-gray-500">
+          {isSaving && (
+            <div className="flex items-center gap-1">
+              <LoadingSpinner size="small" />
+              Saving...
+            </div>
+          )}
+          {error && <ErrorMessage message={error} />}
         </div>
       </div>
-      <EditorContent 
-        editor={editor} 
-        className="min-h-[500px] p-4"
-      />
+      <EditorContent editor={editor} className="prose max-w-none p-4" />
     </div>
   );
 } 

@@ -1,0 +1,8 @@
+#!/bin/sh
+
+# Check for sensitive files
+if git diff --cached --name-only | grep -E '.*firebase.*adminsdk.*\.json$|\.env\.local$'; then
+  echo "Error: Attempting to commit sensitive files"
+  echo "Remove them using: git reset HEAD <file>"
+  exit 1
+fi 

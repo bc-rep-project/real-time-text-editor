@@ -1,0 +1,12 @@
+specVersion: "v1beta"
+serviceId: "real-time-text-editor"
+location: "us-central1"
+schema:
+  source: "./schema"
+  datasource:
+    postgresql:
+      database: "fdcdb"
+      cloudSql:
+        instanceId: "real-time-text-editor-fdc"
+      # schemaValidation: "COMPATIBLE"
+connectorDirs: ["./connector"]

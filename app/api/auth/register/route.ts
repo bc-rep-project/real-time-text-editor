@@ -13,7 +13,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // Check if user already exists using the new db interface
+    // Check if username already exists
     const existingUser = await db.get('users', {
       field: 'username',
       value: username
@@ -29,12 +29,10 @@ export async function POST(request: Request) {
     // Hash password
     const hashedPassword = await hash(password, 12);
 
-    // Create user with the new db interface
+    // Create user
     const userId = await db.add('users', {
       username,
-      password: hashedPassword,
-      createdAt: new Date(),
-      updatedAt: new Date()
+      password: hashedPassword
     });
 
     return NextResponse.json(

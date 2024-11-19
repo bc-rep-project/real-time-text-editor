@@ -1,8 +1,7 @@
 import type { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import { db } from '@/lib/db';
 import { compare } from 'bcrypt';
-import { adminAuth } from '@/lib/firebase-admin';
+import { db } from '@/lib/db';
 
 interface User {
   id: string;
@@ -11,23 +10,27 @@ interface User {
   email?: string;
 }
 
-export const options: NextAuthOptions = {
+if (!process.env.NEXTAUTH_SECRET) {
+  throw new Error('Please provide process.env.NEXTAUTH_SECRET');
+}
+
+export const authOptions: NextAuthOptions = {
+  secret: process.env.NEXTAUTH_SECRET,
   providers: [
     CredentialsProvider({
-      name: 'Credentials',
       credentials: {
         username: { label: "Username", type: "text" },
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
-        if (!credentials?.username || !credentials?.password) {
-          return null;
-        }
-
         try {
-          const user = await db.get<User>('users', { 
-            field: 'username', 
-            value: credentials.username 
+          if (!credentials?.username || !credentials?.password) {
+            throw new Error('Missing credentials');
+          }
+
+          const user = await db.get<User>('users', {
+            field: 'username',
+            value: credentials.username
           });
 
           if (!user) {
@@ -52,36 +55,28 @@ export const options: NextAuthOptions = {
       }
     })
   ],
+  session: {
+    strategy: 'jwt',
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+  },
+  pages: {
+    signIn: '/login',
+    error: '/auth/error',
+  },
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        // Create or update Firebase user
-        try {
-          await adminAuth.getUser(user.id);
-        } catch (error) {
-          await adminAuth.createUser({
-            uid: user.id,
-            email: user.email || undefined,
-            displayName: user.name || undefined
-          });
-        }
+        token.name = user.name;
       }
       return token;
     },
     async session({ session, token }) {
-      if (session.user) {
-        (session.user as any).id = token.id;
+      if (token && session.user) {
+        session.user.id = token.id as string;
+        session.user.name = token.name as string;
       }
       return session;
     }
-  },
-  pages: {
-    signIn: '/login',
-  },
-  session: {
-    strategy: 'jwt',
-  },
-  secret: process.env.NEXTAUTH_SECRET,
-  debug: process.env.NODE_ENV === 'development',
+  }
 }; 
