@@ -1,4 +1,4 @@
-const { randomBytes } = require('node:crypto');
+import { randomBytes } from 'node:crypto';
 
 function generateSecret() {
   const secret = randomBytes(32).toString('base64');
