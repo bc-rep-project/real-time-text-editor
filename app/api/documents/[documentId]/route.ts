@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
+import { authOptions } from '../../auth/[...nextauth]/options';
 import { db } from '@/lib/db';
 
 interface Document {
@@ -7,6 +8,7 @@ interface Document {
   title: string;
   content: string;
   userId: string;
+  createdAt: Date;
   updatedAt: Date;
 }
 
@@ -16,7 +18,8 @@ export async function GET(
   { params }: { params: { documentId: string } }
 ) {
   try {
-    const session = await getServerSession();
+    const session = await getServerSession(authOptions);
+    
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -25,11 +28,6 @@ export async function GET(
 
     if (!document) {
       return NextResponse.json({ error: 'Document not found' }, { status: 404 });
-    }
-
-    // Check if user has access to this document
-    if (document.userId !== session.user.id) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     return NextResponse.json(document);
@@ -48,41 +46,34 @@ export async function PUT(
   { params }: { params: { documentId: string } }
 ) {
   try {
-    const session = await getServerSession();
+    const session = await getServerSession(authOptions);
+    
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const document = await db.get<Document>('documents', params.documentId);
-    if (!document) {
-      return NextResponse.json({ error: 'Document not found' }, { status: 404 });
-    }
-
-    if (document.userId !== session.user.id) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
-
-    const { content, title } = await request.json();
-    const updateData: Partial<Document> = {};
-
-    if (content !== undefined) updateData.content = content;
-    if (title !== undefined) updateData.title = title;
-
+    const { title, content } = await request.json();
+    
     // Save current version before updating
-    if (content !== undefined) {
+    const currentDoc = await db.get<Document>('documents', params.documentId);
+    
+    if (currentDoc) {
       await db.add('versions', {
         documentId: params.documentId,
-        content: document.content,
+        content: currentDoc.content,
         userId: session.user.id,
         createdAt: new Date()
       });
     }
 
     // Update document
-    await db.update('documents', params.documentId, updateData);
+    const updatedDoc = await db.update('documents', params.documentId, {
+      title,
+      content,
+      updatedAt: new Date()
+    });
 
-    const updatedDocument = await db.get<Document>('documents', params.documentId);
-    return NextResponse.json(updatedDocument);
+    return NextResponse.json(updatedDoc);
   } catch (error) {
     console.error('Failed to update document:', error);
     return NextResponse.json(
@@ -98,16 +89,19 @@ export async function DELETE(
   { params }: { params: { documentId: string } }
 ) {
   try {
-    const session = await getServerSession();
+    const session = await getServerSession(authOptions);
+    
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const document = await db.get<Document>('documents', params.documentId);
+
     if (!document) {
       return NextResponse.json({ error: 'Document not found' }, { status: 404 });
     }
 
+    // Only allow document owner to delete
     if (document.userId !== session.user.id) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
