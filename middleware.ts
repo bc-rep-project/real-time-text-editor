@@ -3,6 +3,15 @@ import { NextResponse } from 'next/server';
 
 export default withAuth(
   function middleware(req) {
+    const token = req.nextauth?.token;
+    
+    if (!token) {
+      if (req.nextUrl.pathname.startsWith('/api/')) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+      return NextResponse.redirect(new URL('/login', req.url));
+    }
+
     // Add CORS headers for WebSocket connections
     if (req.method === 'OPTIONS') {
       return new NextResponse(null, {
@@ -14,6 +23,7 @@ export default withAuth(
         },
       });
     }
+
     return NextResponse.next();
   },
   {
