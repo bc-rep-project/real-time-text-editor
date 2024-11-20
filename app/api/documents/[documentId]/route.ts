@@ -30,10 +30,23 @@ export async function GET(
       return NextResponse.json({ error: 'Document not found' }, { status: 404 });
     }
 
-    // Ensure updatedAt is properly formatted as a Date
+    // Safely format the date, falling back to current time if invalid
+    const safeDate = (date: any) => {
+      try {
+        return new Date(date).toISOString();
+      } catch (e) {
+        return new Date().toISOString();
+      }
+    };
+
+    // Return document with safely formatted dates
     return NextResponse.json({
-      ...document,
-      updatedAt: new Date(document.updatedAt).toISOString()
+      id: document.id,
+      title: document.title,
+      content: document.content,
+      userId: document.userId,
+      createdAt: safeDate(document.createdAt),
+      updatedAt: safeDate(document.updatedAt)
     });
 
   } catch (error) {
@@ -59,7 +72,6 @@ export async function PUT(
 
     const { title, content } = await request.json();
     
-    // Save current version before updating
     const currentDoc = await db.get<Document>('documents', params.documentId);
     
     if (!currentDoc) {
@@ -75,25 +87,31 @@ export async function PUT(
       documentId: params.documentId,
       content: currentDoc.content,
       userId: session.user.id,
-      createdAt: new Date()
+      createdAt: new Date().toISOString()
     });
 
-    // Update document with current timestamp
-    const updateData = {
+    // Update document
+    const now = new Date().toISOString();
+    await db.update('documents', params.documentId, {
       ...(title && { title }),
       ...(content !== undefined && { content }),
-      updatedAt: new Date().toISOString()
-    };
+      updatedAt: now
+    });
 
-    // Update the document
-    await db.update('documents', params.documentId, updateData);
-
-    // Fetch the updated document
+    // Fetch updated document
     const updatedDoc = await db.get<Document>('documents', params.documentId);
-
     if (!updatedDoc) {
       return NextResponse.json({ error: 'Failed to update document' }, { status: 500 });
     }
+
+    // Safely format the date
+    const safeDate = (date: any) => {
+      try {
+        return new Date(date).toISOString();
+      } catch (e) {
+        return now;
+      }
+    };
 
     // Return formatted document
     return NextResponse.json({
@@ -101,8 +119,8 @@ export async function PUT(
       title: updatedDoc.title,
       content: updatedDoc.content,
       userId: updatedDoc.userId,
-      createdAt: updatedDoc.createdAt,
-      updatedAt: new Date(updatedDoc.updatedAt).toISOString()
+      createdAt: safeDate(updatedDoc.createdAt),
+      updatedAt: safeDate(updatedDoc.updatedAt)
     });
 
   } catch (error) {
