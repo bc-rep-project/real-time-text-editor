@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../../auth/[...nextauth]/options';
 import { db } from '@/lib/db';
+import { WhereFilterOp } from 'firebase-admin/firestore';
 
 interface ChatMessage {
   id: string;
@@ -36,11 +37,11 @@ export async function GET(
     }
 
     const messages = await db.query<ChatMessage>('chat_messages', {
-      where: {
+      where: [{
         field: 'documentId',
         op: '==',
         value: params.documentId
-      },
+      }],
       orderBy: {
         field: 'createdAt',
         direction: 'asc'

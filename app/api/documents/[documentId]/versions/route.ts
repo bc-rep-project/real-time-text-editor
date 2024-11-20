@@ -37,11 +37,11 @@ export async function GET(
     }
 
     const versions = await db.query<Version>('versions', {
-      where: {
+      where: [{
         field: 'documentId',
         op: '==',
         value: params.documentId
-      },
+      }],
       orderBy: {
         field: 'createdAt',
         direction: 'desc'

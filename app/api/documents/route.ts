@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../auth/[...nextauth]/options';
 import { db } from '@/lib/db';
+import { WhereFilterOp } from 'firebase-admin/firestore';
 
 interface Document {
   id: string;
@@ -10,6 +11,12 @@ interface Document {
   userId: string;
   createdAt: Date;
   updatedAt: Date;
+}
+
+interface WhereClause {
+  field: string;
+  op: WhereFilterOp;
+  value: any;
 }
 
 // GET /api/documents
@@ -23,22 +30,49 @@ export async function GET(request: Request) {
 
     const { searchParams } = new URL(request.url);
     const search = searchParams.get('search') || '';
-    const sort = searchParams.get('sort') || 'updatedAt:desc';
-    const [field, direction] = sort.split(':');
+    const sort = searchParams.get('sort') || 'updatedAt';
+    const direction = 'desc';
 
-    const documents = await db.query('documents', {
-      where: search ? {
+    // Build where clauses with proper typing
+    const whereConditions: WhereClause[] = [
+      {
+        field: 'userId',
+        op: '==',
+        value: session.user.id
+      }
+    ];
+
+    // Add title search condition if search term exists
+    if (search) {
+      whereConditions.push({
         field: 'title',
         op: '>=',
-        value: search
-      } : undefined,
+        value: search.toLowerCase()
+      });
+      whereConditions.push({
+        field: 'title',
+        op: '<=',
+        value: search.toLowerCase() + '\uf8ff'
+      });
+    }
+
+    // Get all documents for the user with proper typing
+    const documents = await db.query<Document>('documents', {
+      where: whereConditions,
       orderBy: {
-        field,
+        field: sort,
         direction: direction as 'asc' | 'desc'
       }
     });
 
-    return NextResponse.json(documents);
+    // Format dates and transform titles for case-insensitive comparison
+    const formattedDocuments = documents.map(doc => ({
+      ...doc,
+      title: doc.title,
+      updatedAt: new Date(doc.updatedAt).toISOString()
+    }));
+
+    return NextResponse.json(formattedDocuments);
   } catch (error) {
     console.error('Failed to fetch documents:', error);
     return NextResponse.json(
@@ -57,17 +91,27 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { title = 'Untitled Document' } = await request.json();
+    const { title } = await request.json();
+    
+    if (typeof title !== 'string' || title.length > 100) {
+      return NextResponse.json(
+        { error: 'Invalid title. Must be a string up to 100 characters.' },
+        { status: 400 }
+      );
+    }
 
     const documentId = await db.add('documents', {
-      title,
+      title: title.trim() || 'Untitled Document',
       content: '',
       userId: session.user.id,
-      createdAt: new Date(),
-      updatedAt: new Date()
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
     });
 
-    return NextResponse.json({ id: documentId });
+    return NextResponse.json({ 
+      id: documentId,
+      message: 'Document created successfully' 
+    });
   } catch (error) {
     console.error('Failed to create document:', error);
     return NextResponse.json(

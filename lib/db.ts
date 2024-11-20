@@ -7,12 +7,14 @@ import {
   OrderByDirection
 } from 'firebase-admin/firestore';
 
+interface WhereClause {
+  field: string;
+  op: WhereFilterOp;
+  value: any;
+}
+
 interface QueryOptions {
-  where?: {
-    field: string;
-    op: WhereFilterOp;
-    value: any;
-  };
+  where?: WhereClause[];
   orderBy?: {
     field: string;
     direction: OrderByDirection;
@@ -52,11 +54,13 @@ export const db = {
       let query: Query<DocumentData> | CollectionReference<DocumentData> = adminDb.collection(collection);
 
       if (options.where) {
-        query = query.where(
-          options.where.field,
-          options.where.op,
-          options.where.value
-        );
+        options.where.forEach(clause => {
+          query = query.where(
+            clause.field,
+            clause.op,
+            clause.value
+          );
+        });
       }
 
       if (options.orderBy) {
