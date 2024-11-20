@@ -64,13 +64,13 @@ export class DocumentWebSocketServer {
     }
   }
 
+  public getConnectedClients(): number {
+    return this.wss.clients.size;
+  }
+
   public close() {
     console.log('Closing WebSocket server...');
     clearInterval(this.pingInterval);
     this.wss.close();
-  }
-
-  public getConnectedClients(): number {
-    return this.wss.clients.size;
   }
 } 

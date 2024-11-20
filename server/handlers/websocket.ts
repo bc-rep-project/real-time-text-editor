@@ -106,32 +106,30 @@ export class WebSocketHandler {
 
   public handleMessage(client: WebSocketClient, data: Buffer | ArrayBuffer | Buffer[]) {
     try {
-      const message = JSON.parse(data.toString());
-      const validatedMessage = validateMessage(message);
-
-      if (!validatedMessage) {
+      const message = validateMessage(JSON.parse(data.toString()));
+      if (!message) {
         console.error('Invalid message format');
         return;
       }
 
-      // Add client to document room if not already added
+      // Add client to document if not already added
       if (client.documentId) {
         this.addClient(client.documentId, client);
       }
 
-      // Handle different message types
-      switch (validatedMessage.type) {
+      // Route message to appropriate handler
+      switch (message.type) {
         case 'userPresence':
-          this.handleUserPresence(client, validatedMessage);
+          this.handleUserPresence(client, message);
           break;
         case 'documentUpdate':
-          this.handleDocumentUpdate(client, validatedMessage);
+          this.handleDocumentUpdate(client, message);
           break;
         case 'chatMessage':
-          this.handleChatMessage(client, validatedMessage);
+          this.handleChatMessage(client, message);
           break;
         default:
-          console.error('Unknown message type:', validatedMessage.type);
+          console.error('Unknown message type:', message.type);
       }
     } catch (error) {
       console.error('Error handling message:', error);
