@@ -37,3 +37,10 @@ next-env.d.ts
 **/firebase-adminsdk*.json
 .env*
 !.env.example
+
+# Service Account
+real-time-text-editor-be6aa-firebase-adminsdk-trw0k-ebe22b0163.json
+
+#scripts
+scripts/setup-env.js
+scripts/setup-env.ts

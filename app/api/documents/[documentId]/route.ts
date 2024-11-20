@@ -30,7 +30,12 @@ export async function GET(
       return NextResponse.json({ error: 'Document not found' }, { status: 404 });
     }
 
-    return NextResponse.json(document);
+    // Ensure updatedAt is properly formatted as a Date
+    return NextResponse.json({
+      ...document,
+      updatedAt: new Date(document.updatedAt).toISOString()
+    });
+
   } catch (error) {
     console.error('Failed to fetch document:', error);
     return NextResponse.json(
@@ -57,23 +62,49 @@ export async function PUT(
     // Save current version before updating
     const currentDoc = await db.get<Document>('documents', params.documentId);
     
-    if (currentDoc) {
-      await db.add('versions', {
-        documentId: params.documentId,
-        content: currentDoc.content,
-        userId: session.user.id,
-        createdAt: new Date()
-      });
+    if (!currentDoc) {
+      return NextResponse.json({ error: 'Document not found' }, { status: 404 });
     }
 
-    // Update document
-    const updatedDoc = await db.update('documents', params.documentId, {
-      title,
-      content,
-      updatedAt: new Date()
+    if (currentDoc.userId !== session.user.id) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    // Save version history
+    await db.add('versions', {
+      documentId: params.documentId,
+      content: currentDoc.content,
+      userId: session.user.id,
+      createdAt: new Date()
     });
 
-    return NextResponse.json(updatedDoc);
+    // Update document with current timestamp
+    const updateData = {
+      ...(title && { title }),
+      ...(content !== undefined && { content }),
+      updatedAt: new Date().toISOString()
+    };
+
+    // Update the document
+    await db.update('documents', params.documentId, updateData);
+
+    // Fetch the updated document
+    const updatedDoc = await db.get<Document>('documents', params.documentId);
+
+    if (!updatedDoc) {
+      return NextResponse.json({ error: 'Failed to update document' }, { status: 500 });
+    }
+
+    // Return formatted document
+    return NextResponse.json({
+      id: updatedDoc.id,
+      title: updatedDoc.title,
+      content: updatedDoc.content,
+      userId: updatedDoc.userId,
+      createdAt: updatedDoc.createdAt,
+      updatedAt: new Date(updatedDoc.updatedAt).toISOString()
+    });
+
   } catch (error) {
     console.error('Failed to update document:', error);
     return NextResponse.json(

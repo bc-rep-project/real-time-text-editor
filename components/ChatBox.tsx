@@ -107,77 +107,71 @@ export function ChatBox({ documentId }: ChatBoxProps) {
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="border rounded-lg bg-white p-4">
-        <LoadingSpinner />
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="border rounded-lg bg-white p-4">
-        <ErrorMessage message={error} />
-      </div>
-    );
-  }
-
   return (
-    <div className="border rounded-lg bg-white">
-      <div className="p-3 border-b">
-        <h3 className="font-medium">Chat</h3>
-      </div>
-      <div className="h-[300px] flex flex-col">
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
-          {messages.map((msg) => (
-            <div
-              key={msg.id}
-              className={`flex flex-col ${
-                msg.userId === session?.user?.id ? 'items-end' : 'items-start'
-              }`}
-            >
-              <div className="text-xs text-gray-500 mb-1">{msg.username}</div>
+    <div className="flex flex-col h-full border rounded-lg bg-white shadow-sm">
+      {isLoading ? (
+        <div className="flex items-center justify-center h-[300px]">
+          <LoadingSpinner />
+        </div>
+      ) : error ? (
+        <div className="p-4">
+          <ErrorMessage message={error} />
+        </div>
+      ) : (
+        <>
+          {/* Chat messages container */}
+          <div className="flex-1 overflow-y-auto p-3 space-y-3 min-h-[200px] max-h-[400px]">
+            {messages.map((msg) => (
               <div
-                className={`rounded-lg px-3 py-2 max-w-[80%] ${
-                  msg.userId === session?.user?.id
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-gray-100'
+                key={msg.id}
+                className={`flex flex-col ${
+                  msg.userId === session?.user?.id ? 'items-end' : 'items-start'
                 }`}
               >
-                {msg.message}
+                <div className="text-xs text-gray-500 px-2">{msg.username}</div>
+                <div
+                  className={`rounded-lg px-3 py-2 break-words ${
+                    msg.userId === session?.user?.id
+                      ? 'bg-blue-500 text-white ml-8'
+                      : 'bg-gray-100 mr-8'
+                  } max-w-[85%] sm:max-w-[75%]`}
+                >
+                  {msg.message}
+                </div>
               </div>
-            </div>
-          ))}
-          <div ref={messagesEndRef} />
-        </div>
-        <form onSubmit={handleSendMessage} className="p-4 border-t">
-          <div className="flex gap-2">
-            <input
-              type="text"
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              placeholder="Type a message..."
-              disabled={isSending}
-              className="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
-            />
-            <button
-              type="submit"
-              disabled={isSending}
-              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 flex items-center gap-2"
-            >
-              {isSending ? (
-                <>
-                  <LoadingSpinner size="small" />
-                  Sending...
-                </>
-              ) : (
-                'Send'
-              )}
-            </button>
+            ))}
+            <div ref={messagesEndRef} />
           </div>
-        </form>
-      </div>
+
+          {/* Message input form */}
+          <form onSubmit={handleSendMessage} className="p-3 border-t">
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                placeholder="Type a message..."
+                disabled={isSending}
+                className="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 text-sm"
+              />
+              <button
+                type="submit"
+                disabled={isSending || !newMessage.trim()}
+                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:hover:bg-blue-500 flex items-center gap-2 whitespace-nowrap text-sm"
+              >
+                {isSending ? (
+                  <>
+                    <LoadingSpinner size="small" />
+                    <span className="hidden sm:inline">Sending...</span>
+                  </>
+                ) : (
+                  <span>Send</span>
+                )}
+              </button>
+            </div>
+          </form>
+        </>
+      )}
     </div>
   );
 } 
