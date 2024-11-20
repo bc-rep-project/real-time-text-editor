@@ -1,4 +1,4 @@
-import type { NextAuthOptions } from 'next-auth';
+import { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { compare } from 'bcrypt';
 import { db } from '@/lib/db';
@@ -8,24 +8,27 @@ interface User {
   username: string;
   password: string;
   email?: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
-if (!process.env.NEXTAUTH_SECRET) {
-  throw new Error('Please provide process.env.NEXTAUTH_SECRET');
+interface Credentials {
+  username: string;
+  password: string;
 }
 
 export const authOptions: NextAuthOptions = {
-  secret: process.env.NEXTAUTH_SECRET,
   providers: [
     CredentialsProvider({
+      name: 'Credentials',
       credentials: {
         username: { label: "Username", type: "text" },
         password: { label: "Password", type: "password" }
       },
-      async authorize(credentials) {
+      async authorize(credentials): Promise<any> {
         try {
           if (!credentials?.username || !credentials?.password) {
-            throw new Error('Missing credentials');
+            throw new Error('Username and password required');
           }
 
           const user = await db.get<User>('users', {
@@ -34,13 +37,13 @@ export const authOptions: NextAuthOptions = {
           });
 
           if (!user) {
-            return null;
+            throw new Error('User not found');
           }
 
           const isPasswordValid = await compare(credentials.password, user.password);
 
           if (!isPasswordValid) {
-            return null;
+            throw new Error('Invalid password');
           }
 
           return {
@@ -55,14 +58,6 @@ export const authOptions: NextAuthOptions = {
       }
     })
   ],
-  session: {
-    strategy: 'jwt',
-    maxAge: 30 * 24 * 60 * 60, // 30 days
-  },
-  pages: {
-    signIn: '/login',
-    error: '/auth/error',
-  },
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
@@ -78,5 +73,14 @@ export const authOptions: NextAuthOptions = {
       }
       return session;
     }
-  }
+  },
+  pages: {
+    signIn: '/login',
+    error: '/login',
+  },
+  session: {
+    strategy: 'jwt',
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+  },
+  secret: process.env.NEXTAUTH_SECRET,
 }; 

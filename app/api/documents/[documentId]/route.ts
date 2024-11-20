@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
+import { authOptions } from '../../auth/[...nextauth]/options';
 import { db } from '@/lib/db';
 
 interface Document {
@@ -7,6 +8,7 @@ interface Document {
   title: string;
   content: string;
   userId: string;
+  createdAt: Date;
   updatedAt: Date;
 }
 
@@ -16,7 +18,8 @@ export async function GET(
   { params }: { params: { documentId: string } }
 ) {
   try {
-    const session = await getServerSession();
+    const session = await getServerSession(authOptions);
+    
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -27,12 +30,25 @@ export async function GET(
       return NextResponse.json({ error: 'Document not found' }, { status: 404 });
     }
 
-    // Check if user has access to this document
-    if (document.userId !== session.user.id) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
+    // Safely format the date, falling back to current time if invalid
+    const safeDate = (date: any) => {
+      try {
+        return new Date(date).toISOString();
+      } catch (e) {
+        return new Date().toISOString();
+      }
+    };
 
-    return NextResponse.json(document);
+    // Return document with safely formatted dates
+    return NextResponse.json({
+      id: document.id,
+      title: document.title,
+      content: document.content,
+      userId: document.userId,
+      createdAt: safeDate(document.createdAt),
+      updatedAt: safeDate(document.updatedAt)
+    });
+
   } catch (error) {
     console.error('Failed to fetch document:', error);
     return NextResponse.json(
@@ -48,41 +64,65 @@ export async function PUT(
   { params }: { params: { documentId: string } }
 ) {
   try {
-    const session = await getServerSession();
+    const session = await getServerSession(authOptions);
+    
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const document = await db.get<Document>('documents', params.documentId);
-    if (!document) {
+    const { title, content } = await request.json();
+    
+    const currentDoc = await db.get<Document>('documents', params.documentId);
+    
+    if (!currentDoc) {
       return NextResponse.json({ error: 'Document not found' }, { status: 404 });
     }
 
-    if (document.userId !== session.user.id) {
+    if (currentDoc.userId !== session.user.id) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const { content, title } = await request.json();
-    const updateData: Partial<Document> = {};
-
-    if (content !== undefined) updateData.content = content;
-    if (title !== undefined) updateData.title = title;
-
-    // Save current version before updating
-    if (content !== undefined) {
-      await db.add('versions', {
-        documentId: params.documentId,
-        content: document.content,
-        userId: session.user.id,
-        createdAt: new Date()
-      });
-    }
+    // Save version history
+    await db.add('versions', {
+      documentId: params.documentId,
+      content: currentDoc.content,
+      userId: session.user.id,
+      createdAt: new Date().toISOString()
+    });
 
     // Update document
-    await db.update('documents', params.documentId, updateData);
+    const now = new Date().toISOString();
+    await db.update('documents', params.documentId, {
+      ...(title && { title }),
+      ...(content !== undefined && { content }),
+      updatedAt: now
+    });
 
-    const updatedDocument = await db.get<Document>('documents', params.documentId);
-    return NextResponse.json(updatedDocument);
+    // Fetch updated document
+    const updatedDoc = await db.get<Document>('documents', params.documentId);
+    if (!updatedDoc) {
+      return NextResponse.json({ error: 'Failed to update document' }, { status: 500 });
+    }
+
+    // Safely format the date
+    const safeDate = (date: any) => {
+      try {
+        return new Date(date).toISOString();
+      } catch (e) {
+        return now;
+      }
+    };
+
+    // Return formatted document
+    return NextResponse.json({
+      id: updatedDoc.id,
+      title: updatedDoc.title,
+      content: updatedDoc.content,
+      userId: updatedDoc.userId,
+      createdAt: safeDate(updatedDoc.createdAt),
+      updatedAt: safeDate(updatedDoc.updatedAt)
+    });
+
   } catch (error) {
     console.error('Failed to update document:', error);
     return NextResponse.json(
@@ -98,16 +138,19 @@ export async function DELETE(
   { params }: { params: { documentId: string } }
 ) {
   try {
-    const session = await getServerSession();
+    const session = await getServerSession(authOptions);
+    
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const document = await db.get<Document>('documents', params.documentId);
+
     if (!document) {
       return NextResponse.json({ error: 'Document not found' }, { status: 404 });
     }
 
+    // Only allow document owner to delete
     if (document.userId !== session.user.id) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }

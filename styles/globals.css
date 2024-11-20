@@ -1,0 +1,19 @@
+/* Add these styles for Quill editor */
+.ql-container {
+  font-size: 16px;
+  height: calc(100% - 42px) !important;
+}
+
+.ql-editor {
+  height: 100%;
+  max-height: 100%;
+  overflow-y: auto;
+}
+
+.ql-toolbar {
+  border-bottom: 1px solid #e2e8f0;
+  position: sticky;
+  top: 0;
+  background: white;
+  z-index: 10;
+} 

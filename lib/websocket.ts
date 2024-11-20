@@ -1,14 +1,47 @@
-import { WebSocket, WebSocketServer, Server } from 'ws';
+import { WebSocket, WebSocketServer } from 'ws';
 import { Server as HttpServer } from 'http';
 import type { WebSocketClient } from '@/types/websocket';
 import { adminDb } from './firebase-admin';
+import { getToken } from 'next-auth/jwt';
+import { parse } from 'cookie';
+import type { IncomingMessage } from 'http';
+
+interface ExtendedIncomingMessage extends IncomingMessage {
+  cookies: { [key: string]: string };
+}
 
 export class DocumentWebSocketServer {
   private wss: WebSocketServer;
   private pingInterval!: NodeJS.Timeout;
 
   constructor(port: number) {
-    this.wss = new WebSocketServer({ port });
+    this.wss = new WebSocketServer({ 
+      port,
+      verifyClient: async ({ req }, done) => {
+        try {
+          // Parse cookies from header
+          const cookieHeader = req.headers.cookie || '';
+          const cookies = parse(cookieHeader);
+          
+          // Extend request with cookies
+          const extendedReq = Object.assign(req, { cookies }) as ExtendedIncomingMessage;
+          
+          const token = await getToken({ 
+            req: extendedReq, 
+            secret: process.env.NEXTAUTH_SECRET 
+          });
+
+          if (!token) {
+            done(false, 401, 'Unauthorized');
+            return;
+          }
+          done(true);
+        } catch (error) {
+          console.error('WebSocket auth error:', error);
+          done(false, 500, 'Internal Server Error');
+        }
+      }
+    });
     this.setupWebSocketServer();
     console.log(`WebSocket server initialized on port ${port}`);
   }
@@ -16,7 +49,13 @@ export class DocumentWebSocketServer {
   private setupWebSocketServer() {
     this.wss.on('connection', (ws: WebSocketClient, req) => {
       const origin = req.headers.origin;
-      if (origin && !ALLOWED_ORIGINS.includes(origin)) {
+      const allowedOrigins = [
+        'http://localhost:3000',
+        'https://real-time-text-editor-amber.vercel.app',
+        'https://real-time-text-editor-git-bug-cee6e5-johanns-projects-6ef4f9e7.vercel.app'
+      ];
+
+      if (origin && !allowedOrigins.includes(origin)) {
         console.log(`Rejected connection from unauthorized origin: ${origin}`);
         ws.close();
         return;
@@ -103,7 +142,25 @@ export class DocumentWebSocketServer {
   }
 }
 
-const ALLOWED_ORIGINS = [
-  'http://localhost:3000',
-  process.env.NEXT_PUBLIC_APP_URL,
-].filter(Boolean) as string[]; 
+export function createWebSocketConnection(documentId: string) {
+  const wsUrl = new URL(process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8081');
+  wsUrl.searchParams.set('documentId', documentId);
+  wsUrl.searchParams.set('token', localStorage.getItem('next-auth.session-token') || '');
+  
+  const ws = new WebSocket(wsUrl.toString());
+  
+  ws.onopen = () => {
+    console.log('WebSocket connected');
+  };
+
+  ws.onerror = (error) => {
+    console.error('WebSocket error:', error);
+  };
+
+  ws.onclose = () => {
+    console.log('WebSocket disconnected, attempting to reconnect...');
+    setTimeout(() => createWebSocketConnection(documentId), 1000);
+  };
+
+  return ws;
+} 

@@ -94,8 +94,8 @@ export default function DocumentPage({ params }: { params: { documentId: string 
       <div className="mb-6 flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold">{document.title}</h1>
-          <p className="text-gray-500">
-            Last updated: {new Date(document.updatedAt).toLocaleString()}
+          <p className="text-sm text-gray-500 mt-1">
+            Last updated: {document && new Date(document.updatedAt).toLocaleString()}
           </p>
         </div>
         <button

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
+import { authOptions } from '../../auth/[...nextauth]/options';
 import { db } from '@/lib/db';
 
 interface ChatMessage {
@@ -16,13 +17,20 @@ interface User {
   username: string;
 }
 
+interface NewChatMessage {
+  documentId: string;
+  userId: string;
+  message: string;
+  createdAt: Date;
+}
+
 // GET /api/chat/[documentId]
 export async function GET(
   request: Request,
   { params }: { params: { documentId: string } }
 ) {
   try {
-    const session = await getServerSession();
+    const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -67,40 +75,30 @@ export async function POST(
   { params }: { params: { documentId: string } }
 ) {
   try {
-    const session = await getServerSession();
+    const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const { message } = await request.json();
-    if (!message?.trim()) {
-      return NextResponse.json(
-        { error: 'Message is required' },
-        { status: 400 }
-      );
-    }
-
-    // Create chat message
-    const messageId = await db.add('chat_messages', {
+    
+    const newMessage: NewChatMessage = {
       documentId: params.documentId,
       userId: session.user.id,
-      message: message.trim(),
+      message,
       createdAt: new Date()
-    });
+    };
 
-    // Get the created message with username
-    const newMessage = await db.get<ChatMessage>('chat_messages', messageId);
-    if (!newMessage) {
-      throw new Error('Failed to create message');
-    }
-
+    const chatMessageId = await db.add('chat_messages', newMessage);
     const user = await db.get<User>('users', session.user.id);
-    const messageWithUsername = {
+
+    const chatMessage: ChatMessage = {
+      id: chatMessageId,
       ...newMessage,
       username: user?.username || 'Unknown User'
     };
 
-    return NextResponse.json(messageWithUsername);
+    return NextResponse.json(chatMessage);
   } catch (error) {
     console.error('Failed to send chat message:', error);
     return NextResponse.json(

@@ -6,6 +6,7 @@ import {
   isDocumentUpdateData,
   isChatMessageData
 } from '../types';
+import { validateMessage } from '../utils/validator';
 
 export class WebSocketHandler {
   private documentClients: Map<string, Set<WebSocketClient>>;
@@ -101,5 +102,43 @@ export class WebSocketHandler {
       total += clients.size;
     }
     return total;
+  }
+
+  public handleMessage(client: WebSocketClient, data: Buffer | ArrayBuffer | Buffer[]) {
+    try {
+      const message = validateMessage(JSON.parse(data.toString()));
+      if (!message) {
+        console.error('Invalid message format');
+        return;
+      }
+
+      // Add client to document if not already added
+      if (client.documentId) {
+        this.addClient(client.documentId, client);
+      }
+
+      // Route message to appropriate handler
+      switch (message.type) {
+        case 'userPresence':
+          this.handleUserPresence(client, message);
+          break;
+        case 'documentUpdate':
+          this.handleDocumentUpdate(client, message);
+          break;
+        case 'chatMessage':
+          this.handleChatMessage(client, message);
+          break;
+        default:
+          console.error('Unknown message type:', message.type);
+      }
+    } catch (error) {
+      console.error('Error handling message:', error);
+    }
+  }
+
+  public handleDisconnect(client: WebSocketClient) {
+    if (client.documentId) {
+      this.removeClient(client.documentId, client);
+    }
   }
 } 

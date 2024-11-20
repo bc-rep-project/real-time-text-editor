@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
+import { authOptions } from '../auth/[...nextauth]/options';
 import { db } from '@/lib/db';
 
 interface Document {
@@ -14,36 +15,28 @@ interface Document {
 // GET /api/documents
 export async function GET(request: Request) {
   try {
-    const session = await getServerSession();
+    const session = await getServerSession(authOptions);
+    
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const { searchParams } = new URL(request.url);
     const search = searchParams.get('search') || '';
-    const sort = searchParams.get('sort') || 'updatedAt';
+    const sort = searchParams.get('sort') || 'updatedAt:desc';
+    const [field, direction] = sort.split(':');
 
-    let queryOptions: any = {
-      where: {
-        field: 'userId',
-        op: '==',
-        value: session.user.id
-      },
-      orderBy: {
-        field: sort,
-        direction: sort === 'title' ? 'asc' : 'desc'
-      }
-    };
-
-    if (search) {
-      queryOptions.where = {
+    const documents = await db.query('documents', {
+      where: search ? {
         field: 'title',
         op: '>=',
         value: search
-      };
-    }
-
-    const documents = await db.query<Document>('documents', queryOptions);
+      } : undefined,
+      orderBy: {
+        field,
+        direction: direction as 'asc' | 'desc'
+      }
+    });
 
     return NextResponse.json(documents);
   } catch (error) {
@@ -58,40 +51,23 @@ export async function GET(request: Request) {
 // POST /api/documents
 export async function POST(request: Request) {
   try {
-    const session = await getServerSession();
+    const session = await getServerSession(authOptions);
+    
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { title, content = '' } = await request.json();
-    if (!title) {
-      return NextResponse.json(
-        { error: 'Title is required' },
-        { status: 400 }
-      );
-    }
+    const { title = 'Untitled Document' } = await request.json();
 
-    // Create document
     const documentId = await db.add('documents', {
       title,
-      content,
+      content: '',
       userId: session.user.id,
       createdAt: new Date(),
       updatedAt: new Date()
     });
 
-    // Create initial version
-    await db.add('versions', {
-      documentId,
-      content,
-      userId: session.user.id,
-      createdAt: new Date()
-    });
-
-    // Get the created document
-    const newDocument = await db.get<Document>('documents', documentId);
-
-    return NextResponse.json(newDocument, { status: 201 });
+    return NextResponse.json({ id: documentId });
   } catch (error) {
     console.error('Failed to create document:', error);
     return NextResponse.json(
