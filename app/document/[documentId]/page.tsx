@@ -9,14 +9,7 @@ import { VersionHistory } from '@/components/VersionHistory';
 import { UserPresenceIndicator } from '@/components/UserPresenceIndicator';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { ErrorMessage } from '@/components/ErrorMessage';
-
-interface Document {
-  id: string;
-  title: string;
-  content: string;
-  updatedAt: Date;
-  userId: string;
-}
+import type { Document } from '@/types/database';
 
 export default function DocumentPage({ params }: { params: { documentId: string } }) {
   const router = useRouter();

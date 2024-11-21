@@ -5,14 +5,7 @@ import { useSession } from 'next-auth/react';
 import { useWebSocket } from '@/hooks/useWebSocket';
 import { LoadingSpinner } from './LoadingSpinner';
 import { ErrorMessage } from './ErrorMessage';
-
-interface ChatMessage {
-  id: string;
-  userId: string;
-  username: string;
-  message: string;
-  createdAt: Date;
-}
+import type { ChatMessageWithUser } from '@/types/database';
 
 interface ChatBoxProps {
   documentId: string;
@@ -20,7 +13,7 @@ interface ChatBoxProps {
 
 export function ChatBox({ documentId }: ChatBoxProps) {
   const { data: session } = useSession();
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [messages, setMessages] = useState<ChatMessageWithUser[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

@@ -83,7 +83,7 @@ export async function POST(
 
     const { message } = await request.json();
     
-    const newMessage: NewChatMessage = {
+    const newMessage = {
       documentId: params.documentId,
       userId: session.user.id,
       message,

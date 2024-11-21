@@ -6,13 +6,7 @@ import { LoadingSpinner } from './LoadingSpinner';
 import { ErrorMessage } from './ErrorMessage';
 import debounce from 'lodash/debounce';
 import { Dialog } from './Dialog';
-
-interface Document {
-  id: string;
-  title: string;
-  updatedAt: Date;
-  userId: string;
-}
+import type { Document } from '@/types/database';
 
 export function DocumentList() {
   const router = useRouter();
