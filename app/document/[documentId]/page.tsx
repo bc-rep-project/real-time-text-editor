@@ -10,6 +10,7 @@ import { UserPresenceIndicator } from '@/components/UserPresenceIndicator';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import type { Document } from '@/types/database';
+import { MobileNavigation } from '@/components/MobileNavigation';
 
 export default function DocumentPage({ params }: { params: { documentId: string } }) {
   const router = useRouter();
@@ -109,7 +110,7 @@ export default function DocumentPage({ params }: { params: { documentId: string 
   }
 
   return (
-    <div className="container mx-auto p-6">
+    <div className="container mx-auto p-6 pb-20 lg:pb-6">
       <div className="mb-6 flex justify-between items-center">
         <div className="flex-1">
           {isEditingTitle ? (
@@ -190,7 +191,7 @@ export default function DocumentPage({ params }: { params: { documentId: string 
           />
         </div>
         
-        <div className="space-y-6">
+        <div className="hidden lg:block space-y-6">
           <UserPresenceIndicator documentId={params.documentId} />
           <ChatBox documentId={params.documentId} />
           <VersionHistory 
@@ -199,6 +200,8 @@ export default function DocumentPage({ params }: { params: { documentId: string 
           />
         </div>
       </div>
+
+      <MobileNavigation documentId={params.documentId} />
     </div>
   );
 } 

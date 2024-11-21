@@ -101,7 +101,7 @@ export function ChatBox({ documentId }: ChatBoxProps) {
   };
 
   return (
-    <div className="flex flex-col h-full border rounded-lg bg-white shadow-sm">
+    <div className="flex flex-col h-[calc(100vh-12rem)] lg:h-full border rounded-lg bg-white shadow-sm">
       {isLoading ? (
         <div className="flex items-center justify-center h-[300px]">
           <LoadingSpinner />
@@ -113,7 +113,7 @@ export function ChatBox({ documentId }: ChatBoxProps) {
       ) : (
         <>
           {/* Chat messages container */}
-          <div className="flex-1 overflow-y-auto p-3 space-y-3 min-h-[200px] max-h-[400px]">
+          <div className="flex-1 overflow-y-auto p-3 space-y-3">
             {messages.map((msg) => (
               <div
                 key={msg.id}
@@ -137,7 +137,7 @@ export function ChatBox({ documentId }: ChatBoxProps) {
           </div>
 
           {/* Message input form */}
-          <form onSubmit={handleSendMessage} className="p-3 border-t">
+          <form onSubmit={handleSendMessage} className="p-3 border-t sticky bottom-0 bg-white">
             <div className="flex gap-2">
               <input
                 type="text"
