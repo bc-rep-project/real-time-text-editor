@@ -22,6 +22,11 @@ export default function DocumentPage({ params }: { params: { documentId: string 
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [newTitle, setNewTitle] = useState('');
   const [isSavingTitle, setIsSavingTitle] = useState(false);
+  const [wordCount, setWordCount] = useState(0);
+
+  const calculateWordCount = (content: string) => {
+    return content.split(/\s+/).filter(Boolean).length;
+  };
 
   useEffect(() => {
     const fetchDocument = async () => {
@@ -31,26 +36,31 @@ export default function DocumentPage({ params }: { params: { documentId: string 
         const response = await fetch(`/api/documents/${params.documentId}`);
         
         if (!response.ok) {
-          if (response.status === 404) {
-            throw new Error('Document not found');
-          }
           throw new Error('Failed to fetch document');
         }
         
-        const data = await response.json();
-        setDocument(data);
+        const doc = await response.json();
+        setDocument(doc);
+        setWordCount(calculateWordCount(doc.content));
       } catch (error) {
         console.error('Error fetching document:', error);
-        setError(error instanceof Error ? error.message : 'Failed to load document');
+        setError('Failed to load document');
       } finally {
         setIsLoading(false);
       }
     };
 
-    if (session) {
+    if (session?.user?.id) {
       fetchDocument();
     }
-  }, [params.documentId, session]);
+  }, [params.documentId, session?.user?.id]);
+
+  const handleContentUpdate = (newContent: string) => {
+    if (document) {
+      setDocument(prev => prev ? { ...prev, content: newContent } : null);
+      setWordCount(calculateWordCount(newContent));
+    }
+  };
 
   const handleUpdateTitle = async () => {
     if (!newTitle.trim() || isSavingTitle) return;
@@ -188,26 +198,37 @@ export default function DocumentPage({ params }: { params: { documentId: string 
         <div className="lg:col-span-3">
           <EditorArea
             documentId={params.documentId}
-            initialContent={document.content}
+            initialContent={document?.content || ''}
+            onContentChange={handleContentUpdate}
           />
           <div className="mt-4 flex justify-between items-center px-2 lg:hidden">
             <div className="text-sm text-gray-500">
-              Words: {document.content.split(/\s+/).filter(Boolean).length}
+              Words: {wordCount}
             </div>
-            <MobileVersionHistory 
-              documentId={params.documentId}
-              onRevert={(content) => setDocument(prev => prev ? {...prev, content} : null)}
-            />
+            {document && (
+              <MobileVersionHistory 
+                documentId={params.documentId}
+                onRevert={(content) => {
+                  setDocument(prev => prev ? {...prev, content} : null);
+                  setWordCount(calculateWordCount(content));
+                }}
+              />
+            )}
           </div>
         </div>
         
         <div className="hidden lg:block space-y-6">
           <UserPresenceIndicator documentId={params.documentId} />
           <ChatBox documentId={params.documentId} />
-          <VersionHistory 
-            documentId={params.documentId}
-            onRevert={(content) => setDocument(prev => prev ? {...prev, content} : null)}
-          />
+          {document && (
+            <VersionHistory 
+              documentId={params.documentId}
+              onRevert={(content) => {
+                setDocument(prev => prev ? {...prev, content} : null);
+                setWordCount(calculateWordCount(content));
+              }}
+            />
+          )}
         </div>
       </div>
 

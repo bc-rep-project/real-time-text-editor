@@ -14,12 +14,13 @@ const ReactQuill = dynamic(() => import('react-quill'), {
   loading: () => <LoadingSpinner />
 });
 
-interface EditorProps {
+interface EditorAreaProps {
   documentId: string;
   initialContent: string;
+  onContentChange: (content: string) => void;
 }
 
-export function EditorArea({ documentId, initialContent }: EditorProps) {
+export function EditorArea({ documentId, initialContent, onContentChange }: EditorAreaProps) {
   const { data: session } = useSession();
   const { sendMessage, addMessageListener } = useWebSocket(documentId);
   const [content, setContent] = useState(initialContent);
