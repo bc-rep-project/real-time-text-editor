@@ -11,7 +11,7 @@ export function Navigation() {
   if (!session) return null;
 
   return (
-    <nav className="bg-white shadow relative">
+    <nav className="bg-white shadow relative z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex">
@@ -52,7 +52,7 @@ export function Navigation() {
 
       {/* Mobile sidebar */}
       <div
-        className={`fixed inset-y-0 right-0 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out ${
+        className={`fixed inset-y-0 right-0 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out z-50 ${
           isSidebarOpen ? 'translate-x-0' : 'translate-x-full'
         } lg:hidden`}
       >
@@ -91,8 +91,9 @@ export function Navigation() {
       {/* Overlay */}
       {isSidebarOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 lg:hidden"
+          className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40 lg:hidden"
           onClick={() => setIsSidebarOpen(false)}
+          aria-hidden="true"
         />
       )}
     </nav>
