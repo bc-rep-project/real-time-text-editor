@@ -7,6 +7,7 @@ import { ErrorMessage } from './ErrorMessage';
 import debounce from 'lodash/debounce';
 import { Dialog } from './Dialog';
 import type { Document } from '@/types/database';
+import { CreateNewDocumentButton } from './CreateNewDocumentButton';
 
 export function DocumentList() {
   const router = useRouter();
@@ -64,30 +65,6 @@ export function DocumentList() {
     };
   }, [searchTerm, sortBy, debouncedFetch]);
 
-  const createDocument = async (title: string) => {
-    try {
-      setIsCreating(true);
-      setError(null);
-      
-      const response = await fetch('/api/documents', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: title.trim() || 'Untitled Document' })
-      });
-
-      if (!response.ok) throw new Error('Failed to create document');
-      
-      const data = await response.json();
-      router.push(`/document/${data.id}`);
-    } catch (error) {
-      console.error('Error creating document:', error);
-      setError('Failed to create document');
-    } finally {
-      setIsCreating(false);
-      setNewDocTitle('');
-    }
-  };
-
   const deleteDocument = async (documentId: string) => {
     try {
       setError(null);
@@ -110,25 +87,7 @@ export function DocumentList() {
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">My Documents</h1>
-        <button
-          onClick={() => setNewDocTitle('')}
-          className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 flex items-center gap-2"
-          disabled={isCreating}
-        >
-          {isCreating ? (
-            <>
-              <LoadingSpinner size="small" />
-              Creating...
-            </>
-          ) : (
-            <>
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-              New Document
-            </>
-          )}
-        </button>
+        <CreateNewDocumentButton onSuccess={() => fetchDocuments(searchTerm, sortBy)} />
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3">
@@ -211,42 +170,6 @@ export function DocumentList() {
           ))}
         </div>
       )}
-
-      <Dialog
-        isOpen={newDocTitle !== null}
-        onClose={() => setNewDocTitle('')}
-        title="Create New Document"
-      >
-        <form onSubmit={(e) => {
-          e.preventDefault();
-          createDocument(newDocTitle);
-        }}>
-          <input
-            type="text"
-            value={newDocTitle}
-            onChange={(e) => setNewDocTitle(e.target.value)}
-            placeholder="Document title"
-            className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            autoFocus
-          />
-          <div className="mt-4 flex justify-end gap-2">
-            <button
-              type="button"
-              onClick={() => setNewDocTitle('')}
-              className="px-4 py-2 text-gray-600 hover:text-gray-800"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={isCreating}
-              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50"
-            >
-              Create
-            </button>
-          </div>
-        </form>
-      </Dialog>
 
       <Dialog
         isOpen={!!showDeleteDialog}
