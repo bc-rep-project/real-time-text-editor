@@ -11,6 +11,7 @@ import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import type { Document } from '@/types/database';
 import { MobileNavigation } from '@/components/MobileNavigation';
+import { MobileVersionHistory } from '@/components/MobileVersionHistory';
 
 export default function DocumentPage({ params }: { params: { documentId: string } }) {
   const router = useRouter();
@@ -189,6 +190,15 @@ export default function DocumentPage({ params }: { params: { documentId: string 
             documentId={params.documentId}
             initialContent={document.content}
           />
+          <div className="mt-4 flex justify-between items-center px-2 lg:hidden">
+            <div className="text-sm text-gray-500">
+              Words: {document.content.split(/\s+/).filter(Boolean).length}
+            </div>
+            <MobileVersionHistory 
+              documentId={params.documentId}
+              onRevert={(content) => setDocument(prev => prev ? {...prev, content} : null)}
+            />
+          </div>
         </div>
         
         <div className="hidden lg:block space-y-6">
