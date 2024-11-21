@@ -17,6 +17,9 @@ export default function DocumentPage({ params }: { params: { documentId: string 
   const [document, setDocument] = useState<Document | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [newTitle, setNewTitle] = useState('');
+  const [isSavingTitle, setIsSavingTitle] = useState(false);
 
   useEffect(() => {
     const fetchDocument = async () => {
@@ -46,6 +49,29 @@ export default function DocumentPage({ params }: { params: { documentId: string 
       fetchDocument();
     }
   }, [params.documentId, session]);
+
+  const handleUpdateTitle = async () => {
+    if (!newTitle.trim() || isSavingTitle) return;
+
+    try {
+      setIsSavingTitle(true);
+      const response = await fetch(`/api/documents/${params.documentId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: newTitle.trim() })
+      });
+
+      if (!response.ok) throw new Error('Failed to update title');
+
+      const updatedDoc = await response.json();
+      setDocument(updatedDoc);
+      setIsEditingTitle(false);
+    } catch (error) {
+      console.error('Error updating title:', error);
+    } finally {
+      setIsSavingTitle(false);
+    }
+  };
 
   if (status === 'loading' || isLoading) {
     return (
@@ -85,8 +111,63 @@ export default function DocumentPage({ params }: { params: { documentId: string 
   return (
     <div className="container mx-auto p-6">
       <div className="mb-6 flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold">{document.title}</h1>
+        <div className="flex-1">
+          {isEditingTitle ? (
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                value={newTitle}
+                onChange={(e) => setNewTitle(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleUpdateTitle();
+                  } else if (e.key === 'Escape') {
+                    setIsEditingTitle(false);
+                  }
+                }}
+                className="text-3xl font-bold px-2 py-1 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Document title"
+                autoFocus
+              />
+              <button
+                onClick={handleUpdateTitle}
+                disabled={isSavingTitle || !newTitle.trim()}
+                className="p-2 text-blue-500 hover:text-blue-600 disabled:opacity-50"
+              >
+                {isSavingTitle ? (
+                  <LoadingSpinner size="small" />
+                ) : (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                )}
+              </button>
+              <button
+                onClick={() => setIsEditingTitle(false)}
+                className="p-2 text-gray-500 hover:text-gray-600"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          ) : (
+            <div className="group flex items-center gap-2">
+              <h1 className="text-3xl font-bold">{document?.title}</h1>
+              <button
+                onClick={() => {
+                  setNewTitle(document?.title || '');
+                  setIsEditingTitle(true);
+                }}
+                className="p-1 text-gray-400 hover:text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                aria-label="Edit title"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                </svg>
+              </button>
+            </div>
+          )}
           <p className="text-sm text-gray-500 mt-1">
             Last updated: {document && new Date(document.updatedAt).toLocaleString()}
           </p>

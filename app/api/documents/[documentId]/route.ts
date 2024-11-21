@@ -165,4 +165,58 @@ export async function DELETE(
       { status: 500 }
     );
   }
+}
+
+// PATCH /api/documents/[documentId]
+export async function PATCH(
+  request: Request,
+  { params }: { params: { documentId: string } }
+) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { title } = await request.json();
+    
+    if (!title?.trim()) {
+      return NextResponse.json(
+        { error: 'Title is required' },
+        { status: 400 }
+      );
+    }
+
+    const document = await db.get<Document>('documents', params.documentId);
+    
+    if (!document) {
+      return NextResponse.json(
+        { error: 'Document not found' },
+        { status: 404 }
+      );
+    }
+
+    if (document.userId !== session.user.id) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 403 }
+      );
+    }
+
+    const updatedDocument = {
+      ...document,
+      title: title.trim(),
+      updatedAt: new Date()
+    };
+
+    await db.update('documents', params.documentId, updatedDocument);
+
+    return NextResponse.json(updatedDocument);
+  } catch (error) {
+    console.error('Failed to update document:', error);
+    return NextResponse.json(
+      { error: 'Internal Server Error' },
+      { status: 500 }
+    );
+  }
 } 
