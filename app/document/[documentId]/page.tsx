@@ -126,7 +126,7 @@ export default function DocumentPage({ params }: { params: { documentId: string 
   }
 
   return (
-    <div className="container mx-auto p-6 pb-20 lg:pb-6 relative z-0">
+    <div className="container mx-auto p-6 pb-24 lg:pb-6 relative z-0">
       <div className="mb-6 flex justify-between items-center">
         <div className="flex-1">
           {isEditingTitle ? (
@@ -208,7 +208,7 @@ export default function DocumentPage({ params }: { params: { documentId: string 
             onEditorReady={() => setIsEditorReady(true)}
           />
           {isEditorReady && (
-            <div className="mt-4 flex justify-between items-center px-2 lg:hidden">
+            <div className="mt-4 mb-16 lg:mb-0 flex justify-between items-center px-2 lg:hidden">
               <div className="text-sm text-gray-500">
                 Words: {wordCount}
               </div>
