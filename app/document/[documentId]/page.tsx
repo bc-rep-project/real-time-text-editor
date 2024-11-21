@@ -23,6 +23,8 @@ export default function DocumentPage({ params }: { params: { documentId: string 
   const [newTitle, setNewTitle] = useState('');
   const [isSavingTitle, setIsSavingTitle] = useState(false);
   const [wordCount, setWordCount] = useState(0);
+  const [editorContent, setEditorContent] = useState('');
+  const [isEditorReady, setIsEditorReady] = useState(false);
 
   const calculateWordCount = (content: string) => {
     return content.split(/\s+/).filter(Boolean).length;
@@ -41,7 +43,9 @@ export default function DocumentPage({ params }: { params: { documentId: string 
         
         const doc = await response.json();
         setDocument(doc);
+        setEditorContent(doc.content);
         setWordCount(calculateWordCount(doc.content));
+        setIsEditorReady(true);
       } catch (error) {
         console.error('Error fetching document:', error);
         setError('Failed to load document');
@@ -56,9 +60,10 @@ export default function DocumentPage({ params }: { params: { documentId: string 
   }, [params.documentId, session?.user?.id]);
 
   const handleContentUpdate = (newContent: string) => {
+    setEditorContent(newContent);
+    setWordCount(calculateWordCount(newContent));
     if (document) {
       setDocument(prev => prev ? { ...prev, content: newContent } : null);
-      setWordCount(calculateWordCount(newContent));
     }
   };
 
@@ -198,32 +203,37 @@ export default function DocumentPage({ params }: { params: { documentId: string 
         <div className="lg:col-span-3">
           <EditorArea
             documentId={params.documentId}
-            initialContent={document?.content || ''}
+            initialContent={editorContent}
             onContentChange={handleContentUpdate}
+            onEditorReady={() => setIsEditorReady(true)}
           />
-          <div className="mt-4 flex justify-between items-center px-2 lg:hidden">
-            <div className="text-sm text-gray-500">
-              Words: {wordCount}
+          {isEditorReady && (
+            <div className="mt-4 flex justify-between items-center px-2 lg:hidden">
+              <div className="text-sm text-gray-500">
+                Words: {wordCount}
+              </div>
+              {document && (
+                <MobileVersionHistory 
+                  documentId={params.documentId}
+                  onRevert={(content) => {
+                    setEditorContent(content);
+                    setDocument(prev => prev ? {...prev, content} : null);
+                    setWordCount(calculateWordCount(content));
+                  }}
+                />
+              )}
             </div>
-            {document && (
-              <MobileVersionHistory 
-                documentId={params.documentId}
-                onRevert={(content) => {
-                  setDocument(prev => prev ? {...prev, content} : null);
-                  setWordCount(calculateWordCount(content));
-                }}
-              />
-            )}
-          </div>
+          )}
         </div>
         
         <div className="hidden lg:block space-y-6">
           <UserPresenceIndicator documentId={params.documentId} />
           <ChatBox documentId={params.documentId} />
-          {document && (
+          {isEditorReady && document && (
             <VersionHistory 
               documentId={params.documentId}
               onRevert={(content) => {
+                setEditorContent(content);
                 setDocument(prev => prev ? {...prev, content} : null);
                 setWordCount(calculateWordCount(content));
               }}
