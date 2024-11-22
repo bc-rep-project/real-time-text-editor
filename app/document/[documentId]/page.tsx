@@ -126,9 +126,9 @@ export default function DocumentPage({ params }: { params: { documentId: string 
   }
 
   return (
-    <div className="container mx-auto p-6 pb-24 lg:pb-6 relative z-0">
-      <div className="mb-6 flex justify-between items-center">
-        <div className="flex-1">
+    <div className="container mx-auto px-4 sm:px-6 pb-24 lg:pb-6 pt-4 sm:pt-6 relative z-0">
+      <div className="mb-4 sm:mb-6 flex justify-between items-center">
+        <div className="flex-1 min-w-0">
           {isEditingTitle ? (
             <div className="flex items-center gap-2">
               <input
@@ -142,7 +142,7 @@ export default function DocumentPage({ params }: { params: { documentId: string 
                     setIsEditingTitle(false);
                   }
                 }}
-                className="text-3xl font-bold px-2 py-1 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="text-xl sm:text-3xl font-bold px-2 py-1 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
                 placeholder="Document title"
                 autoFocus
               />
@@ -169,14 +169,14 @@ export default function DocumentPage({ params }: { params: { documentId: string 
               </button>
             </div>
           ) : (
-            <div className="group flex items-center gap-2">
-              <h1 className="text-3xl font-bold">{document?.title}</h1>
+            <div className="group flex items-center gap-2 overflow-hidden">
+              <h1 className="text-xl sm:text-3xl font-bold truncate">{document?.title}</h1>
               <button
                 onClick={() => {
                   setNewTitle(document?.title || '');
                   setIsEditingTitle(true);
                 }}
-                className="p-1 text-gray-400 hover:text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                className="p-1 text-gray-400 hover:text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
                 aria-label="Edit title"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -185,21 +185,22 @@ export default function DocumentPage({ params }: { params: { documentId: string 
               </button>
             </div>
           )}
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-xs sm:text-sm text-gray-500 mt-1 truncate">
             Last updated: {document && new Date(document.updatedAt).toLocaleString()}
           </p>
         </div>
         <button
           onClick={() => router.push('/')}
-          className="text-gray-600 hover:text-gray-900"
+          className="text-gray-600 hover:text-gray-900 ml-2 flex-shrink-0"
+          aria-label="Back to documents"
         >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
           </svg>
         </button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6">
         <div className="lg:col-span-3">
           <EditorArea
             documentId={params.documentId}
@@ -208,7 +209,7 @@ export default function DocumentPage({ params }: { params: { documentId: string 
             onEditorReady={() => setIsEditorReady(true)}
           />
           {isEditorReady && (
-            <div className="mt-4 mb-16 lg:mb-0 flex justify-between items-center px-2 lg:hidden">
+            <div className="fixed bottom-16 left-0 right-0 bg-white border-t py-2 px-4 flex justify-between items-center lg:hidden">
               <div className="text-sm text-gray-500">
                 Words: {wordCount}
               </div>
