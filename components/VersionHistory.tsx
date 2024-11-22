@@ -56,16 +56,10 @@ export function VersionHistory({ documentId, onRevert, hideTitle = false }: Vers
       setIsReverting(version.id);
       setError(null);
 
-      console.log('Sending revert request with:', {
-        versionId: version.id,
-        content: version.content
-      });
-
       const response = await fetch(`/api/documents/${documentId}/versions/revert`, {
         method: 'POST',
         headers: { 
-          'Content-Type': 'application/json',
-          'Cache-Control': 'no-cache'
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({ 
           versionId: version.id,
@@ -73,19 +67,9 @@ export function VersionHistory({ documentId, onRevert, hideTitle = false }: Vers
         }),
       });
 
-      const responseText = await response.text();
-      console.log('Raw response:', responseText);
-
-      let data;
-      try {
-        data = responseText ? JSON.parse(responseText) : {};
-      } catch (parseError) {
-        console.error('Error parsing response:', parseError);
-        throw new Error('Invalid server response');
-      }
+      const data = await response.json();
 
       if (!response.ok) {
-        console.error('Revert error response:', data);
         throw new Error(data.error || 'Failed to revert to version');
       }
 
@@ -93,7 +77,7 @@ export function VersionHistory({ documentId, onRevert, hideTitle = false }: Vers
       console.log('Successfully reverted to version:', version.id);
     } catch (error) {
       console.error('Error reverting version:', error);
-      setError(error instanceof Error ? error.message : 'Failed to revert to selected version. Please try again.');
+      setError(error instanceof Error ? error.message : 'Failed to revert to selected version');
     } finally {
       setIsReverting(null);
     }
