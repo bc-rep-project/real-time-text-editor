@@ -13,12 +13,14 @@ export function MobileNavigation({ documentId }: MobileNavigationProps) {
   const isChatPage = pathname === `/document/${documentId}/chat`;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white border-t lg:hidden z-30">
+    <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t dark:border-gray-700 lg:hidden z-30">
       <div className="flex justify-around items-center h-16">
         <Link
           href={`/document/${documentId}`}
           className={`flex flex-col items-center w-1/2 py-2 ${
-            isDocumentPage ? 'text-blue-500' : 'text-gray-500'
+            isDocumentPage 
+              ? 'text-blue-500 dark:text-blue-400' 
+              : 'text-gray-500 dark:text-gray-400'
           }`}
         >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -29,7 +31,9 @@ export function MobileNavigation({ documentId }: MobileNavigationProps) {
         <Link
           href={`/document/${documentId}/chat`}
           className={`flex flex-col items-center w-1/2 py-2 ${
-            isChatPage ? 'text-blue-500' : 'text-gray-500'
+            isChatPage 
+              ? 'text-blue-500 dark:text-blue-400' 
+              : 'text-gray-500 dark:text-gray-400'
           }`}
         >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

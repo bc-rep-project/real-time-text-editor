@@ -86,7 +86,7 @@ export function DocumentList() {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">My Documents</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">My Documents</h1>
         <CreateNewDocumentButton onSuccess={() => fetchDocuments(searchTerm, sortBy)} />
       </div>
 
@@ -103,13 +103,14 @@ export function DocumentList() {
                 fetchDocuments('', sortBy);
               }
             }}
-            className="w-full h-10 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+            className="w-full h-10 px-4 py-2 border dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 
+            text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
             aria-label="Search documents"
           />
           {searchTerm && (
             <button
               onClick={() => setSearchTerm('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
               aria-label="Clear search"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -122,7 +123,8 @@ export function DocumentList() {
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as 'updatedAt' | 'title')}
-            className="w-full h-10 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-sm appearance-none cursor-pointer"
+            className="w-full h-10 px-4 py-2 border dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 
+            bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm appearance-none cursor-pointer"
           >
             <option value="updatedAt">Last Updated</option>
             <option value="title">Title</option>
@@ -137,7 +139,7 @@ export function DocumentList() {
       ) : error ? (
         <ErrorMessage message={error} />
       ) : documents.length === 0 ? (
-        <div className="text-center py-8 text-gray-500">
+        <div className="text-center py-8 text-gray-500 dark:text-gray-400">
           {searchTerm ? `No documents found for "${searchTerm}"` : 'No documents found'}
         </div>
       ) : (
@@ -145,21 +147,23 @@ export function DocumentList() {
           {documents.map((doc) => (
             <div
               key={doc.id}
-              className="flex items-center justify-between p-4 bg-white rounded-lg shadow-sm border hover:border-blue-500 transition-colors duration-200"
+              className="flex items-center justify-between p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm 
+              border dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-400 transition-colors duration-200"
             >
               <button
                 onClick={() => router.push(`/document/${doc.id}`)}
                 className="flex-1 text-left"
               >
-                <h3 className="font-medium text-gray-900">{doc.title}</h3>
-                <p className="text-sm text-gray-500 mt-1">
+                <h3 className="font-medium text-gray-900 dark:text-white">{doc.title}</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                   Last updated: {new Date(doc.updatedAt).toLocaleString()}
                 </p>
               </button>
               
               <button
                 onClick={() => setShowDeleteDialog(doc.id)}
-                className="ml-4 p-2 text-gray-400 hover:text-red-500 rounded-full hover:bg-red-50"
+                className="ml-4 p-2 text-gray-400 hover:text-red-500 dark:text-gray-500 dark:hover:text-red-400 
+                rounded-full hover:bg-red-50 dark:hover:bg-red-900/20"
                 aria-label="Delete document"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -176,19 +180,19 @@ export function DocumentList() {
         onClose={() => setShowDeleteDialog(null)}
         title="Delete Document"
       >
-        <p className="text-gray-600">
+        <p className="text-gray-600 dark:text-gray-300">
           Are you sure you want to delete this document? This action cannot be undone.
         </p>
         <div className="mt-4 flex justify-end gap-2">
           <button
             onClick={() => setShowDeleteDialog(null)}
-            className="px-4 py-2 text-gray-600 hover:text-gray-800"
+            className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
           >
             Cancel
           </button>
           <button
             onClick={() => showDeleteDialog && deleteDocument(showDeleteDialog)}
-            className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+            className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600"
           >
             Delete
           </button>
