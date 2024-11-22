@@ -56,16 +56,35 @@ export function VersionHistory({ documentId, onRevert, hideTitle = false }: Vers
       setIsReverting(version.id);
       setError(null);
 
-      const response = await fetch(`/api/documents/${documentId}/versions/revert`, {
-        method: 'POST',
+      // First update the document content
+      const documentResponse = await fetch(`/api/documents/${documentId}`, {
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ versionId: version.id }),
+        body: JSON.stringify({ 
+          content: version.content,
+          lastVersionId: version.id 
+        }),
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to revert to version');
+      if (!documentResponse.ok) {
+        throw new Error('Failed to update document content');
       }
 
+      // Then create a new version entry to track this reversion
+      const versionResponse = await fetch(`/api/documents/${documentId}/versions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          content: version.content,
+          restoredFromVersionId: version.id
+        }),
+      });
+
+      if (!versionResponse.ok) {
+        throw new Error('Failed to create version entry');
+      }
+
+      // Update the UI
       onRevert(version.content);
     } catch (error) {
       console.error('Error reverting version:', error);
