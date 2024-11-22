@@ -81,14 +81,18 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { versionId, content } = await request.json();
+    const body = await request.json().catch(() => ({}));
+    const { versionId, content } = body;
+
     if (!versionId || !content) {
-      return NextResponse.json({ error: 'Version ID and content are required' }, { status: 400 });
+      return NextResponse.json({ 
+        error: 'Version ID and content are required',
+        receivedData: { versionId, content } 
+      }, { status: 400 });
     }
 
     // Get current document
     const currentDoc = await db.get<Document>('documents', params.documentId);
-
     if (!currentDoc) {
       return NextResponse.json({ error: 'Document not found' }, { status: 404 });
     }
@@ -105,40 +109,45 @@ export async function POST(
 
       // 1. Create new version with current content
       const newVersionRef = db.collection('versions').doc();
-      batch.set(newVersionRef, {
+      const newVersion = {
         documentId: params.documentId,
         content: currentDoc.content,
         userId: session.user.id,
-        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        createdAt: new Date(), // Use regular Date instead of serverTimestamp for consistency
         title: currentDoc.title
-      });
+      };
+      
+      batch.set(newVersionRef, newVersion);
 
       // 2. Update the document with the reverted content
       const documentRef = db.doc('documents', params.documentId);
-      batch.update(documentRef, {
+      const updateData = {
         content: content,
-        updatedAt: admin.firestore.FieldValue.serverTimestamp()
-      });
+        updatedAt: new Date() // Use regular Date instead of serverTimestamp for consistency
+      };
+      
+      batch.update(documentRef, updateData);
 
       // Commit both operations atomically
       await batch.commit();
 
       return NextResponse.json({ 
         success: true,
-        message: 'Successfully reverted to selected version'
+        message: 'Successfully reverted to selected version',
+        newVersionId: newVersionRef.id
       });
     } catch (dbError) {
       console.error('Database operation failed:', dbError);
-      return NextResponse.json(
-        { error: 'Failed to save version history' },
-        { status: 500 }
-      );
+      return NextResponse.json({ 
+        error: 'Failed to save version history',
+        details: dbError instanceof Error ? dbError.message : 'Unknown error'
+      }, { status: 500 });
     }
   } catch (error) {
     console.error('Failed to revert version:', error);
-    return NextResponse.json(
-      { error: 'Internal Server Error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ 
+      error: 'Internal Server Error',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 });
   }
 } 

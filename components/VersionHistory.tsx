@@ -65,7 +65,16 @@ export function VersionHistory({ documentId, onRevert, hideTitle = false }: Vers
         }),
       });
 
-      const data = await response.json();
+      const responseText = await response.text();
+      console.log('Raw response:', responseText);
+
+      let data;
+      try {
+        data = responseText ? JSON.parse(responseText) : {};
+      } catch (parseError) {
+        console.error('Error parsing response:', parseError);
+        throw new Error('Invalid server response');
+      }
 
       if (!response.ok) {
         console.error('Revert error response:', data);
@@ -73,7 +82,6 @@ export function VersionHistory({ documentId, onRevert, hideTitle = false }: Vers
       }
 
       onRevert(version.content);
-      
       console.log('Successfully reverted to version:', version.id);
     } catch (error) {
       console.error('Error reverting version:', error);
