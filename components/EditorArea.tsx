@@ -99,7 +99,7 @@ export function EditorArea({
           modules={modules}
           theme="snow"
           placeholder="Start writing..."
-          className="h-[calc(100vh-12rem)] sm:h-[calc(100vh-14rem)] lg:h-[500px] mb-12"
+          className="h-[calc(100vh-16rem)] sm:h-[calc(100vh-14rem)] lg:h-[500px] mb-12"
         />
       </div>
       

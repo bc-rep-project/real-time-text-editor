@@ -201,7 +201,7 @@ export default function DocumentPage({ params }: { params: { documentId: string 
         </button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 relative">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 relative mb-16 lg:mb-0">
         <div className="lg:col-span-8 xl:col-span-9 relative z-10">
           <EditorArea
             documentId={params.documentId}
@@ -210,13 +210,23 @@ export default function DocumentPage({ params }: { params: { documentId: string 
             onEditorReady={() => setIsEditorReady(true)}
           />
           {isEditorReady && (
-            <div className="hidden lg:flex justify-between items-center mt-4">
+            <div className="flex justify-between items-center mt-4">
               <div className="text-sm text-gray-500">
                 Words: {wordCount}
               </div>
+              <div className="flex lg:hidden">
+                <MobileVersionHistory
+                  documentId={params.documentId}
+                  onRevert={(content) => {
+                    setEditorContent(content);
+                    setDocument(prev => prev ? {...prev, content} : null);
+                    setWordCount(calculateWordCount(content));
+                  }}
+                />
+              </div>
               <button
                 onClick={() => setShowVersionHistory(true)}
-                className="flex items-center gap-1 text-gray-500 hover:text-gray-700"
+                className="hidden lg:flex items-center gap-1 text-gray-500 hover:text-gray-700"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -236,7 +246,7 @@ export default function DocumentPage({ params }: { params: { documentId: string 
       </div>
 
       {showVersionHistory && (
-        <div className="fixed inset-0 z-50">
+        <div className="fixed inset-0 z-[60]">
           <div 
             className="absolute inset-0 bg-black/30 backdrop-blur-sm"
             onClick={() => setShowVersionHistory(false)}
@@ -255,7 +265,7 @@ export default function DocumentPage({ params }: { params: { documentId: string 
         </div>
       )}
 
-      <div className="z-30 relative">
+      <div className="fixed bottom-0 left-0 right-0 z-40 lg:hidden">
         <MobileNavigation documentId={params.documentId} />
       </div>
     </div>
