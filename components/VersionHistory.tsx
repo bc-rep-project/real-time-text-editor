@@ -56,9 +56,17 @@ export function VersionHistory({ documentId, onRevert, hideTitle = false }: Vers
       setIsReverting(version.id);
       setError(null);
 
+      console.log('Sending revert request with:', {
+        versionId: version.id,
+        content: version.content
+      });
+
       const response = await fetch(`/api/documents/${documentId}/versions/revert`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache'
+        },
         body: JSON.stringify({ 
           versionId: version.id,
           content: version.content

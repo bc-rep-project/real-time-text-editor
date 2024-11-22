@@ -81,9 +81,24 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const body = await request.json().catch(() => ({}));
+    // Log the request body for debugging
+    const rawBody = await request.text();
+    console.log('Raw request body:', rawBody);
+
+    let body;
+    try {
+      body = JSON.parse(rawBody);
+    } catch (parseError) {
+      console.error('Error parsing request body:', parseError);
+      return NextResponse.json({ 
+        error: 'Invalid request body',
+        details: 'Could not parse JSON'
+      }, { status: 400 });
+    }
+
     const { versionId, content } = body;
 
+    // Validate required fields
     if (!versionId || !content) {
       return NextResponse.json({ 
         error: 'Version ID and content are required',
@@ -104,37 +119,25 @@ export async function POST(
     }
 
     try {
-      // Create a new batch
-      const batch = db.createBatch();
-
-      // 1. Create new version with current content
-      const newVersionRef = db.collection('versions').doc();
-      const newVersion = {
+      // First save the current version
+      const newVersionId = await db.add('versions', {
         documentId: params.documentId,
         content: currentDoc.content,
         userId: session.user.id,
-        createdAt: new Date(), // Use regular Date instead of serverTimestamp for consistency
+        createdAt: new Date(),
         title: currentDoc.title
-      };
-      
-      batch.set(newVersionRef, newVersion);
+      });
 
-      // 2. Update the document with the reverted content
-      const documentRef = db.doc('documents', params.documentId);
-      const updateData = {
+      // Then update the document with the reverted content
+      await db.update('documents', params.documentId, {
         content: content,
-        updatedAt: new Date() // Use regular Date instead of serverTimestamp for consistency
-      };
-      
-      batch.update(documentRef, updateData);
-
-      // Commit both operations atomically
-      await batch.commit();
+        updatedAt: new Date()
+      });
 
       return NextResponse.json({ 
         success: true,
         message: 'Successfully reverted to selected version',
-        newVersionId: newVersionRef.id
+        newVersionId
       });
     } catch (dbError) {
       console.error('Database operation failed:', dbError);
