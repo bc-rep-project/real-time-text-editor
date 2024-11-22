@@ -17,9 +17,10 @@ interface Version {
 interface VersionHistoryProps {
   documentId: string;
   onRevert: (content: string) => void;
+  hideTitle?: boolean;
 }
 
-export function VersionHistory({ documentId, onRevert }: VersionHistoryProps) {
+export function VersionHistory({ documentId, onRevert, hideTitle = false }: VersionHistoryProps) {
   const { data: session } = useSession();
   const [versions, setVersions] = useState<Version[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -92,9 +93,11 @@ export function VersionHistory({ documentId, onRevert }: VersionHistoryProps) {
 
   return (
     <div className="border rounded-lg bg-white dark:bg-gray-800">
-      <div className="p-3 border-b dark:border-gray-700">
-        <h3 className="font-medium text-gray-900 dark:text-white">Version History</h3>
-      </div>
+      {!hideTitle && (
+        <div className="p-3 border-b dark:border-gray-700">
+          <h3 className="font-medium text-gray-900 dark:text-white">Version History</h3>
+        </div>
+      )}
       <div className="divide-y dark:divide-gray-700 max-h-[300px] overflow-y-auto">
         {versions.map((version) => (
           <div key={version.id} className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50">

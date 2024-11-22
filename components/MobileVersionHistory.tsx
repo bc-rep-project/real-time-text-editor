@@ -97,6 +97,7 @@ export function MobileVersionHistory({ documentId, onRevert }: MobileVersionHist
                 onRevert(content);
                 setIsOpen(false);
               }}
+              hideTitle={true}
             />
           </div>
         </div>
