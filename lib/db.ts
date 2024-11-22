@@ -4,7 +4,8 @@ import {
   Query,
   CollectionReference,
   WhereFilterOp,
-  OrderByDirection
+  OrderByDirection,
+  WriteBatch
 } from 'firebase-admin/firestore';
 
 interface WhereClause {
@@ -123,5 +124,18 @@ export const db = {
       console.error('Error deleting document:', error);
       throw error;
     }
+  },
+
+  // Add these new methods
+  createBatch(): WriteBatch {
+    return adminDb.batch();
+  },
+
+  collection(collectionName: string) {
+    return adminDb.collection(collectionName);
+  },
+
+  doc(collectionName: string, docId: string) {
+    return adminDb.collection(collectionName).doc(docId);
   }
 }; 

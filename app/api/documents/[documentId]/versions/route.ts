@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { db } from '@/lib/db';
+import * as admin from 'firebase-admin';
 
 interface User {
   id: string;
@@ -81,8 +82,8 @@ export async function POST(
     }
 
     const { versionId, content } = await request.json();
-    if (!versionId) {
-      return NextResponse.json({ error: 'Version ID is required' }, { status: 400 });
+    if (!versionId || !content) {
+      return NextResponse.json({ error: 'Version ID and content are required' }, { status: 400 });
     }
 
     // Get current document
@@ -92,25 +93,51 @@ export async function POST(
       return NextResponse.json({ error: 'Document not found' }, { status: 404 });
     }
 
-    // Save current version before reverting
-    await db.add('versions', {
-      documentId: params.documentId,
-      content: currentDoc.content,
-      userId: session.user.id,
-      createdAt: new Date()
-    });
+    // Verify the version exists
+    const versionToRevert = await db.get<Version>('versions', versionId);
+    if (!versionToRevert) {
+      return NextResponse.json({ error: 'Version not found' }, { status: 404 });
+    }
 
-    // Revert to the selected version
-    await db.update('documents', params.documentId, {
-      content: content,
-      updatedAt: new Date()
-    });
+    try {
+      // Create a new batch
+      const batch = db.createBatch();
 
-    return NextResponse.json({ success: true });
+      // 1. Create new version with current content
+      const newVersionRef = db.collection('versions').doc();
+      batch.set(newVersionRef, {
+        documentId: params.documentId,
+        content: currentDoc.content,
+        userId: session.user.id,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        title: currentDoc.title
+      });
+
+      // 2. Update the document with the reverted content
+      const documentRef = db.doc('documents', params.documentId);
+      batch.update(documentRef, {
+        content: content,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp()
+      });
+
+      // Commit both operations atomically
+      await batch.commit();
+
+      return NextResponse.json({ 
+        success: true,
+        message: 'Successfully reverted to selected version'
+      });
+    } catch (dbError) {
+      console.error('Database operation failed:', dbError);
+      return NextResponse.json(
+        { error: 'Failed to save version history' },
+        { status: 500 }
+      );
+    }
   } catch (error) {
     console.error('Failed to revert version:', error);
     return NextResponse.json(
-      { error: 'Internal Server Error' }, 
+      { error: 'Internal Server Error' },
       { status: 500 }
     );
   }

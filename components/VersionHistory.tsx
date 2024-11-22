@@ -65,16 +65,19 @@ export function VersionHistory({ documentId, onRevert, hideTitle = false }: Vers
         }),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to revert to version');
+        console.error('Revert error response:', data);
+        throw new Error(data.error || 'Failed to revert to version');
       }
 
-      const data = await response.json();
       onRevert(version.content);
+      
+      console.log('Successfully reverted to version:', version.id);
     } catch (error) {
       console.error('Error reverting version:', error);
-      setError('Failed to revert to selected version');
+      setError(error instanceof Error ? error.message : 'Failed to revert to selected version. Please try again.');
     } finally {
       setIsReverting(null);
     }
