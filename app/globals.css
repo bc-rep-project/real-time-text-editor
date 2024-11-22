@@ -7,6 +7,11 @@
   --background-rgb: 255, 255, 255;
 }
 
+:root[class~="dark"] {
+  --foreground-rgb: 255, 255, 255;
+  --background-rgb: 17, 24, 39;
+}
+
 body {
   color: rgb(var(--foreground-rgb));
   background: rgb(var(--background-rgb));
@@ -73,4 +78,27 @@ body {
   top: 0;
   background: white;
   z-index: 10;
+}
+
+/* Dark mode styles for editor */
+.dark .ql-toolbar {
+  background: rgb(31, 41, 55);
+  border-color: rgb(55, 65, 81);
+}
+
+.dark .ql-container {
+  background: rgb(31, 41, 55);
+  border-color: rgb(55, 65, 81);
+}
+
+.dark .ql-editor {
+  color: rgb(229, 231, 235);
+}
+
+.dark .ql-stroke {
+  stroke: rgb(229, 231, 235) !important;
+}
+
+.dark .ql-fill {
+  fill: rgb(229, 231, 235) !important;
 } 
