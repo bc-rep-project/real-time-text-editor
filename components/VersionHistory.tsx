@@ -77,7 +77,7 @@ export function VersionHistory({ documentId, onRevert, hideTitle = false }: Vers
 
   if (isLoading) {
     return (
-      <div className="border rounded-lg bg-white p-4">
+      <div className="border rounded-lg bg-white dark:bg-gray-800 dark:border-gray-700 p-4">
         <LoadingSpinner />
       </div>
     );
@@ -85,14 +85,14 @@ export function VersionHistory({ documentId, onRevert, hideTitle = false }: Vers
 
   if (error) {
     return (
-      <div className="border rounded-lg bg-white p-4">
+      <div className="border rounded-lg bg-white dark:bg-gray-800 dark:border-gray-700 p-4">
         <ErrorMessage message={error} />
       </div>
     );
   }
 
   return (
-    <div className="border rounded-lg bg-white dark:bg-gray-800">
+    <div className="border rounded-lg bg-white dark:bg-gray-800 dark:border-gray-700">
       {!hideTitle && (
         <div className="p-3 border-b dark:border-gray-700">
           <h3 className="font-medium text-gray-900 dark:text-white">Version History</h3>

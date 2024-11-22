@@ -83,15 +83,15 @@ export function UserPresenceIndicator({ documentId }: UserPresenceIndicatorProps
 
   if (isLoading) {
     return (
-      <div className="border rounded-lg bg-white p-4">
+      <div className="border rounded-lg bg-white dark:bg-gray-800 dark:border-gray-700 p-4">
         <LoadingSpinner size="small" />
       </div>
     );
   }
 
   return (
-    <div className="border rounded-lg bg-white p-4">
-      <h3 className="text-sm font-semibold text-gray-600 mb-3">
+    <div className="border rounded-lg bg-white dark:bg-gray-800 dark:border-gray-700 p-4">
+      <h3 className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-3">
         Currently Active
       </h3>
       <div className="space-y-2">
@@ -104,14 +104,14 @@ export function UserPresenceIndicator({ documentId }: UserPresenceIndicatorProps
               <div className="w-2 h-2 bg-green-500 rounded-full"></div>
               <div className="w-2 h-2 bg-green-500 rounded-full absolute animate-ping"></div>
             </div>
-            <span className="text-sm text-gray-700">
+            <span className="text-sm text-gray-700 dark:text-gray-300">
               {user.username}
               {user.userId === session?.user?.id && ' (You)'}
             </span>
           </div>
         ))}
         {activeUsers.length === 0 && (
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
             No active users
           </p>
         )}
