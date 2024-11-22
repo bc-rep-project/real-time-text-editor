@@ -126,8 +126,8 @@ export default function DocumentPage({ params }: { params: { documentId: string 
   }
 
   return (
-    <div className="container mx-auto px-4 sm:px-6 pb-24 lg:pb-6 pt-4 sm:pt-6 relative z-0">
-      <div className="mb-4 sm:mb-6 flex justify-between items-center">
+    <div className="container mx-auto px-4 sm:px-6 pb-24 lg:pb-6 pt-4 sm:pt-6 relative">
+      <div className="mb-4 sm:mb-6 flex justify-between items-center relative z-[1]">
         <div className="flex-1 min-w-0">
           {isEditingTitle ? (
             <div className="flex items-center gap-2">
@@ -200,7 +200,7 @@ export default function DocumentPage({ params }: { params: { documentId: string 
         </button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6 relative z-[1]">
         <div className="lg:col-span-3">
           <EditorArea
             documentId={params.documentId}
@@ -209,7 +209,7 @@ export default function DocumentPage({ params }: { params: { documentId: string 
             onEditorReady={() => setIsEditorReady(true)}
           />
           {isEditorReady && (
-            <div className="fixed bottom-16 left-0 right-0 bg-white border-t py-2 px-4 flex justify-between items-center lg:hidden">
+            <div className="fixed bottom-16 left-0 right-0 bg-white border-t py-2 px-4 flex justify-between items-center lg:hidden z-[2]">
               <div className="text-sm text-gray-500">
                 Words: {wordCount}
               </div>
