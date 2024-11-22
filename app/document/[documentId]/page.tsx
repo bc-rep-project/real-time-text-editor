@@ -143,7 +143,11 @@ export default function DocumentPage({ params }: { params: { documentId: string 
                     setIsEditingTitle(false);
                   }
                 }}
-                className="text-xl sm:text-3xl font-bold px-2 py-1 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
+                className="text-xl sm:text-3xl font-bold px-2 py-1 border rounded-lg 
+                focus:outline-none focus:ring-2 focus:ring-blue-500 w-full
+                bg-white dark:bg-gray-800
+                text-gray-900 dark:text-white
+                border-gray-300 dark:border-gray-600"
                 placeholder="Document title"
                 autoFocus
               />
@@ -171,7 +175,9 @@ export default function DocumentPage({ params }: { params: { documentId: string 
             </div>
           ) : (
             <div className="group flex items-center gap-2 overflow-hidden">
-              <h1 className="text-xl sm:text-3xl font-bold truncate">{document?.title}</h1>
+              <h1 className="text-xl sm:text-3xl font-bold truncate text-gray-900 dark:text-white">
+                {document?.title}
+              </h1>
               <button
                 onClick={() => {
                   setNewTitle(document?.title || '');
@@ -186,13 +192,13 @@ export default function DocumentPage({ params }: { params: { documentId: string 
               </button>
             </div>
           )}
-          <p className="text-xs sm:text-sm text-gray-500 mt-1 truncate">
+          <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1 truncate">
             Last updated: {document && new Date(document.updatedAt).toLocaleString()}
           </p>
         </div>
         <button
           onClick={() => router.push('/')}
-          className="text-gray-600 hover:text-gray-900 ml-2 flex-shrink-0"
+          className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white ml-2 flex-shrink-0"
           aria-label="Back to documents"
         >
           <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -211,7 +217,7 @@ export default function DocumentPage({ params }: { params: { documentId: string 
           />
           {isEditorReady && (
             <div className="flex justify-between items-center mt-4">
-              <div className="text-sm text-gray-500">
+              <div className="text-sm text-gray-500 dark:text-gray-400">
                 Words: {wordCount}
               </div>
               <div className="flex lg:hidden">
@@ -226,7 +232,8 @@ export default function DocumentPage({ params }: { params: { documentId: string 
               </div>
               <button
                 onClick={() => setShowVersionHistory(true)}
-                className="hidden lg:flex items-center gap-1 text-gray-500 hover:text-gray-700"
+                className="hidden lg:flex items-center gap-1 text-gray-500 dark:text-gray-400 
+                hover:text-gray-700 dark:hover:text-gray-200"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />

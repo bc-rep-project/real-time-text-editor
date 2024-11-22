@@ -101,13 +101,17 @@ export function ChatBox({ documentId }: ChatBoxProps) {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-12rem)] lg:h-full border rounded-lg bg-white shadow-sm">
+    <div className="border rounded-lg bg-white dark:bg-gray-800 h-[500px] flex flex-col">
+      <div className="p-3 border-b dark:border-gray-700">
+        <h3 className="font-medium text-gray-900 dark:text-white">Chat</h3>
+      </div>
+
       {isLoading ? (
-        <div className="flex items-center justify-center h-[300px]">
+        <div className="flex-1 flex items-center justify-center">
           <LoadingSpinner />
         </div>
       ) : error ? (
-        <div className="p-4">
+        <div className="flex-1 flex items-center justify-center">
           <ErrorMessage message={error} />
         </div>
       ) : (
@@ -121,12 +125,14 @@ export function ChatBox({ documentId }: ChatBoxProps) {
                   msg.userId === session?.user?.id ? 'items-end' : 'items-start'
                 }`}
               >
-                <div className="text-xs text-gray-500 px-2">{msg.username}</div>
+                <div className="text-xs text-gray-500 dark:text-gray-400 px-2">
+                  {msg.username}
+                </div>
                 <div
                   className={`rounded-lg px-3 py-2 break-words ${
                     msg.userId === session?.user?.id
-                      ? 'bg-blue-500 text-white ml-8'
-                      : 'bg-gray-100 mr-8'
+                      ? 'bg-blue-500 text-white dark:bg-blue-600 ml-8'
+                      : 'bg-gray-100 dark:bg-gray-700 dark:text-gray-100 mr-8'
                   } max-w-[85%] sm:max-w-[75%]`}
                 >
                   {msg.message}
@@ -137,7 +143,7 @@ export function ChatBox({ documentId }: ChatBoxProps) {
           </div>
 
           {/* Message input form */}
-          <form onSubmit={handleSendMessage} className="p-3 border-t sticky bottom-0 bg-white">
+          <form onSubmit={handleSendMessage} className="p-3 border-t dark:border-gray-700 sticky bottom-0 bg-white dark:bg-gray-800">
             <div className="flex gap-2">
               <input
                 type="text"
@@ -145,12 +151,20 @@ export function ChatBox({ documentId }: ChatBoxProps) {
                 onChange={(e) => setNewMessage(e.target.value)}
                 placeholder="Type a message..."
                 disabled={isSending}
-                className="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 text-sm"
+                className="flex-1 px-3 py-2 border dark:border-gray-600 rounded-lg 
+                focus:outline-none focus:ring-2 focus:ring-blue-500 
+                disabled:opacity-50 text-sm
+                bg-white dark:bg-gray-700
+                text-gray-900 dark:text-gray-100
+                placeholder-gray-500 dark:placeholder-gray-400"
               />
               <button
                 type="submit"
                 disabled={isSending || !newMessage.trim()}
-                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:hover:bg-blue-500 flex items-center gap-2 whitespace-nowrap text-sm"
+                className="px-4 py-2 bg-blue-500 dark:bg-blue-600 text-white rounded-lg 
+                hover:bg-blue-600 dark:hover:bg-blue-700 
+                disabled:opacity-50 disabled:hover:bg-blue-500 dark:disabled:hover:bg-blue-600 
+                flex items-center gap-2 whitespace-nowrap text-sm"
               >
                 {isSending ? (
                   <>

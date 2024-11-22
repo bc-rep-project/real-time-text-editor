@@ -91,26 +91,27 @@ export function VersionHistory({ documentId, onRevert }: VersionHistoryProps) {
   }
 
   return (
-    <div className="border rounded-lg bg-white">
-      <div className="p-3 border-b">
-        <h3 className="font-medium">Version History</h3>
+    <div className="border rounded-lg bg-white dark:bg-gray-800">
+      <div className="p-3 border-b dark:border-gray-700">
+        <h3 className="font-medium text-gray-900 dark:text-white">Version History</h3>
       </div>
-      <div className="divide-y max-h-[300px] overflow-y-auto">
+      <div className="divide-y dark:divide-gray-700 max-h-[300px] overflow-y-auto">
         {versions.map((version) => (
-          <div key={version.id} className="p-4 hover:bg-gray-50">
+          <div key={version.id} className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50">
             <div className="flex justify-between items-start mb-2">
               <div>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-gray-600 dark:text-gray-300">
                   {version.username}
                 </p>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-gray-500 dark:text-gray-400">
                   {new Date(version.createdAt).toLocaleString()}
                 </p>
               </div>
               <button
                 onClick={() => handleRevert(version)}
                 disabled={isReverting !== null}
-                className="text-sm text-blue-500 hover:text-blue-600 disabled:opacity-50 flex items-center gap-1"
+                className="text-sm text-blue-500 dark:text-blue-400 hover:text-blue-600 dark:hover:text-blue-300 
+                disabled:opacity-50 flex items-center gap-1"
               >
                 {isReverting === version.id ? (
                   <>
@@ -125,7 +126,7 @@ export function VersionHistory({ documentId, onRevert }: VersionHistoryProps) {
           </div>
         ))}
         {versions.length === 0 && (
-          <div className="p-4 text-center text-gray-500">
+          <div className="p-4 text-center text-gray-500 dark:text-gray-400">
             No version history available
           </div>
         )}
