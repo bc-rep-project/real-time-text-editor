@@ -25,6 +25,7 @@ export default function DocumentPage({ params }: { params: { documentId: string 
   const [wordCount, setWordCount] = useState(0);
   const [editorContent, setEditorContent] = useState('');
   const [isEditorReady, setIsEditorReady] = useState(false);
+  const [showVersionHistory, setShowVersionHistory] = useState(false);
 
   const calculateWordCount = (content: string) => {
     return content.split(/\s+/).filter(Boolean).length;
@@ -126,8 +127,8 @@ export default function DocumentPage({ params }: { params: { documentId: string 
   }
 
   return (
-    <div className="container mx-auto px-4 sm:px-6 pb-24 lg:pb-6 pt-4 sm:pt-6 relative">
-      <div className="mb-4 sm:mb-6 flex justify-between items-center relative z-[1]">
+    <div className="container mx-auto px-4 sm:px-6 pb-24 lg:pb-6 pt-4 sm:pt-6">
+      <div className="mb-4 sm:mb-6 flex justify-between items-center relative z-20">
         <div className="flex-1 min-w-0">
           {isEditingTitle ? (
             <div className="flex items-center gap-2">
@@ -200,8 +201,8 @@ export default function DocumentPage({ params }: { params: { documentId: string 
         </button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6 relative z-[1]">
-        <div className="lg:col-span-3">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 relative">
+        <div className="lg:col-span-8 xl:col-span-9 relative z-10">
           <EditorArea
             documentId={params.documentId}
             initialContent={editorContent}
@@ -209,41 +210,54 @@ export default function DocumentPage({ params }: { params: { documentId: string 
             onEditorReady={() => setIsEditorReady(true)}
           />
           {isEditorReady && (
-            <div className="fixed bottom-16 left-0 right-0 bg-white border-t py-2 px-4 flex justify-between items-center lg:hidden z-[2]">
+            <div className="hidden lg:flex justify-between items-center mt-4">
               <div className="text-sm text-gray-500">
                 Words: {wordCount}
               </div>
-              {document && (
-                <MobileVersionHistory 
-                  documentId={params.documentId}
-                  onRevert={(content) => {
-                    setEditorContent(content);
-                    setDocument(prev => prev ? {...prev, content} : null);
-                    setWordCount(calculateWordCount(content));
-                  }}
-                />
-              )}
+              <button
+                onClick={() => setShowVersionHistory(true)}
+                className="flex items-center gap-1 text-gray-500 hover:text-gray-700"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span className="text-sm">Version History</span>
+              </button>
             </div>
           )}
         </div>
         
-        <div className="hidden lg:block space-y-6">
-          <UserPresenceIndicator documentId={params.documentId} />
-          <ChatBox documentId={params.documentId} />
-          {isEditorReady && document && (
-            <VersionHistory 
+        <div className="hidden lg:block lg:col-span-4 xl:col-span-3">
+          <div className="sticky top-4 space-y-4">
+            <UserPresenceIndicator documentId={params.documentId} />
+            <ChatBox documentId={params.documentId} />
+          </div>
+        </div>
+      </div>
+
+      {showVersionHistory && (
+        <div className="fixed inset-0 z-50">
+          <div 
+            className="absolute inset-0 bg-black/30 backdrop-blur-sm"
+            onClick={() => setShowVersionHistory(false)}
+          />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl">
+            <VersionHistory
               documentId={params.documentId}
               onRevert={(content) => {
                 setEditorContent(content);
                 setDocument(prev => prev ? {...prev, content} : null);
                 setWordCount(calculateWordCount(content));
+                setShowVersionHistory(false);
               }}
             />
-          )}
+          </div>
         </div>
-      </div>
+      )}
 
-      <MobileNavigation documentId={params.documentId} />
+      <div className="z-30 relative">
+        <MobileNavigation documentId={params.documentId} />
+      </div>
     </div>
   );
 } 
