@@ -80,16 +80,9 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { versionId } = await request.json();
+    const { versionId, content } = await request.json();
     if (!versionId) {
       return NextResponse.json({ error: 'Version ID is required' }, { status: 400 });
-    }
-
-    // Get the version to revert to
-    const version = await db.get<Version>('versions', versionId);
-
-    if (!version) {
-      return NextResponse.json({ error: 'Version not found' }, { status: 404 });
     }
 
     // Get current document
@@ -109,16 +102,16 @@ export async function POST(
 
     // Revert to the selected version
     await db.update('documents', params.documentId, {
-      content: version.content,
+      content: content,
       updatedAt: new Date()
     });
 
-    // Get updated document
-    const updatedDocument = await db.get<Document>('documents', params.documentId);
-
-    return NextResponse.json(updatedDocument);
+    return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Failed to revert version:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Internal Server Error' }, 
+      { status: 500 }
+    );
   }
 } 

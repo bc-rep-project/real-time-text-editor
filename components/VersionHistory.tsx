@@ -59,13 +59,18 @@ export function VersionHistory({ documentId, onRevert, hideTitle = false }: Vers
       const response = await fetch(`/api/documents/${documentId}/versions/revert`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ versionId: version.id }),
+        body: JSON.stringify({ 
+          versionId: version.id,
+          content: version.content
+        }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to revert to version');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to revert to version');
       }
 
+      const data = await response.json();
       onRevert(version.content);
     } catch (error) {
       console.error('Error reverting version:', error);
