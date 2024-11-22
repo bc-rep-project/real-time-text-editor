@@ -28,11 +28,25 @@ export default function DocumentPage({ params }: { params: { documentId: string 
   const [showVersionHistory, setShowVersionHistory] = useState(false);
 
   const calculateWordCount = (content: string) => {
-    return content
-      .trim()
-      .split(/\s+/)
-      .filter(word => word.length > 0)
-      .length;
+    if (typeof window === 'undefined' || !content || content === '<p><br></p>' || content === '<p></p>') {
+      return 0;
+    }
+
+    try {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(content, 'text/html');
+      const textContent = doc.body.textContent || '';
+      
+      const words = textContent
+        .trim()
+        .split(/\s+/)
+        .filter(word => word.length > 0);
+      
+      return words.length;
+    } catch (error) {
+      console.error('Error calculating word count:', error);
+      return 0;
+    }
   };
 
   useEffect(() => {
