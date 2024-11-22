@@ -56,6 +56,7 @@ export function EditorArea({
 
   // Handle content changes
   const handleContentChange = useCallback((newContent: string) => {
+    // Update word count immediately when content changes
     onContentChange(newContent);
     setIsTyping(true);
 
@@ -77,6 +78,13 @@ export function EditorArea({
         });
 
         if (!response.ok) throw new Error('Failed to save changes');
+        
+        // Create a new version after successful save
+        await fetch(`/api/documents/${documentId}/versions`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ content: newContent }),
+        });
       } catch (error) {
         console.error('Error saving document:', error);
         setError('Failed to save changes');

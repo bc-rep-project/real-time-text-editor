@@ -28,7 +28,11 @@ export default function DocumentPage({ params }: { params: { documentId: string 
   const [showVersionHistory, setShowVersionHistory] = useState(false);
 
   const calculateWordCount = (content: string) => {
-    return content.split(/\s+/).filter(Boolean).length;
+    return content
+      .trim()
+      .split(/\s+/)
+      .filter(word => word.length > 0)
+      .length;
   };
 
   useEffect(() => {
