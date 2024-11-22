@@ -220,7 +220,7 @@ export default function DocumentPage({ params }: { params: { documentId: string 
               <div className="text-sm text-gray-500 dark:text-gray-400">
                 Words: {wordCount}
               </div>
-              <div className="flex lg:hidden">
+              <div className="block lg:hidden">
                 <MobileVersionHistory
                   documentId={params.documentId}
                   onRevert={(content) => {
@@ -253,7 +253,7 @@ export default function DocumentPage({ params }: { params: { documentId: string 
       </div>
 
       {showVersionHistory && (
-        <div className="fixed inset-0 z-[60]">
+        <div className="fixed inset-0 z-[60] hidden lg:block">
           <div 
             className="absolute inset-0 bg-black/30 backdrop-blur-sm"
             onClick={() => setShowVersionHistory(false)}
