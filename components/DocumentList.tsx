@@ -27,7 +27,7 @@ export function DocumentList() {
       
       const searchParam = encodeURIComponent(search.trim());
       const response = await fetch(
-        `/api/documents?search=${searchParam}&sort=${sort}`
+        `/api/documents?sort=${sort}`
       );
 
       if (!response.ok) {

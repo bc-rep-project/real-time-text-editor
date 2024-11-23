@@ -42,20 +42,6 @@ export async function GET(request: Request) {
       }
     ];
 
-    // Add title search condition if search term exists
-    if (search) {
-      whereConditions.push({
-        field: 'title',
-        op: '>=',
-        value: search.toLowerCase()
-      });
-      whereConditions.push({
-        field: 'title',
-        op: '<=',
-        value: search.toLowerCase() + '\uf8ff'
-      });
-    }
-
     // Get all documents for the user with proper typing
     const documents = await db.query<Document>('documents', {
       where: whereConditions,
@@ -65,10 +51,9 @@ export async function GET(request: Request) {
       }
     });
 
-    // Format dates and transform titles for case-insensitive comparison
+    // Format dates
     const formattedDocuments = documents.map(doc => ({
       ...doc,
-      title: doc.title,
       updatedAt: new Date(doc.updatedAt).toISOString()
     }));
 
