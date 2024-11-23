@@ -76,12 +76,16 @@ export const db = {
       }
 
       const snapshot = await query.get();
-      return snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate(),
-        updatedAt: doc.data().updatedAt?.toDate()
-      })) as T[];
+      return snapshot.docs.map(doc => {
+        const data = doc.data();
+        // Safely handle timestamp conversions
+        return {
+          id: doc.id,
+          ...data,
+          createdAt: data.createdAt?.toDate?.() || data.createdAt,
+          updatedAt: data.updatedAt?.toDate?.() || data.updatedAt
+        } as T;
+      });
     } catch (error) {
       console.error('Error querying documents:', error);
       return [];
