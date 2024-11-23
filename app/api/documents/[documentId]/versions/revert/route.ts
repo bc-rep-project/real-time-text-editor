@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { db } from '@/lib/db';
+import { authOptions } from '@/app/api/auth/[...nextauth]/options';
 
 interface Document {
   id: string;
@@ -23,7 +24,7 @@ export async function POST(
   { params }: { params: { documentId: string } }
 ) {
   try {
-    const session = await getServerSession();
+    const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }

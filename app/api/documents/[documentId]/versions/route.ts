@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { db } from '@/lib/db';
 import * as admin from 'firebase-admin';
+import { authOptions } from '@/app/api/auth/[...nextauth]/options';
 
 interface User {
   id: string;
@@ -32,7 +33,7 @@ export async function GET(
   { params }: { params: { documentId: string } }
 ) {
   try {
-    const session = await getServerSession();
+    const session = await getServerSession(authOptions);
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -76,7 +77,7 @@ export async function POST(
   { params }: { params: { documentId: string } }
 ) {
   try {
-    const session = await getServerSession();
+    const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
