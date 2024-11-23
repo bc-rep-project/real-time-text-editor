@@ -10,6 +10,11 @@ service cloud.firestore {
       return request.auth.uid == userId;
     }
 
+    function isDocumentParticipant(documentId) {
+      return exists(/databases/$(database)/documents/documents/$(documentId)) &&
+             get(/databases/$(database)/documents/documents/$(documentId)).data.userId == request.auth.uid;
+    }
+
     // Documents collection
     match /documents/{documentId} {
       allow read: if isAuthenticated();
@@ -22,6 +27,8 @@ service cloud.firestore {
     match /versions/{versionId} {
       allow read: if isAuthenticated();
       allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && isDocumentParticipant(resource.data.documentId);
+      allow delete: if isAuthenticated() && isDocumentParticipant(resource.data.documentId);
     }
     
     // Users collection
@@ -35,7 +42,14 @@ service cloud.firestore {
     match /chat_messages/{messageId} {
       allow read: if isAuthenticated();
       allow create: if isAuthenticated();
-      allow update, delete: if isDocumentOwner(resource.data.userId);
+      allow update: if isAuthenticated() && (
+        isDocumentOwner(resource.data.userId) || 
+        isDocumentParticipant(resource.data.documentId)
+      );
+      allow delete: if isAuthenticated() && (
+        isDocumentOwner(resource.data.userId) || 
+        isDocumentParticipant(resource.data.documentId)
+      );
     }
   }
 } 
