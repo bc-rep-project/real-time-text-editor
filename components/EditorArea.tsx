@@ -14,47 +14,50 @@ const ReactQuill = dynamic(() => import('react-quill'), {
   loading: () => <LoadingSpinner />
 });
 
-interface EditorProps {
+// Define Quill modules configuration
+const modules = {
+  toolbar: [
+    [{ header: [1, 2, 3, false] }],
+    ['bold', 'italic', 'underline', 'strike'],
+    [{ list: 'ordered' }, { list: 'bullet' }],
+    [{ script: 'sub' }, { script: 'super' }],
+    [{ indent: '-1' }, { indent: '+1' }],
+    ['link', 'image'],
+    ['clean']
+  ],
+  clipboard: {
+    matchVisual: false
+  }
+};
+
+interface EditorAreaProps {
   documentId: string;
   initialContent: string;
+  onContentChange: (content: string) => void;
+  onEditorReady: () => void;
 }
 
-export function EditorArea({ documentId, initialContent }: EditorProps) {
+export function EditorArea({ 
+  documentId, 
+  initialContent, 
+  onContentChange,
+  onEditorReady 
+}: EditorAreaProps) {
   const { data: session } = useSession();
   const { sendMessage, addMessageListener } = useWebSocket(documentId);
-  const [content, setContent] = useState(initialContent);
-  const [wordCount, setWordCount] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isTyping, setIsTyping] = useState(false);
 
-  // Quill modules configuration
-  const modules = useMemo(() => ({
-    toolbar: [
-      [{ 'header': [1, 2, 3, false] }],
-      ['bold', 'italic', 'underline', 'strike'],
-      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-      [{ 'color': [] }, { 'background': [] }],
-      ['link', 'image'],
-      ['clean']
-    ],
-    clipboard: {
-      matchVisual: false
-    }
-  }), []);
-
-  // Calculate word count
-  const calculateWordCount = useCallback((text: string) => {
-    // Remove HTML tags and count words
-    const plainText = text.replace(/<[^>]*>/g, ' ');
-    const words = plainText.trim().split(/\s+/).filter(word => word.length > 0);
-    return words.length;
-  }, []);
+  // Call onEditorReady when the component mounts
+  useEffect(() => {
+    onEditorReady();
+  }, [onEditorReady]);
 
   // Handle content changes
   const handleContentChange = useCallback((newContent: string) => {
-    setContent(newContent);
-    setWordCount(calculateWordCount(newContent));
+    // Update word count immediately when content changes
+    onContentChange(newContent);
     setIsTyping(true);
 
     // Notify other users of changes
@@ -75,6 +78,13 @@ export function EditorArea({ documentId, initialContent }: EditorProps) {
         });
 
         if (!response.ok) throw new Error('Failed to save changes');
+        
+        // Create a new version after successful save
+        await fetch(`/api/documents/${documentId}/versions`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ content: newContent }),
+        });
       } catch (error) {
         console.error('Error saving document:', error);
         setError('Failed to save changes');
@@ -86,41 +96,23 @@ export function EditorArea({ documentId, initialContent }: EditorProps) {
 
     const timeoutId = setTimeout(saveContent, 1000);
     return () => clearTimeout(timeoutId);
-  }, [documentId, sendMessage]);
-
-  // Listen for updates from other users
-  useEffect(() => {
-    const cleanup = addMessageListener((event: MessageEvent) => {
-      try {
-        const data = JSON.parse(event.data);
-        if (data.type === 'documentUpdate' && data.documentId === documentId) {
-          setContent(data.data.content);
-          setWordCount(calculateWordCount(data.data.content));
-        }
-      } catch (error) {
-        console.error('Error handling editor update:', error);
-      }
-    });
-
-    return cleanup;
-  }, [documentId, addMessageListener, calculateWordCount]);
+  }, [documentId, sendMessage, onContentChange]);
 
   return (
     <div className="flex flex-col h-full">
       <div className="border rounded-lg bg-white overflow-hidden">
         <ReactQuill
-          value={content}
+          value={initialContent}
           onChange={handleContentChange}
           modules={modules}
           theme="snow"
           placeholder="Start writing..."
-          className="h-[500px] mb-12"
+          className="h-[calc(100vh-16rem)] sm:h-[calc(100vh-14rem)] lg:h-[500px] mb-12"
         />
       </div>
       
-      <div className="flex justify-between items-center mt-2 px-2 text-sm text-gray-500">
+      <div className="flex justify-between items-center mt-2 px-2 text-xs sm:text-sm text-gray-500">
         <div className="flex items-center gap-2">
-          <span>{wordCount} words</span>
           {isTyping && <span>•</span>}
           {isSaving && (
             <span className="flex items-center gap-1">

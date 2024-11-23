@@ -15,13 +15,9 @@ const firebaseConfig = {
 // Initialize Firebase for client-side
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 export const auth = getAuth(app);
-
-// Initialize Firestore with settings
 export const firestore = initializeFirestore(app, {
   cacheSizeBytes: CACHE_SIZE_UNLIMITED,
-  experimentalForceLongPolling: config.firebase.experimentalForceLongPolling,
-  experimentalAutoDetectLongPolling: config.firebase.experimentalAutoDetectLongPolling,
-  ignoreUndefinedProperties: config.firebase.ignoreUndefinedProperties
+  ...config.firebase
 });
 
 // Enable offline persistence

@@ -1,24 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { db } from '@/lib/db';
-import * as admin from 'firebase-admin';
 import { authOptions } from '@/app/api/auth/[...nextauth]/options';
-
-interface User {
-  id: string;
-  username: string;
-  password: string;
-  email?: string;
-}
-
-interface Version {
-  id: string;
-  documentId: string;
-  content: string;
-  userId: string;
-  createdAt: Date;
-  username?: string;
-}
 
 interface Document {
   id: string;
@@ -27,48 +10,12 @@ interface Document {
   updatedAt: Date;
 }
 
-// GET /api/documents/[documentId]/versions
-export async function GET(
-  request: Request,
-  { params }: { params: { documentId: string } }
-) {
-  try {
-    const session = await getServerSession(authOptions);
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const versions = await db.query<Version>('versions', {
-      where: [{
-        field: 'documentId',
-        op: '==',
-        value: params.documentId
-      }],
-      orderBy: {
-        field: 'createdAt',
-        direction: 'desc'
-      }
-    });
-
-    // Get usernames for each version
-    const versionsWithUsernames = await Promise.all(
-      versions.map(async (version: Version) => {
-        const user = await db.get<User>('users', version.userId);
-        return {
-          ...version,
-          username: user?.username || 'Unknown User'
-        };
-      })
-    );
-
-    return NextResponse.json(versionsWithUsernames);
-  } catch (error) {
-    console.error('Failed to fetch versions:', error);
-    return NextResponse.json(
-      { error: 'Internal Server Error' },
-      { status: 500 }
-    );
-  }
+interface Version {
+  id: string;
+  documentId: string;
+  content: string;
+  userId: string;
+  createdAt: Date;
 }
 
 // POST /api/documents/[documentId]/versions/revert
@@ -82,21 +29,7 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Log the request body for debugging
-    const rawBody = await request.text();
-    console.log('Raw request body:', rawBody);
-
-    let body;
-    try {
-      body = JSON.parse(rawBody);
-    } catch (parseError) {
-      console.error('Error parsing request body:', parseError);
-      return NextResponse.json({ 
-        error: 'Invalid request body',
-        details: 'Could not parse JSON'
-      }, { status: 400 });
-    }
-
+    const body = await request.json();
     const { versionId, content } = body;
 
     // Validate required fields
@@ -126,7 +59,6 @@ export async function POST(
         content: currentDoc.content,
         userId: session.user.id,
         createdAt: new Date(),
-        title: currentDoc.title
       });
 
       // Then update the document with the reverted content

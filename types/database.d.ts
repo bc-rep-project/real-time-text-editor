@@ -31,6 +31,10 @@ export interface ChatMessage {
   createdAt: Date;
 }
 
+export interface ChatMessageWithUser extends ChatMessage {
+  username: string;
+}
+
 export interface DocumentVersion {
   id: string;
   documentId: string;

@@ -4,15 +4,18 @@ import {
   Query,
   CollectionReference,
   WhereFilterOp,
-  OrderByDirection
+  OrderByDirection,
+  WriteBatch
 } from 'firebase-admin/firestore';
 
+interface WhereClause {
+  field: string;
+  op: WhereFilterOp;
+  value: any;
+}
+
 interface QueryOptions {
-  where?: {
-    field: string;
-    op: WhereFilterOp;
-    value: any;
-  };
+  where?: WhereClause[];
   orderBy?: {
     field: string;
     direction: OrderByDirection;
@@ -52,11 +55,13 @@ export const db = {
       let query: Query<DocumentData> | CollectionReference<DocumentData> = adminDb.collection(collection);
 
       if (options.where) {
-        query = query.where(
-          options.where.field,
-          options.where.op,
-          options.where.value
-        );
+        options.where.forEach(clause => {
+          query = query.where(
+            clause.field,
+            clause.op,
+            clause.value
+          );
+        });
       }
 
       if (options.orderBy) {
@@ -71,12 +76,16 @@ export const db = {
       }
 
       const snapshot = await query.get();
-      return snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate(),
-        updatedAt: doc.data().updatedAt?.toDate()
-      })) as T[];
+      return snapshot.docs.map(doc => {
+        const data = doc.data();
+        // Safely handle timestamp conversions
+        return {
+          id: doc.id,
+          ...data,
+          createdAt: data.createdAt?.toDate?.() || data.createdAt,
+          updatedAt: data.updatedAt?.toDate?.() || data.updatedAt
+        } as T;
+      });
     } catch (error) {
       console.error('Error querying documents:', error);
       return [];
@@ -119,5 +128,18 @@ export const db = {
       console.error('Error deleting document:', error);
       throw error;
     }
+  },
+
+  // Add these new methods
+  createBatch(): WriteBatch {
+    return adminDb.batch();
+  },
+
+  collection(collectionName: string) {
+    return adminDb.collection(collectionName);
+  },
+
+  doc(collectionName: string, docId: string) {
+    return adminDb.collection(collectionName).doc(docId);
   }
 }; 
