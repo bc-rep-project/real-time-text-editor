@@ -216,7 +216,7 @@ export default function DocumentPage({ params }: { params: { documentId: string 
         </div>
         <button
           onClick={() => router.push('/')}
-          className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white ml-2 flex-shrink-0"
+          className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white ml-2 flex-shrink-0 p-2 rounded-lg transition-colors"
           aria-label="Back to documents"
         >
           <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
