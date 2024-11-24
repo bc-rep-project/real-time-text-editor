@@ -21,7 +21,9 @@ export function useWebSocket(documentId: string) {
   const connect = useCallback(() => {
     if (wsRef.current?.readyState === WebSocket.OPEN) return;
 
-    const ws = new WebSocket(`${config.websocket.url}?documentId=${documentId}`);
+    const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsUrl = `${wsProtocol}//${process.env.NEXT_PUBLIC_WS_URL}/ws?documentId=${documentId}`;
+    const ws = new WebSocket(wsUrl);
     wsRef.current = ws;
 
     ws.onopen = () => {

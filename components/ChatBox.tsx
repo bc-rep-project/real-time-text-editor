@@ -18,7 +18,7 @@ export function ChatBox({ documentId }: ChatBoxProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSending, setIsSending] = useState(false);
-  const { sendMessage } = useWebSocket(documentId);
+  const { sendMessage, addMessageListener } = useWebSocket(documentId);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -48,11 +48,11 @@ export function ChatBox({ documentId }: ChatBoxProps) {
 
   // Handle incoming chat messages
   useEffect(() => {
-    const handleWebSocketMessage = (event: MessageEvent) => {
+    const handleWebSocketMessage = async (event: MessageEvent) => {
       try {
         const data = JSON.parse(event.data);
         if (data.type === 'chatMessage') {
-          setMessages(prev => [...prev, data.data]);
+          setMessages(prev => [...prev, data]);
           scrollToBottom();
         }
       } catch (error) {
@@ -60,14 +60,12 @@ export function ChatBox({ documentId }: ChatBoxProps) {
       }
     };
 
-    const ws = new WebSocket(`ws://localhost:8081?documentId=${documentId}`);
-    ws.addEventListener('message', handleWebSocketMessage);
+    const unsubscribe = addMessageListener(handleWebSocketMessage);
 
     return () => {
-      ws.removeEventListener('message', handleWebSocketMessage);
-      ws.close();
+      unsubscribe();
     };
-  }, [documentId]);
+  }, [addMessageListener]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();

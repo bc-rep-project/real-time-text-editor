@@ -5,6 +5,11 @@ export default withAuth(
   function middleware(req) {
     const token = req.nextauth?.token;
     
+    // Allow WebSocket upgrade requests
+    if (req.headers.get('upgrade') === 'websocket') {
+      return NextResponse.next();
+    }
+
     if (!token) {
       if (req.nextUrl.pathname.startsWith('/api/')) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -28,7 +33,13 @@ export default withAuth(
   },
   {
     callbacks: {
-      authorized: ({ token }) => !!token,
+      authorized: ({ token, req }) => {
+        // Allow WebSocket connections
+        if (req.headers.get('upgrade') === 'websocket') {
+          return true;
+        }
+        return !!token;
+      },
     },
   }
 );
@@ -38,5 +49,6 @@ export const config = {
     '/documents/:path*',
     '/api/documents/:path*',
     '/api/chat/:path*',
+    '/ws', // Add WebSocket path
   ],
 }; 
