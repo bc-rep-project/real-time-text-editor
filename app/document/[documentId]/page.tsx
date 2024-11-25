@@ -38,8 +38,9 @@ export default function DocumentPage({ params }: { params: { documentId: string 
       const textContent = doc.body.textContent || '';
       
       const words = textContent
+        .replace(/\s+/g, ' ')  // Replace multiple spaces with single space
         .trim()
-        .split(/\s+/)
+        .split(' ')
         .filter(word => word.length > 0);
       
       return words.length;

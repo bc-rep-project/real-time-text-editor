@@ -82,6 +82,8 @@ body {
   height: calc(100% - 42px) !important;
   border-bottom-left-radius: 0.5rem;
   border-bottom-right-radius: 0.5rem;
+  border: 1px solid rgb(229, 231, 235);
+  border-top: none;
 }
 
 .ql-editor {
@@ -95,7 +97,7 @@ body {
 .ql-toolbar {
   border-top-left-radius: 0.5rem;
   border-top-right-radius: 0.5rem;
-  border-bottom: 1px solid rgb(var(--border-rgb));
+  border: 1px solid rgb(229, 231, 235);
   position: sticky;
   top: 0;
   background: rgb(var(--background-rgb));
@@ -123,6 +125,23 @@ body {
 
 .dark .ql-fill {
   fill: rgb(229, 231, 235) !important;
+}
+
+.dark .ql-picker {
+  color: rgb(229, 231, 235) !important;
+}
+
+.dark .ql-picker-options {
+  background-color: rgb(31, 41, 55) !important;
+  border-color: rgb(55, 65, 81) !important;
+}
+
+.dark .ql-picker-item {
+  color: rgb(229, 231, 235) !important;
+}
+
+.dark .ql-picker-label {
+  border-color: rgb(55, 65, 81) !important;
 }
 
 /* Mobile layout adjustments */
