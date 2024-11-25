@@ -100,18 +100,18 @@ export function EditorArea({
 
   return (
     <div className="flex flex-col h-full">
-      <div className="border rounded-lg bg-white overflow-hidden">
+      <div className="rounded-lg overflow-hidden">
         <ReactQuill
           value={initialContent}
           onChange={handleContentChange}
           modules={modules}
           theme="snow"
           placeholder="Start writing..."
-          className="h-[calc(100vh-16rem)] sm:h-[calc(100vh-14rem)] lg:h-[500px] mb-12"
+          className="h-[500px] bg-white dark:bg-gray-800"
         />
       </div>
       
-      <div className="flex justify-between items-center mt-2 px-2 text-xs sm:text-sm text-gray-500">
+      <div className="flex justify-between items-center mt-2 px-2 text-xs sm:text-sm text-gray-500 dark:text-gray-400">
         <div className="flex items-center gap-2">
           {isTyping && <span>•</span>}
           {isSaving && (

@@ -88,6 +88,12 @@ body {
   padding: 1rem;
   font-size: 16px;
   background: rgb(var(--background-rgb));
+  margin-bottom: 0 !important;
+}
+
+.ql-container.ql-snow {
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
 }
 
 .ql-toolbar {
@@ -112,6 +118,7 @@ body {
 }
 
 .dark .ql-editor {
+  background: rgb(31, 41, 55);
   color: rgb(229, 231, 235);
 }
 
