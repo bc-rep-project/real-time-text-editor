@@ -13,7 +13,7 @@ export function MobileNavigation({ documentId }: MobileNavigationProps) {
   const isChatPage = pathname === `/document/${documentId}/chat`;
 
   return (
-    <div className="mobile-nav">
+    <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t dark:border-gray-700 lg:hidden z-30">
       <div className="flex justify-around items-center h-16">
         <Link
           href={`/document/${documentId}`}

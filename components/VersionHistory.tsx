@@ -100,17 +100,15 @@ export function VersionHistory({ documentId, onRevert, hideTitle = false }: Vers
   }
 
   return (
-    <div className="version-history-modal border rounded-lg bg-white dark:bg-gray-800 dark:border-gray-700">
+    <div className="border rounded-lg bg-white dark:bg-gray-800 dark:border-gray-700">
       {!hideTitle && (
         <div className="p-3 border-b dark:border-gray-700">
           <h3 className="font-medium text-gray-900 dark:text-white">Version History</h3>
         </div>
       )}
-      <div className="divide-y dark:divide-gray-700 max-h-[70vh] overflow-y-auto">
+      <div className="divide-y dark:divide-gray-700 max-h-[300px] overflow-y-auto">
         {versions.map((version) => (
-          <div key={version.id} 
-            className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
-          >
+          <div key={version.id} className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50">
             <div className="flex justify-between items-start mb-2">
               <div>
                 <p className="text-sm text-gray-600 dark:text-gray-300">

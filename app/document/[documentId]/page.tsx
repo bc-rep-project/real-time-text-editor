@@ -12,7 +12,6 @@ import { ErrorMessage } from '@/components/ErrorMessage';
 import type { Document } from '@/types/database';
 import { MobileNavigation } from '@/components/MobileNavigation';
 import { MobileVersionHistory } from '@/components/MobileVersionHistory';
-import { useTheme } from '@/components/ThemeProvider';
 
 export default function DocumentPage({ params }: { params: { documentId: string } }) {
   const router = useRouter();
@@ -27,7 +26,6 @@ export default function DocumentPage({ params }: { params: { documentId: string 
   const [editorContent, setEditorContent] = useState('');
   const [isEditorReady, setIsEditorReady] = useState(false);
   const [showVersionHistory, setShowVersionHistory] = useState(false);
-  const { theme, toggleTheme } = useTheme();
 
   const calculateWordCount = (content: string) => {
     if (typeof window === 'undefined' || !content || content === '<p><br></p>' || content === '<p></p>') {
@@ -111,57 +109,6 @@ export default function DocumentPage({ params }: { params: { documentId: string 
     }
   };
 
-  const handleSave = async () => {
-    if (!newTitle.trim() || isSavingTitle) return;
-
-    try {
-      setIsSavingTitle(true);
-      const response = await fetch(`/api/documents/${params.documentId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: newTitle.trim() })
-      });
-
-      if (!response.ok) throw new Error('Failed to update title');
-
-      const updatedDoc = await response.json();
-      setDocument(updatedDoc);
-      setIsEditingTitle(false);
-    } catch (error) {
-      console.error('Error updating title:', error);
-    } finally {
-      setIsSavingTitle(false);
-    }
-  };
-
-  useEffect(() => {
-    let saveTimeout: NodeJS.Timeout;
-
-    const autoSave = async () => {
-      if (!document?.id || !editorContent) return;
-
-      try {
-        const response = await fetch(`/api/documents/${document.id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ content: editorContent }),
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to save document');
-        }
-      } catch (error) {
-        console.error('Error auto-saving document:', error);
-      }
-    };
-
-    if (isEditorReady && editorContent) {
-      saveTimeout = setTimeout(autoSave, 2000); // Auto-save after 2 seconds of no changes
-    }
-
-    return () => clearTimeout(saveTimeout);
-  }, [editorContent, document?.id, isEditorReady]);
-
   if (status === 'loading' || isLoading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -198,46 +145,88 @@ export default function DocumentPage({ params }: { params: { documentId: string 
   }
 
   return (
-    <div className="desktop-layout">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-4">
-          <button
-            onClick={() => router.push('/')}
-            className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 
-            rounded-lg transition-colors"
-            title="Back to Documents"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
-          </button>
-          <div>
-            <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
-              {document?.title || 'Loading...'}
-            </h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Auto-saving • Last edited {document && new Date(document.updatedAt).toLocaleString()}
-            </p>
-          </div>
+    <div className="container mx-auto px-4 sm:px-6 pb-24 lg:pb-6 pt-4 sm:pt-6">
+      <div className="mb-4 sm:mb-6 flex justify-between items-center relative z-20">
+        <div className="flex-1 min-w-0">
+          {isEditingTitle ? (
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                value={newTitle}
+                onChange={(e) => setNewTitle(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleUpdateTitle();
+                  } else if (e.key === 'Escape') {
+                    setIsEditingTitle(false);
+                  }
+                }}
+                className="text-xl sm:text-3xl font-bold px-2 py-1 border rounded-lg 
+                focus:outline-none focus:ring-2 focus:ring-blue-500 w-full
+                bg-white dark:bg-gray-800
+                text-gray-900 dark:text-white
+                border-gray-300 dark:border-gray-600"
+                placeholder="Document title"
+                autoFocus
+              />
+              <button
+                onClick={handleUpdateTitle}
+                disabled={isSavingTitle || !newTitle.trim()}
+                className="p-2 text-blue-500 hover:text-blue-600 disabled:opacity-50"
+              >
+                {isSavingTitle ? (
+                  <LoadingSpinner size="small" />
+                ) : (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                )}
+              </button>
+              <button
+                onClick={() => setIsEditingTitle(false)}
+                className="p-2 text-gray-500 hover:text-gray-600"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          ) : (
+            <div className="group flex items-center gap-2 overflow-hidden">
+              <h1 className="text-xl sm:text-3xl font-bold truncate text-gray-900 dark:text-white">
+                {document?.title}
+              </h1>
+              <button
+                onClick={() => {
+                  setNewTitle(document?.title || '');
+                  setIsEditingTitle(true);
+                }}
+                className="p-1 text-gray-400 hover:text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
+                aria-label="Edit title"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                </svg>
+              </button>
+            </div>
+          )}
+          <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1 truncate">
+            Last updated: {document && new Date(document.updatedAt).toLocaleString()}
+          </p>
         </div>
-        
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setShowVersionHistory(true)}
-            className="flex items-center gap-2 px-4 py-2 text-gray-700 dark:text-gray-300 
-            hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <span>History</span>
-          </button>
-        </div>
+        <button
+          onClick={() => router.push('/')}
+          className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white ml-2 flex-shrink-0 p-2 rounded-lg transition-colors"
+          aria-label="Back to documents"
+        >
+          <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+        </button>
       </div>
 
-      <div className="content-container">
-        <div className="editor-container">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 relative mb-16 lg:mb-0">
+        <div className="lg:col-span-8 xl:col-span-9 relative z-10">
           <EditorArea
             documentId={params.documentId}
             initialContent={editorContent}
@@ -245,17 +234,39 @@ export default function DocumentPage({ params }: { params: { documentId: string 
             onEditorReady={() => setIsEditorReady(true)}
           />
           {isEditorReady && (
-            <div className="flex justify-between items-center p-3 border-t dark:border-gray-700">
+            <div className="flex justify-between items-center mt-4">
               <div className="text-sm text-gray-500 dark:text-gray-400">
                 Words: {wordCount}
               </div>
+              <div className="block lg:hidden">
+                <MobileVersionHistory
+                  documentId={params.documentId}
+                  onRevert={(content) => {
+                    setEditorContent(content);
+                    setDocument(prev => prev ? {...prev, content} : null);
+                    setWordCount(calculateWordCount(content));
+                  }}
+                />
+              </div>
+              <button
+                onClick={() => setShowVersionHistory(true)}
+                className="hidden lg:flex items-center gap-1 text-gray-500 dark:text-gray-400 
+                hover:text-gray-700 dark:hover:text-gray-200"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span className="text-sm">Version History</span>
+              </button>
             </div>
           )}
         </div>
         
-        <div className="sidebar-container">
+        <div className="hidden lg:block lg:col-span-4 xl:col-span-3">
+          <div className="sticky top-4 space-y-4">
             <UserPresenceIndicator documentId={params.documentId} />
             <ChatBox documentId={params.documentId} />
+          </div>
         </div>
       </div>
 
@@ -266,39 +277,22 @@ export default function DocumentPage({ params }: { params: { documentId: string 
             onClick={() => setShowVersionHistory(false)}
           />
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl">
-            <div className="version-history-modal rounded-lg overflow-hidden shadow-xl">
-              <VersionHistory
-                documentId={params.documentId}
-                onRevert={(content) => {
-                  setEditorContent(content);
-                  setDocument(prev => prev ? {...prev, content} : null);
-                  setWordCount(calculateWordCount(content));
-                  setShowVersionHistory(false);
-                }}
-                hideTitle={true}
-              />
-            </div>
+            <VersionHistory
+              documentId={params.documentId}
+              onRevert={(content) => {
+                setEditorContent(content);
+                setDocument(prev => prev ? {...prev, content} : null);
+                setWordCount(calculateWordCount(content));
+                setShowVersionHistory(false);
+              }}
+            />
           </div>
         </div>
       )}
 
-      <button
-        onClick={toggleTheme}
-        className="theme-toggle"
-        title="Toggle theme"
-      >
-        {theme === 'dark' ? (
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-              d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-          </svg>
-        ) : (
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-              d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-          </svg>
-        )}
-      </button>
+      <div className="fixed bottom-0 left-0 right-0 z-40 lg:hidden">
+        <MobileNavigation documentId={params.documentId} />
+      </div>
     </div>
   );
 } 

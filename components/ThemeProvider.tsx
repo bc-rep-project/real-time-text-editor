@@ -15,35 +15,19 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>('light');
 
   useEffect(() => {
-    // Check if we're in the browser
-    if (typeof window !== 'undefined') {
-      // Load theme from localStorage on mount
-      const savedTheme = localStorage.getItem('theme') as Theme || 
-        (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-      
+    // Load theme from localStorage on mount
+    const savedTheme = localStorage.getItem('theme') as Theme;
+    if (savedTheme) {
       setTheme(savedTheme);
-      
-      // Safely access document after checking for browser environment
-      const root = document.documentElement;
-      if (root) {
-        root.classList.toggle('dark', savedTheme === 'dark');
-      }
+      document.documentElement.classList.toggle('dark', savedTheme === 'dark');
     }
   }, []);
 
   const toggleTheme = () => {
-    if (typeof window !== 'undefined') {
-      const newTheme = theme === 'light' ? 'dark' : 'light';
-      setTheme(newTheme);
-      
-      // Safely access document after checking for browser environment
-      const root = document.documentElement;
-      if (root) {
-        root.classList.toggle('dark');
-      }
-      
-      localStorage.setItem('theme', newTheme);
-    }
+    const newTheme = theme === 'light' ? 'dark' : 'light';
+    setTheme(newTheme);
+    localStorage.setItem('theme', newTheme);
+    document.documentElement.classList.toggle('dark', newTheme === 'dark');
   };
 
   return (
@@ -51,7 +35,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       {children}
     </ThemeContext.Provider>
   );
-}
+};
 
 export const useTheme = () => {
   const context = useContext(ThemeContext);
