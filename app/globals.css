@@ -24,6 +24,7 @@ body {
   padding: 1rem;
   outline: none;
   overflow-y: auto;
+  background: rgb(var(--background-rgb));
 }
 
 @media (max-width: 1023px) {
@@ -189,4 +190,36 @@ body {
   .chat-container {
     height: calc(100vh - 13rem);
   }
+}
+
+/* Add styles for editor container */
+.editor-container {
+  background: rgb(var(--background-rgb));
+  border-radius: 0.5rem;
+}
+
+.dark .editor-container {
+  background: rgb(31, 41, 55);
+}
+
+/* Update toolbar styles */
+.tiptap-toolbar {
+  background: rgb(var(--background-rgb));
+  border-bottom: 1px solid rgb(229, 231, 235);
+  border-top-left-radius: 0.5rem;
+  border-top-right-radius: 0.5rem;
+}
+
+.dark .tiptap-toolbar {
+  background: rgb(31, 41, 55);
+  border-color: rgb(55, 65, 81);
+}
+
+/* Update button styles in toolbar */
+.dark .tiptap-toolbar button {
+  color: rgb(229, 231, 235);
+}
+
+.dark .tiptap-toolbar button:hover {
+  background: rgb(55, 65, 81);
 } 
