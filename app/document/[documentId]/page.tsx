@@ -235,13 +235,10 @@ export default function DocumentPage({ params }: { params: { documentId: string 
             onEditorReady={() => setIsEditorReady(true)}
           />
           {isEditorReady && (
-            <div className="flex justify-between items-center mt-4">
-              <div className="text-sm text-gray-500 dark:text-gray-400">
-                Words: {wordCount}
-              </div>
-              <div className="mt-4 flex items-center justify-between text-sm text-gray-500 dark:text-gray-400 lg:hidden">
-                <div className="flex items-center gap-4">
-                  <span>{wordCount} words</span>
+            <div className="mt-4 flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
+              <span>{wordCount} words</span>
+              <div className="flex items-center gap-4">
+                <div className="lg:hidden">
                   <MobileVersionHistory
                     documentId={params.documentId}
                     onRevert={(content) => {
@@ -251,17 +248,16 @@ export default function DocumentPage({ params }: { params: { documentId: string 
                     }}
                   />
                 </div>
+                <button
+                  onClick={() => setShowVersionHistory(true)}
+                  className="hidden lg:flex items-center gap-1 hover:text-gray-700 dark:hover:text-gray-200"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span>Version History</span>
+                </button>
               </div>
-              <button
-                onClick={() => setShowVersionHistory(true)}
-                className="hidden lg:flex items-center gap-1 text-gray-500 dark:text-gray-400 
-                hover:text-gray-700 dark:hover:text-gray-200"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <span className="text-sm">Version History</span>
-              </button>
             </div>
           )}
         </div>
