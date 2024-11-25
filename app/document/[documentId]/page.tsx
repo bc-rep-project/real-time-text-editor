@@ -146,7 +146,7 @@ export default function DocumentPage({ params }: { params: { documentId: string 
   }
 
   return (
-    <div className="container mx-auto px-4 sm:px-6 pb-24 lg:pb-6 pt-4 sm:pt-6">
+    <div className="container mx-auto pb-24 lg:pb-6 pt-4 sm:pt-6">
       <div className="mb-4 sm:mb-6 flex justify-between items-center relative z-20">
         <div className="flex-1 min-w-0">
           {isEditingTitle ? (
@@ -226,47 +226,46 @@ export default function DocumentPage({ params }: { params: { documentId: string 
         </button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 relative mb-20 lg:mb-0">
-        <div className="lg:col-span-8 xl:col-span-9 relative z-10">
-          <EditorArea
-            documentId={params.documentId}
-            initialContent={editorContent}
-            onContentChange={handleContentUpdate}
-            onEditorReady={() => setIsEditorReady(true)}
-          />
-          {isEditorReady && (
-            <div className="mt-4 flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
-              <span>{wordCount} words</span>
-              <div className="flex items-center gap-4">
-                <div className="lg:hidden">
-                  <MobileVersionHistory
-                    documentId={params.documentId}
-                    onRevert={(content) => {
-                      setEditorContent(content);
-                      setDocument(prev => prev ? {...prev, content} : null);
-                      setWordCount(calculateWordCount(content));
-                    }}
-                  />
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6">
+        <div className="lg:col-span-8">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow border dark:border-gray-700">
+            <EditorArea
+              documentId={params.documentId}
+              initialContent={editorContent}
+              onContentChange={handleContentUpdate}
+              onEditorReady={() => setIsEditorReady(true)}
+            />
+            {isEditorReady && (
+              <div className="mt-4 flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
+                <span>{wordCount} words</span>
+                <div className="flex items-center gap-4">
+                  <div className="lg:hidden">
+                    <MobileVersionHistory
+                      documentId={params.documentId}
+                      onRevert={(content) => {
+                        setEditorContent(content);
+                        setDocument(prev => prev ? {...prev, content} : null);
+                        setWordCount(calculateWordCount(content));
+                      }}
+                    />
+                  </div>
+                  <button
+                    onClick={() => setShowVersionHistory(true)}
+                    className="hidden lg:flex items-center gap-1 hover:text-gray-700 dark:hover:text-gray-200"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>Version History</span>
+                  </button>
                 </div>
-                <button
-                  onClick={() => setShowVersionHistory(true)}
-                  className="hidden lg:flex items-center gap-1 hover:text-gray-700 dark:hover:text-gray-200"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <span>Version History</span>
-                </button>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
         
-        <div className="hidden lg:block lg:col-span-4 xl:col-span-3">
-          <div className="sticky top-4 space-y-4">
-            <UserPresenceIndicator documentId={params.documentId} />
-            <ChatBox documentId={params.documentId} />
-          </div>
+        <div className="lg:col-span-4">
+          <ChatBox documentId={params.documentId} />
         </div>
       </div>
 

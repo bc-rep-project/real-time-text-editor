@@ -99,7 +99,7 @@ export function ChatBox({ documentId }: ChatBoxProps) {
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow border dark:border-gray-700 flex flex-col h-[calc(100vh-13rem)] lg:h-[600px]">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow border dark:border-gray-700 flex flex-col chat-container">
       <div className="p-3 border-b dark:border-gray-700">
         <h3 className="font-medium text-gray-900 dark:text-white">Chat</h3>
       </div>

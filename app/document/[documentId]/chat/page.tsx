@@ -7,8 +7,8 @@ import { UserPresenceIndicator } from '@/components/UserPresenceIndicator';
 
 export default function ChatPage({ params }: { params: { documentId: string } }) {
   return (
-    <div className="container mx-auto p-4 sm:p-6 pb-24 lg:pb-6 min-h-screen flex flex-col">
-      <div className="flex-1 space-y-4">
+    <div className="container mx-auto pb-24 lg:pb-6">
+      <div className="max-w-2xl mx-auto space-y-4">
         <UserPresenceIndicator documentId={params.documentId} />
         <ChatBox documentId={params.documentId} />
       </div>
