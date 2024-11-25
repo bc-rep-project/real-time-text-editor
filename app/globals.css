@@ -184,4 +184,127 @@ body {
 /* Mobile bottom navigation spacing */
 .pb-safe {
   padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Chat-specific styles */
+.chat-container {
+  height: calc(100vh - 8rem) !important;
+  border-radius: 0.5rem;
+}
+
+@media (max-width: 768px) {
+  .chat-container {
+    height: calc(100vh - 10rem) !important;
+    margin: -1.5rem;
+    border-radius: 0;
+  }
+
+  .chat-input-container {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* Dark mode chat styles */
+.dark .chat-message-received {
+  background: rgb(31, 41, 55) !important;
+  border: 1px solid rgb(55, 65, 81);
+}
+
+.dark .chat-message-sent {
+  background: rgb(37, 99, 235) !important;
+}
+
+.dark .chat-input {
+  background: rgb(31, 41, 55) !important;
+  border-color: rgb(55, 65, 81) !important;
+  color: rgb(229, 231, 235) !important;
+}
+
+/* Desktop layout styles */
+.desktop-layout {
+  max-width: 1920px;
+  margin: 0 auto;
+  padding: 1.5rem 2rem;
+}
+
+/* Document and chat container styles */
+.content-container {
+  display: grid;
+  grid-template-columns: 1fr 350px;
+  gap: 1.5rem;
+  height: calc(100vh - 8rem);
+  position: relative;
+}
+
+/* Sidebar styles */
+.sidebar-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  height: 100%;
+  position: sticky;
+  top: 1.5rem;
+}
+
+/* Document editor styles */
+.editor-container {
+  background: white;
+  border-radius: 0.75rem;
+  border: 1px solid rgb(229, 231, 235);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.dark .editor-container {
+  background: rgb(31, 41, 55);
+  border-color: rgb(55, 65, 81);
+}
+
+/* Theme toggle button */
+.theme-toggle {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  padding: 0.75rem;
+  border-radius: 9999px;
+  background: white;
+  border: 1px solid rgb(229, 231, 235);
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  z-index: 50;
+  transition: all 0.2s;
+}
+
+.dark .theme-toggle {
+  background: rgb(31, 41, 55);
+  border-color: rgb(55, 65, 81);
+  color: white;
+}
+
+.theme-toggle:hover {
+  transform: scale(1.05);
+}
+
+/* Modern scrollbar styles */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(156, 163, 175, 0.5);
+  border-radius: 3px;
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(156, 163, 175, 0.3);
 } 
