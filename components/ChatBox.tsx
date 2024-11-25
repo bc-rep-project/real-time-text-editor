@@ -103,25 +103,15 @@ export function ChatBox({ documentId }: ChatBoxProps) {
       <div className="p-3 border-b dark:border-gray-700 flex justify-between items-center">
         <h3 className="font-medium text-gray-900 dark:text-white">Chat</h3>
         
-        {/* Added features menu */}
+        {/* Features menu */}
         <div className="flex items-center gap-2">
           <button
-            onClick={() => {/* Add scroll to latest */}}
+            onClick={scrollToBottom}
             className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
             title="Scroll to Latest"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-            </svg>
-          </button>
-          
-          <button
-            onClick={() => {/* Add clear chat */}}
-            className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
-            title="Clear Chat"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
             </svg>
           </button>
         </div>
@@ -137,8 +127,7 @@ export function ChatBox({ documentId }: ChatBoxProps) {
         </div>
       ) : (
         <>
-          {/* Chat messages container */}
-          <div className="flex-1 overflow-y-auto p-3 space-y-3">
+          <div className="messages-container p-3 space-y-4 overflow-y-auto">
             {messages.map((msg) => (
               <div
                 key={msg.id}
@@ -163,8 +152,8 @@ export function ChatBox({ documentId }: ChatBoxProps) {
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Message input form */}
-          <form onSubmit={handleSendMessage} className="chat-input-container p-3 border-t dark:border-gray-700 sticky bottom-0 bg-white dark:bg-gray-800">
+          <form onSubmit={handleSendMessage} 
+            className="chat-input-container p-3 border-t dark:border-gray-700">
             <div className="flex gap-2">
               <input
                 type="text"

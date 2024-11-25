@@ -307,4 +307,132 @@ body {
 
 .dark .custom-scrollbar::-webkit-scrollbar-thumb {
   background-color: rgba(156, 163, 175, 0.3);
+}
+
+/* Dark mode consistency updates */
+.editor-container {
+  background: white;
+  border: 1px solid rgb(229, 231, 235);
+  border-radius: 0.75rem;
+}
+
+.dark .editor-container {
+  background: rgb(31, 41, 55);
+  border-color: rgb(55, 65, 81);
+}
+
+/* Editor background in dark mode */
+.dark .ProseMirror {
+  background: rgb(31, 41, 55);
+  color: rgb(229, 231, 235);
+}
+
+/* Toolbar dark mode */
+.dark .tiptap-toolbar {
+  background: rgb(31, 41, 55);
+  border-color: rgb(55, 65, 81);
+}
+
+.dark .tiptap-toolbar button {
+  color: rgb(229, 231, 235);
+}
+
+.dark .tiptap-toolbar button:hover {
+  background: rgb(55, 65, 81);
+}
+
+/* Version history modal dark mode */
+.dark .version-history-modal {
+  background: rgb(31, 41, 55);
+  border-color: rgb(55, 65, 81);
+}
+
+/* Desktop layout dark mode */
+.dark .desktop-layout {
+  background: rgb(17, 24, 39);
+}
+
+/* Consistent scrollbar in dark mode */
+.dark ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.dark ::-webkit-scrollbar-track {
+  background: rgb(31, 41, 55);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: rgb(55, 65, 81);
+  border-radius: 4px;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgb(75, 85, 101);
+}
+
+/* Chat container dark mode consistency */
+.dark .chat-container {
+  background: rgb(31, 41, 55);
+  border-color: rgb(55, 65, 81);
+}
+
+.dark .chat-message-received {
+  background: rgb(55, 65, 81);
+}
+
+.dark .chat-message-sent {
+  background: rgb(37, 99, 235);
+}
+
+/* User presence indicator dark mode */
+.dark .user-presence {
+  background: rgb(31, 41, 55);
+  border-color: rgb(55, 65, 81);
+}
+
+/* Mobile layout fixes */
+@media (max-width: 1024px) {
+  /* Adjust main container padding to account for bottom navigation */
+  .desktop-layout {
+    padding-bottom: 4rem;
+  }
+
+  /* Chat container mobile adjustments */
+  .chat-container {
+    height: calc(100vh - 16rem) !important;
+    margin-bottom: 4rem;
+  }
+
+  /* Messages container */
+  .messages-container {
+    height: calc(100vh - 24rem);
+    overflow-y: auto;
+  }
+
+  /* Fix input container positioning */
+  .chat-input-container {
+    position: sticky;
+    bottom: 0;
+    background: inherit;
+    z-index: 20;
+  }
+}
+
+/* Mobile navigation fixes */
+.mobile-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgb(var(--background-rgb));
+  border-top: 1px solid rgb(55, 65, 81);
+  z-index: 50;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Dark mode specific mobile fixes */
+.dark .mobile-nav {
+  background: rgb(17, 24, 39);
+  border-color: rgb(55, 65, 81);
 } 

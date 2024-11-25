@@ -12,6 +12,7 @@ import { ErrorMessage } from '@/components/ErrorMessage';
 import type { Document } from '@/types/database';
 import { MobileNavigation } from '@/components/MobileNavigation';
 import { MobileVersionHistory } from '@/components/MobileVersionHistory';
+import { useTheme } from '@/components/ThemeProvider';
 
 export default function DocumentPage({ params }: { params: { documentId: string } }) {
   const router = useRouter();
@@ -26,7 +27,7 @@ export default function DocumentPage({ params }: { params: { documentId: string 
   const [editorContent, setEditorContent] = useState('');
   const [isEditorReady, setIsEditorReady] = useState(false);
   const [showVersionHistory, setShowVersionHistory] = useState(false);
-  const [theme, setTheme] = useState('light');
+  const { theme, toggleTheme } = useTheme();
 
   const calculateWordCount = (content: string) => {
     if (typeof window === 'undefined' || !content || content === '<p><br></p>' || content === '<p></p>') {
@@ -133,9 +134,33 @@ export default function DocumentPage({ params }: { params: { documentId: string 
     }
   };
 
-  const toggleTheme = () => {
-    setTheme(theme === 'light' ? 'dark' : 'light');
-  };
+  useEffect(() => {
+    let saveTimeout: NodeJS.Timeout;
+
+    const autoSave = async () => {
+      if (!document?.id || !editorContent) return;
+
+      try {
+        const response = await fetch(`/api/documents/${document.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ content: editorContent }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to save document');
+        }
+      } catch (error) {
+        console.error('Error auto-saving document:', error);
+      }
+    };
+
+    if (isEditorReady && editorContent) {
+      saveTimeout = setTimeout(autoSave, 2000); // Auto-save after 2 seconds of no changes
+    }
+
+    return () => clearTimeout(saveTimeout);
+  }, [editorContent, document?.id, isEditorReady]);
 
   if (status === 'loading' || isLoading) {
     return (
@@ -188,10 +213,10 @@ export default function DocumentPage({ params }: { params: { documentId: string 
           </button>
           <div>
             <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
-          {document?.title || 'Loading...'}
-        </h1>
+              {document?.title || 'Loading...'}
+            </h1>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              Last edited {document && new Date(document.updatedAt).toLocaleString()}
+              Auto-saving • Last edited {document && new Date(document.updatedAt).toLocaleString()}
             </p>
           </div>
         </div>
@@ -207,18 +232,6 @@ export default function DocumentPage({ params }: { params: { documentId: string 
                 d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             <span>History</span>
-          </button>
-          
-          <button
-            onClick={handleSave}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 
-            dark:bg-blue-600 dark:hover:bg-blue-700 text-white rounded-lg transition-colors"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-                d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
-            </svg>
-            <span>Save</span>
           </button>
         </div>
       </div>
@@ -246,7 +259,29 @@ export default function DocumentPage({ params }: { params: { documentId: string 
         </div>
       </div>
 
-      {/* Theme toggle button */}
+      {showVersionHistory && (
+        <div className="fixed inset-0 z-[60] hidden lg:block">
+          <div 
+            className="absolute inset-0 bg-black/30 backdrop-blur-sm"
+            onClick={() => setShowVersionHistory(false)}
+          />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl">
+            <div className="version-history-modal rounded-lg overflow-hidden shadow-xl">
+              <VersionHistory
+                documentId={params.documentId}
+                onRevert={(content) => {
+                  setEditorContent(content);
+                  setDocument(prev => prev ? {...prev, content} : null);
+                  setWordCount(calculateWordCount(content));
+                  setShowVersionHistory(false);
+                }}
+                hideTitle={true}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
       <button
         onClick={toggleTheme}
         className="theme-toggle"
