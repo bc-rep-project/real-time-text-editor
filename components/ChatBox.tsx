@@ -99,7 +99,7 @@ export function ChatBox({ documentId }: ChatBoxProps) {
   };
 
   return (
-    <div className="border rounded-lg bg-white dark:bg-gray-800 h-[500px] flex flex-col">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow border dark:border-gray-700 flex flex-col h-[calc(100vh-13rem)] lg:h-[600px]">
       <div className="p-3 border-b dark:border-gray-700">
         <h3 className="font-medium text-gray-900 dark:text-white">Chat</h3>
       </div>
@@ -115,7 +115,7 @@ export function ChatBox({ documentId }: ChatBoxProps) {
       ) : (
         <>
           {/* Chat messages container */}
-          <div className="flex-1 overflow-y-auto p-3 space-y-3">
+          <div className="flex-1 overflow-y-auto p-4 space-y-4">
             {messages.map((msg) => (
               <div
                 key={msg.id}
@@ -141,7 +141,7 @@ export function ChatBox({ documentId }: ChatBoxProps) {
           </div>
 
           {/* Message input form */}
-          <form onSubmit={handleSendMessage} className="p-3 border-t dark:border-gray-700 sticky bottom-0 bg-white dark:bg-gray-800">
+          <form onSubmit={handleSendMessage} className="p-3 border-t dark:border-gray-700 bg-white dark:bg-gray-800 rounded-b-lg">
             <div className="flex gap-2">
               <input
                 type="text"

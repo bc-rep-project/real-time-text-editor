@@ -225,7 +225,7 @@ export default function DocumentPage({ params }: { params: { documentId: string 
         </button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 relative mb-16 lg:mb-0">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 relative mb-20 lg:mb-0">
         <div className="lg:col-span-8 xl:col-span-9 relative z-10">
           <EditorArea
             documentId={params.documentId}
@@ -238,15 +238,18 @@ export default function DocumentPage({ params }: { params: { documentId: string 
               <div className="text-sm text-gray-500 dark:text-gray-400">
                 Words: {wordCount}
               </div>
-              <div className="block lg:hidden">
-                <MobileVersionHistory
-                  documentId={params.documentId}
-                  onRevert={(content) => {
-                    setEditorContent(content);
-                    setDocument(prev => prev ? {...prev, content} : null);
-                    setWordCount(calculateWordCount(content));
-                  }}
-                />
+              <div className="mt-4 flex items-center justify-between text-sm text-gray-500 dark:text-gray-400 lg:hidden">
+                <div className="flex items-center gap-4">
+                  <span>{wordCount} words</span>
+                  <MobileVersionHistory
+                    documentId={params.documentId}
+                    onRevert={(content) => {
+                      setEditorContent(content);
+                      setDocument(prev => prev ? {...prev, content} : null);
+                      setWordCount(calculateWordCount(content));
+                    }}
+                  />
+                </div>
               </div>
               <button
                 onClick={() => setShowVersionHistory(true)}
@@ -290,7 +293,7 @@ export default function DocumentPage({ params }: { params: { documentId: string 
         </div>
       )}
 
-      <div className="fixed bottom-0 left-0 right-0 z-40 lg:hidden">
+      <div className="fixed bottom-0 left-0 right-0 z-40 lg:hidden pb-safe">
         <MobileNavigation documentId={params.documentId} />
       </div>
     </div>

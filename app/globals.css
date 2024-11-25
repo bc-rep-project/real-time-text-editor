@@ -76,7 +76,7 @@ body {
   font-family: monospace;
 }
 
-/* Add these styles for Quill editor */
+/* Editor styles */
 .ql-container {
   font-size: 16px;
   height: calc(100% - 42px) !important;
@@ -102,7 +102,7 @@ body {
   z-index: 10;
 }
 
-/* Dark mode styles for editor */
+/* Dark mode styles */
 .dark .ql-toolbar {
   background: rgb(31, 41, 55);
   border-color: rgb(55, 65, 81);
@@ -125,7 +125,18 @@ body {
   fill: rgb(229, 231, 235) !important;
 }
 
-/* Mobile bottom navigation spacing */
+/* Mobile layout adjustments */
 .pb-safe {
-  padding-bottom: env(safe-area-inset-bottom);
+  padding-bottom: max(env(safe-area-inset-bottom), 1rem);
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 1024px) {
+  .min-h-screen {
+    min-height: calc(100vh - env(safe-area-inset-bottom));
+  }
+
+  .h-\[calc\(100vh-13rem\)\] {
+    height: calc(100vh - 13rem - env(safe-area-inset-bottom));
+  }
 } 
