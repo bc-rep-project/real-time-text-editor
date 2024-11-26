@@ -40,7 +40,11 @@ export function ChatBox({ documentId }: ChatBoxProps) {
         const response = await fetch(`/api/chat/${documentId}`);
         if (!response.ok) throw new Error('Failed to fetch messages');
         const data = await response.json();
-        setMessages(data);
+        const messagesWithDates = data.map((msg: ChatMessageWithUser) => ({
+          ...msg,
+          createdAt: new Date(msg.createdAt)
+        }));
+        setMessages(messagesWithDates);
       } catch (error) {
         console.error('Error fetching messages:', error);
         setError('Failed to load chat messages');
@@ -58,7 +62,11 @@ export function ChatBox({ documentId }: ChatBoxProps) {
       try {
         const data = JSON.parse(event.data);
         if (data.type === 'chatMessage') {
-          setMessages(prev => [...prev, data]);
+          const messageWithDate = {
+            ...data,
+            createdAt: new Date(data.createdAt)
+          };
+          setMessages(prev => [...prev, messageWithDate]);
           scrollToBottom();
         }
       } catch (error) {
