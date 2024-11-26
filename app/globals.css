@@ -229,4 +229,24 @@ body {
 
 .dark .tiptap-toolbar button:hover {
   background: rgb(55, 65, 81);
+}
+
+/* Add styles for presence indicator */
+.presence-indicator {
+  transition: all 0.3s ease;
+}
+
+.presence-indicator-dot {
+  @apply w-2 h-2 bg-green-500 rounded-full relative;
+}
+
+.presence-indicator-pulse {
+  @apply absolute w-2 h-2 bg-green-500 rounded-full animate-ping opacity-75;
+}
+
+/* Adjust spacing for mobile presence indicator */
+@media (max-width: 1023px) {
+  .presence-indicator {
+    margin-bottom: 1rem;
+  }
 } 
