@@ -31,7 +31,6 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const search = searchParams.get('search') || '';
     const sort = searchParams.get('sort') || 'updatedAt';
-    const direction = 'desc';
 
     // Build where clauses with proper typing
     const whereConditions: WhereClause[] = [
@@ -46,8 +45,8 @@ export async function GET(request: Request) {
     const documents = await db.query<Document>('documents', {
       where: whereConditions,
       orderBy: {
-        field: sort,
-        direction: direction as 'asc' | 'desc'
+        field: sort === 'title' ? 'title' : 'updatedAt',
+        direction: sort === 'title' ? 'asc' : 'desc'
       }
     });
 

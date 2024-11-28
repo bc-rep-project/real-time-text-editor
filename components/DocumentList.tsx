@@ -30,15 +30,19 @@ export function DocumentList() {
       setError(null);
       
       const searchParam = encodeURIComponent(search.trim());
-      const response = await fetch(`/api/documents?sort=${sort}`);
+      const response = await fetch(`/api/documents?search=${searchParam}&sort=${sort}`);
 
       if (!response.ok) {
         throw new Error('Failed to fetch documents');
       }
 
       const data = await response.json();
-      setDocuments(data);
-      setFilteredDocs(data); // Initialize filtered docs with all docs
+      const sortedData = sort === 'title' 
+        ? [...data].sort((a, b) => a.title.localeCompare(b.title))
+        : data;
+      
+      setDocuments(sortedData);
+      setFilteredDocs(sortedData); // Initialize filtered docs with sorted data
     } catch (error) {
       console.error('Error fetching documents:', error);
       setError('Failed to load documents');
