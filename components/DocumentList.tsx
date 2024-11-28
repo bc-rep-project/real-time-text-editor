@@ -29,20 +29,24 @@ export function DocumentList() {
       setIsLoading(true);
       setError(null);
       
-      const searchParam = encodeURIComponent(search.trim());
-      const response = await fetch(`/api/documents?search=${searchParam}&sort=${sort}`);
+      const response = await fetch(`/api/documents?sort=${sort}`);
 
       if (!response.ok) {
         throw new Error('Failed to fetch documents');
       }
 
       const data = await response.json();
-      const sortedData = sort === 'title' 
-        ? [...data].sort((a, b) => a.title.localeCompare(b.title))
-        : data;
+      setDocuments(data);
       
-      setDocuments(sortedData);
-      setFilteredDocs(sortedData); // Initialize filtered docs with sorted data
+      if (search.trim()) {
+        const filtered = data.filter((doc: Document) => 
+          doc.title.toLowerCase().includes(search.toLowerCase()) ||
+          doc.content.toLowerCase().includes(search.toLowerCase())
+        );
+        setFilteredDocs(filtered);
+      } else {
+        setFilteredDocs(data);
+      }
     } catch (error) {
       console.error('Error fetching documents:', error);
       setError('Failed to load documents');
@@ -54,7 +58,7 @@ export function DocumentList() {
   const debouncedFetch = useCallback(
     debounce((search: string, sort: string) => {
       fetchDocuments(search, sort);
-    }, 200),
+    }, 300),
     []
   );
 
@@ -90,7 +94,7 @@ export function DocumentList() {
       return;
     }
     
-    const filtered = documents.filter(doc => 
+    const filtered = documents.filter((doc: Document) => 
       doc.title.toLowerCase().includes(query.toLowerCase()) ||
       doc.content.toLowerCase().includes(query.toLowerCase())
     );
