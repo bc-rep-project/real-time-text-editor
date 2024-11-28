@@ -20,6 +20,8 @@ import { DocumentStats } from '@/components/DocumentStats';
 import { DocumentComments } from '@/components/DocumentComments';
 import { ShareDialog } from '@/components/ShareDialog';
 import { ExportDialog } from '@/components/ExportDialog';
+import { DocumentOutline } from '@/components/DocumentOutline';
+import { DocumentCollaborators } from '@/components/DocumentCollaborators';
 
 export default function DocumentPage({ params }: { params: { documentId: string } }) {
   const router = useRouter();
@@ -133,6 +135,37 @@ export default function DocumentPage({ params }: { params: { documentId: string 
     }
   };
 
+  const documentTabs = [
+    {
+      id: 'editor',
+      label: 'Editor',
+      icon: (
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+        </svg>
+      )
+    },
+    {
+      id: 'preview',
+      label: 'Preview',
+      icon: (
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+        </svg>
+      )
+    },
+    {
+      id: 'comments',
+      label: 'Comments',
+      icon: (
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+        </svg>
+      )
+    }
+  ];
+
   if (status === 'loading' || isLoading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -169,42 +202,96 @@ export default function DocumentPage({ params }: { params: { documentId: string 
   }
 
   return (
-    <div className="container mx-auto pb-24 lg:pb-6">
-      <div className="space-y-4">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="container mx-auto px-4 py-6">
+        {/* Top Navigation Area */}
+        <div className="mb-6">
         <DocumentBreadcrumbs documentId={params.documentId} />
         <DocumentToolbar 
           documentId={params.documentId}
           onShare={() => setShowShareDialog(true)}
           onExport={() => setShowExportDialog(true)}
         />
-        
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-          <div className="lg:col-span-9">
-            <div className="space-y-4">
+        </div>
+
+        {/* Main Content Area */}
+        <div className="grid grid-cols-12 gap-6">
+          {/* Left Sidebar - Document Structure */}
+          <div className="hidden lg:block col-span-2 space-y-4">
+            <DocumentOutline />
+            <DocumentCollaborators documentId={params.documentId} />
+          </div>
+
+          {/* Main Editor Area */}
+          <div className="col-span-12 lg:col-span-7 space-y-4">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700">
+              {/* Editor Header */}
+              <div className="p-4 border-b dark:border-gray-700">
               <UserPresenceIndicator documentId={params.documentId} />
+              <DocumentStats 
+                documentId={params.documentId}
+                content={editorContent} 
+              />
+                <DocumentTabs
+                  activeTab={activeTab}
+                  onTabChange={setActiveTab}
+                  tabs={documentTabs}
+                />
+              </div>
+
+              {/* Editor Content */}
+              <div className="p-4">
+                {activeTab === 'editor' && (
               <EditorArea 
                 documentId={params.documentId}
                 initialContent={document?.content || ''}
                 onContentChange={handleContentChange}
                 onEditorReady={handleEditorReady}
               />
+                )}
+                {activeTab === 'preview' && (
+                  <DocumentPreview content={editorContent} />
+                )}
+                {activeTab === 'comments' && (
+                  <DocumentComments documentId={params.documentId} />
+                )}
+              </div>
             </div>
           </div>
           
-          {/* Chat and Version History for desktop only */}
-          <div className="hidden lg:block lg:col-span-3 space-y-4">
+          {/* Right Sidebar */}
+          <div className="hidden lg:block col-span-3 space-y-4">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700">
             <ChatBox documentId={params.documentId} />
+            </div>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700">
             <VersionHistory documentId={params.documentId} onRevert={handleRevert} />
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Mobile navigation remains at bottom */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 pb-safe">
-        <MobileNavigation documentId={params.documentId} />
+      {/* Mobile Navigation */}
+      <div className="lg:hidden">
+        {/* Bottom Navigation Bar */}
+        <div className="fixed bottom-0 left-0 right-0 z-40 pb-safe">
+        <MobileNavigation 
+          documentId={params.documentId}
+          onVersionHistoryClick={() => setShowVersionHistory(true)} 
+        />
       </div>
 
-      {/* Dialogs remain unchanged */}
+        {/* Mobile Drawers/Modals */}
+      {showVersionHistory && (
+        <MobileVersionHistory
+          documentId={params.documentId}
+          onRevert={handleRevert}
+          onClose={() => setShowVersionHistory(false)}
+        />
+      )}
+      </div>
+
+      {/* Dialogs */}
       {showShareDialog && (
         <ShareDialog
           documentId={params.documentId}
