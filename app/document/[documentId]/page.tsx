@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { EditorArea } from '@/components/EditorArea';
@@ -61,6 +61,17 @@ export default function DocumentPage({ params }: { params: { documentId: string 
     }
   };
 
+  const handleRevert = useCallback((content: string) => {
+    // Update editor content
+    setEditorContent(content);
+    
+    // Update word count
+    setWordCount(calculateWordCount(content));
+    
+    // Notify other users of changes via WebSocket if needed
+    // This assumes you have access to the WebSocket context/hook
+  }, [calculateWordCount]);
+
   useEffect(() => {
     const fetchDocument = async () => {
       try {
@@ -90,12 +101,13 @@ export default function DocumentPage({ params }: { params: { documentId: string 
     }
   }, [params.documentId, session?.user?.id]);
 
-  const handleContentUpdate = (newContent: string) => {
-    setEditorContent(newContent);
-    setWordCount(calculateWordCount(newContent));
-    if (document) {
-      setDocument(prev => prev ? { ...prev, content: newContent } : null);
-    }
+  const handleContentChange = (content: string) => {
+    setEditorContent(content);
+    setWordCount(calculateWordCount(content));
+  };
+
+  const handleEditorReady = () => {
+    setIsEditorReady(true);
   };
 
   const handleUpdateTitle = async () => {
@@ -157,54 +169,42 @@ export default function DocumentPage({ params }: { params: { documentId: string 
   }
 
   return (
-    <div className="container mx-auto pb-24 lg:pb-6 pt-4 sm:pt-6">
-      <DocumentBreadcrumbs
-        items={[
-          { label: 'Documents', href: '/' },
-          { label: document?.title || 'Loading...' }
-        ]}
-      />
-
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6">
-        <div className="lg:col-span-9">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow border dark:border-gray-700">
-            <DocumentToolbar />
-            <DocumentTabs
-              activeTab={activeTab}
-              onTabChange={setActiveTab}
-            />
-            
-            {activeTab === 'editor' ? (
-              <EditorArea
+    <div className="container mx-auto pb-24 lg:pb-6">
+      <div className="space-y-4">
+        <DocumentBreadcrumbs documentId={params.documentId} />
+        <DocumentToolbar 
+          documentId={params.documentId}
+          onShare={() => setShowShareDialog(true)}
+          onExport={() => setShowExportDialog(true)}
+        />
+        
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+          <div className="lg:col-span-9">
+            <div className="space-y-4">
+              <UserPresenceIndicator documentId={params.documentId} />
+              <EditorArea 
                 documentId={params.documentId}
-                initialContent={editorContent}
-                onContentChange={handleContentUpdate}
-                onEditorReady={() => setIsEditorReady(true)}
+                initialContent={document?.content || ''}
+                onContentChange={handleContentChange}
+                onEditorReady={handleEditorReady}
               />
-            ) : (
-              <DocumentPreview content={editorContent} />
-            )}
-            
-            <DocumentStats
-              documentId={params.documentId}
-              content={editorContent}
-            />
+            </div>
           </div>
-        </div>
-
-        <div className="lg:col-span-3 space-y-4">
-          <UserPresenceIndicator documentId={params.documentId} />
-          <DocumentComments documentId={params.documentId} />
-          <ChatBox documentId={params.documentId} />
+          
+          {/* Chat and Version History for desktop only */}
+          <div className="hidden lg:block lg:col-span-3 space-y-4">
+            <ChatBox documentId={params.documentId} />
+            <VersionHistory documentId={params.documentId} onRevert={handleRevert} />
+          </div>
         </div>
       </div>
 
-      {/* Mobile navigation */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 lg:hidden pb-safe">
+      {/* Mobile navigation remains at bottom */}
+      <div className="fixed bottom-0 left-0 right-0 z-40 pb-safe">
         <MobileNavigation documentId={params.documentId} />
       </div>
 
-      {/* Modals */}
+      {/* Dialogs remain unchanged */}
       {showShareDialog && (
         <ShareDialog
           documentId={params.documentId}

@@ -249,4 +249,50 @@ body {
   .presence-indicator {
     margin-bottom: 1rem;
   }
-} 
+}
+
+/* Mobile layout fixes */
+@media (max-width: 1024px) {
+  /* Adjust main container padding to account for bottom navigation */
+  .desktop-layout {
+    padding-bottom: 4rem;
+  }
+
+  /* Chat container mobile adjustments */
+  .chat-container {
+    height: calc(100vh - 16rem) !important;
+    margin-bottom: 4rem;
+  }
+
+  /* Messages container */
+  .messages-container {
+    height: calc(100vh - 24rem);
+    overflow-y: auto;
+  }
+
+  /* Fix input container positioning */
+  .chat-input-container {
+    position: sticky;
+    bottom: 0;
+    background: inherit;
+    z-index: 20;
+  }
+}
+
+/* Mobile navigation fixes */
+.mobile-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgb(var(--background-rgb));
+  border-top: 1px solid rgb(55, 65, 81);
+  z-index: 50;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Dark mode specific mobile fixes */
+.dark .mobile-nav {
+  background: rgb(17, 24, 39);
+  border-color: rgb(55, 65, 81);
+}

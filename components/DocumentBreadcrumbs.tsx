@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useState, useEffect } from 'react';
 
 interface Breadcrumb {
   label: string;
@@ -8,10 +9,36 @@ interface Breadcrumb {
 }
 
 interface DocumentBreadcrumbsProps {
-  items: Breadcrumb[];
+  documentId: string;
 }
 
-export function DocumentBreadcrumbs({ items }: DocumentBreadcrumbsProps) {
+export function DocumentBreadcrumbs({ documentId }: DocumentBreadcrumbsProps) {
+  const [document, setDocument] = useState<{ title: string } | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchDocument = async () => {
+      try {
+        const response = await fetch(`/api/documents/${documentId}`);
+        if (response.ok) {
+          const data = await response.json();
+          setDocument(data);
+        }
+      } catch (error) {
+        console.error('Error fetching document:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchDocument();
+  }, [documentId]);
+
+  const items: Breadcrumb[] = [
+    { label: 'Documents', href: '/' },
+    { label: document?.title || 'Loading...' },
+  ];
+
   return (
     <nav className="flex" aria-label="Breadcrumb">
       <ol className="flex items-center space-x-2">

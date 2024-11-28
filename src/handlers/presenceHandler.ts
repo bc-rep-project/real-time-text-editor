@@ -87,4 +87,4 @@ export class PresenceHandler {
     // This should be injected or accessed through a singleton
     return (global as any).wss;
   }
-} 
+}

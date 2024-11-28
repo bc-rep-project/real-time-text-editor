@@ -9,7 +9,13 @@ interface ToolbarButton {
   action: () => void;
 }
 
-export function DocumentToolbar() {
+interface DocumentToolbarProps {
+  documentId: string;
+  onShare: () => void;
+  onExport: () => void;
+}
+
+export function DocumentToolbar({ documentId, onShare, onExport }: DocumentToolbarProps) {
   const [fontSize, setFontSize] = useState('16px');
   const [fontFamily, setFontFamily] = useState('default');
 
@@ -63,4 +69,6 @@ export function DocumentToolbar() {
       </div>
     </div>
   );
-} 
+}
+
+export type { DocumentToolbarProps }; 
