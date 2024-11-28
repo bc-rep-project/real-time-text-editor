@@ -29,8 +29,9 @@ export async function GET(request: Request) {
     }
 
     const { searchParams } = new URL(request.url);
+    const search = searchParams.get('search') || '';
     const sort = searchParams.get('sort') || 'updatedAt';
-    const direction = sort === 'title' ? 'asc' : 'desc';
+    const direction = 'desc';
 
     // Build where clauses with proper typing
     const whereConditions: WhereClause[] = [

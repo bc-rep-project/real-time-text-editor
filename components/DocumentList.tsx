@@ -29,10 +29,11 @@ export function DocumentList() {
       setIsLoading(true);
       setError(null);
       
-      const response = await fetch(`/api/documents?sort=${sort}`);
+      const response = await fetch(`/api/documents?sort=${sort}&search=${encodeURIComponent(search)}`);
 
       if (!response.ok) {
-        throw new Error('Failed to fetch documents');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to fetch documents');
       }
 
       const data = await response.json();
@@ -49,7 +50,7 @@ export function DocumentList() {
       }
     } catch (error) {
       console.error('Error fetching documents:', error);
-      setError('Failed to load documents');
+      setError(typeof error === 'string' ? error : 'Failed to load documents');
     } finally {
       setIsLoading(false);
     }
