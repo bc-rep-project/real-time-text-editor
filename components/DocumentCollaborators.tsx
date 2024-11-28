@@ -1,43 +1,73 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { LoadingSpinner } from './LoadingSpinner';
+import { ErrorMessage } from './ErrorMessage';
 
 interface Collaborator {
   id: string;
-  email: string;
   name: string;
+  email: string;
   role: 'editor' | 'viewer';
-  lastActive: string;
   isOnline: boolean;
 }
 
-export function DocumentCollaborators({ documentId }: { documentId: string }) {
+interface DocumentCollaboratorsProps {
+  documentId: string;
+}
+
+export function DocumentCollaborators({ documentId }: DocumentCollaboratorsProps) {
   const [collaborators, setCollaborators] = useState<Collaborator[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchCollaborators = async () => {
       try {
+        setIsLoading(true);
+        setError(null);
         const response = await fetch(`/api/documents/${documentId}/collaborators`);
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch collaborators');
+        }
+
         const data = await response.json();
         setCollaborators(data);
       } catch (error) {
         console.error('Error fetching collaborators:', error);
+        setError('Failed to load collaborators');
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchCollaborators();
-    const interval = setInterval(fetchCollaborators, 30000); // Update every 30s
-    return () => clearInterval(interval);
   }, [documentId]);
 
+  if (isLoading) {
+    return (
+      <div className="p-4 bg-white dark:bg-gray-800 rounded-lg">
+        <h3 className="font-medium mb-4 text-gray-900 dark:text-white">Collaborators</h3>
+        <div className="flex justify-center">
+          <LoadingSpinner />
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-4 bg-white dark:bg-gray-800 rounded-lg">
+        <h3 className="font-medium mb-4 text-gray-900 dark:text-white">Collaborators</h3>
+        <ErrorMessage message={error} />
+      </div>
+    );
+  }
+
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg p-4">
-      <h3 className="font-medium text-gray-900 dark:text-white mb-4">
-        Collaborators
-      </h3>
+    <div className="p-4 bg-white dark:bg-gray-800 rounded-lg">
+      <h3 className="font-medium mb-4 text-gray-900 dark:text-white">Collaborators</h3>
       <div className="space-y-3">
         {collaborators.map((collaborator) => (
           <div
@@ -73,6 +103,11 @@ export function DocumentCollaborators({ documentId }: { documentId: string }) {
             </div>
           </div>
         ))}
+        {collaborators.length === 0 && (
+          <div className="text-center text-gray-500 dark:text-gray-400">
+            No collaborators yet
+          </div>
+        )}
       </div>
     </div>
   );
