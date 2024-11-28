@@ -128,11 +128,7 @@ export function DocumentList() {
       ) : (
       <div className="grid gap-4">
         {filteredDocs.map((doc) => (
-          <div
-            key={doc.id}
-            className="flex items-center justify-between p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm 
-            border dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-400 transition-colors duration-200"
-          >
+          <div key={doc.id} className="flex items-center justify-between p-4 bg-white dark:bg-gray-800 rounded-lg">
             <button
               onClick={() => router.push(`/document/${doc.id}`)}
               className="flex-1 text-left"
@@ -147,8 +143,8 @@ export function DocumentList() {
             
             <DocumentActions
               documentId={doc.id}
-              onShare={() => {/* Handle share */}}
-              onExport={() => {/* Handle export */}}
+              onShare={() => {/* This is now handled within DocumentActions */}}
+              onExport={() => {/* This is now handled within DocumentActions */}}
               onDelete={() => setShowDeleteDialog(doc.id)}
             />
           </div>

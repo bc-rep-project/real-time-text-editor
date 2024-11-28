@@ -10,10 +10,57 @@ interface DocumentActionsProps {
 }
 
 export function DocumentActions({ documentId, onShare, onExport, onDelete }: DocumentActionsProps) {
+  const handleShare = async () => {
+    try {
+      // Get document details for sharing
+      const response = await fetch(`/api/documents/${documentId}`);
+      if (!response.ok) throw new Error('Failed to fetch document');
+      const document = await response.json();
+      
+      // Create a shareable link
+      const shareUrl = `${window.location.origin}/document/${documentId}`;
+      
+      // Try to use the native share API if available
+      if (navigator.share) {
+        await navigator.share({
+          title: document.title,
+          text: 'Check out this document',
+          url: shareUrl
+        });
+      } else {
+        // Fallback to clipboard copy
+        await navigator.clipboard.writeText(shareUrl);
+        // You might want to show a toast notification here
+        alert('Link copied to clipboard!');
+      }
+    } catch (error) {
+      console.error('Error sharing document:', error);
+    }
+  };
+
+  const handleExport = async () => {
+    try {
+      const response = await fetch(`/api/documents/${documentId}/export`);
+      if (!response.ok) throw new Error('Failed to export document');
+      
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `document-${documentId}.md`; // You can customize the filename
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error('Error exporting document:', error);
+    }
+  };
+
   return (
     <div className="flex items-center gap-2">
       <button
-        onClick={onShare}
+        onClick={handleShare}
         className="p-2 text-gray-600 hover:text-blue-500 dark:text-gray-400 dark:hover:text-blue-400"
         title="Share Document"
       >
@@ -22,7 +69,7 @@ export function DocumentActions({ documentId, onShare, onExport, onDelete }: Doc
         </svg>
       </button>
       <button
-        onClick={onExport}
+        onClick={handleExport}
         className="p-2 text-gray-600 hover:text-green-500 dark:text-gray-400 dark:hover:text-green-400"
         title="Export Document"
       >
