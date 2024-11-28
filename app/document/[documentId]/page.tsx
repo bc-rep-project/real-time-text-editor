@@ -202,20 +202,20 @@ export default function DocumentPage({ params }: { params: { documentId: string 
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="container mx-auto px-4 py-6">
-        {/* Top Navigation Area */}
-        <div className="mb-6">
-        <DocumentBreadcrumbs documentId={params.documentId} />
-        <DocumentToolbar 
-          documentId={params.documentId}
-          onShare={() => setShowShareDialog(true)}
-          onExport={() => setShowExportDialog(true)}
-        />
+    <div className="min-h-screen flex flex-col">
+      {/* Main Content */}
+      <div className="flex-1 container mx-auto px-4 space-y-4">
+        {/* Header area remains the same */}
+        <div className="space-y-4 pt-4">
+          <DocumentBreadcrumbs documentId={params.documentId} />
+          <DocumentToolbar
+            onShareClick={() => setShowShareDialog(true)}
+            onExportClick={() => setShowExportDialog(true)}
+          />
         </div>
 
         {/* Main Content Area */}
-        <div className="grid grid-cols-12 gap-6">
+        <div className="grid grid-cols-12 gap-6 pb-24 lg:pb-0"> {/* Add bottom padding for mobile */}
           {/* Left Sidebar - Document Structure */}
           <div className="hidden lg:block col-span-2 space-y-4">
             <DocumentOutline />
@@ -273,22 +273,12 @@ export default function DocumentPage({ params }: { params: { documentId: string 
 
       {/* Mobile Navigation */}
       <div className="lg:hidden">
-        {/* Bottom Navigation Bar */}
-        <div className="fixed bottom-0 left-0 right-0 z-40 pb-safe">
-        <MobileNavigation 
-          documentId={params.documentId}
-          onVersionHistoryClick={() => setShowVersionHistory(true)} 
-        />
-      </div>
-
-        {/* Mobile Drawers/Modals */}
-      {showVersionHistory && (
-        <MobileVersionHistory
-          documentId={params.documentId}
-          onRevert={handleRevert}
-          onClose={() => setShowVersionHistory(false)}
-        />
-      )}
+        <div className="fixed bottom-0 left-0 right-0 z-40">
+          <MobileNavigation 
+            documentId={params.documentId}
+            onVersionHistoryClick={() => setShowVersionHistory(true)} 
+          />
+        </div>
       </div>
 
       {/* Dialogs */}

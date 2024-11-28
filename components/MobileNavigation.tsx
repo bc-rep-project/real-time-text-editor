@@ -14,8 +14,8 @@ export function MobileNavigation({ documentId, onVersionHistoryClick }: MobileNa
   const isChatPage = pathname === `/document/${documentId}/chat`;
 
   return (
-    <div className="bg-white dark:bg-gray-800 border-t dark:border-gray-700 py-2">
-      <div className="grid grid-cols-3 items-center">
+    <div className="bg-white dark:bg-gray-800 border-t dark:border-gray-700 shadow-lg">
+      <div className="grid grid-cols-3 items-center safe-area-inset-bottom">
         <Link
           href={`/document/${documentId}`}
           className={`flex flex-col items-center py-2 ${
