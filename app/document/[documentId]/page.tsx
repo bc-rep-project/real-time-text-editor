@@ -25,6 +25,7 @@ import { DocumentCollaborators } from '@/components/DocumentCollaborators';
 
 export default function DocumentPage({ params }: { params: { documentId: string } }) {
   const [isLoading, setIsLoading] = useState(true);
+  const [content, setContent] = useState('');
   const [showVersionHistory, setShowVersionHistory] = useState(false);
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [showExportDialog, setShowExportDialog] = useState(false);
@@ -51,6 +52,14 @@ export default function DocumentPage({ params }: { params: { documentId: string 
     setShowVersionHistory(false);
   }, []);
 
+  const handleContentChange = useCallback((newContent: string) => {
+    setContent(newContent);
+  }, []);
+
+  const handleEditorReady = useCallback(() => {
+    setIsLoading(false);
+  }, []);
+
   if (!session) {
     return null; // Let the session handler redirect
   }
@@ -64,23 +73,44 @@ export default function DocumentPage({ params }: { params: { documentId: string 
           <DocumentToolbar
             onShareClick={() => setShowShareDialog(true)}
             onExportClick={() => setShowExportDialog(true)}
-                />
-              </div>
+          />
+        </div>
 
         {/* Main content */}
         <div className="grid grid-cols-12 gap-6 pb-24 lg:pb-0">
           {/* Editor area */}
           <div className="col-span-12 lg:col-span-9 space-y-4">
-            {/* Your editor components */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700">
+              <DocumentTabs
+                activeTab="editor"
+                onTabChange={() => {}}
+                tabs={[
+                  { id: 'editor', label: 'Editor' },
+                  { id: 'preview', label: 'Preview' }
+                ]}
+              />
+              <div className="p-4">
+                <EditorArea
+                  documentId={params.documentId}
+                  readOnly={false}
+                  onContentChange={handleContentChange}
+                  onEditorReady={handleEditorReady}
+                />
+              </div>
+            </div>
+            <DocumentStats 
+              documentId={params.documentId}
+              content={content}
+            />
           </div>
           
           {/* Right Sidebar */}
           <div className="hidden lg:block col-span-3 space-y-4">
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700">
-            <ChatBox documentId={params.documentId} />
+              <ChatBox documentId={params.documentId} />
             </div>
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700">
-            <VersionHistory documentId={params.documentId} onRevert={handleRevert} />
+              <VersionHistory documentId={params.documentId} onRevert={handleRevert} />
             </div>
           </div>
         </div>

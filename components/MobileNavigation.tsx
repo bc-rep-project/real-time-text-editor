@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useState } from 'react';
 
 interface MobileNavigationProps {
   documentId: string;
@@ -12,6 +13,12 @@ export function MobileNavigation({ documentId, onVersionHistoryClick }: MobileNa
   const pathname = usePathname();
   const isDocumentPage = pathname === `/document/${documentId}`;
   const isChatPage = pathname === `/document/${documentId}/chat`;
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+
+  const handleHistoryClick = () => {
+    setIsHistoryOpen(true);
+    onVersionHistoryClick();
+  };
 
   return (
     <div className="bg-white dark:bg-gray-800 border-t dark:border-gray-700 shadow-lg">
@@ -30,8 +37,12 @@ export function MobileNavigation({ documentId, onVersionHistoryClick }: MobileNa
           <span className="text-xs mt-1">Editor</span>
         </Link>
         <button
-          onClick={onVersionHistoryClick}
-          className="flex flex-col items-center py-2 text-gray-500 dark:text-gray-400"
+          onClick={handleHistoryClick}
+          className={`flex flex-col items-center py-2 ${
+            isHistoryOpen
+              ? 'text-blue-500 dark:text-blue-400'
+              : 'text-gray-500 dark:text-gray-400'
+          }`}
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
