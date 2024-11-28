@@ -14,7 +14,7 @@ interface DocumentToolbarProps {
   onExportClick: () => void;
 }
 
-export function DocumentToolbar() {
+export function DocumentToolbar({ onShareClick, onExportClick }: DocumentToolbarProps) {
   const [fontSize, setFontSize] = useState('16px');
   const [fontFamily, setFontFamily] = useState('default');
 

@@ -24,254 +24,54 @@ import { DocumentOutline } from '@/components/DocumentOutline';
 import { DocumentCollaborators } from '@/components/DocumentCollaborators';
 
 export default function DocumentPage({ params }: { params: { documentId: string } }) {
-  const router = useRouter();
-  const { data: session, status } = useSession();
-  const [document, setDocument] = useState<Document | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isEditingTitle, setIsEditingTitle] = useState(false);
-  const [newTitle, setNewTitle] = useState('');
-  const [isSavingTitle, setIsSavingTitle] = useState(false);
-  const [wordCount, setWordCount] = useState(0);
-  const [editorContent, setEditorContent] = useState('');
-  const [isEditorReady, setIsEditorReady] = useState(false);
   const [showVersionHistory, setShowVersionHistory] = useState(false);
-  const [activeTab, setActiveTab] = useState('editor');
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [showExportDialog, setShowExportDialog] = useState(false);
-
-  const calculateWordCount = (content: string) => {
-    if (typeof window === 'undefined' || !content || content === '<p><br></p>' || content === '<p></p>') {
-      return 0;
-    }
-
-    try {
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(content, 'text/html');
-      const textContent = doc.body.textContent || '';
-      
-      const words = textContent
-        .replace(/\s+/g, ' ')  // Replace multiple spaces with single space
-        .trim()
-        .split(' ')
-        .filter(word => word.length > 0);
-      
-      return words.length;
-    } catch (error) {
-      console.error('Error calculating word count:', error);
-      return 0;
-    }
-  };
-
-  const handleRevert = useCallback((content: string) => {
-    // Update editor content
-    setEditorContent(content);
-    
-    // Update word count
-    setWordCount(calculateWordCount(content));
-    
-    // Notify other users of changes via WebSocket if needed
-    // This assumes you have access to the WebSocket context/hook
-  }, [calculateWordCount]);
+  const router = useRouter();
+  const { data: session } = useSession({
+    required: true,
+    onUnauthenticated() {
+      router.push('/auth/signin');
+    },
+  });
 
   useEffect(() => {
-    const fetchDocument = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-        const response = await fetch(`/api/documents/${params.documentId}`);
-        
-        if (!response.ok) {
-          throw new Error('Failed to fetch document');
-        }
-        
-        const doc = await response.json();
-        setDocument(doc);
-        setEditorContent(doc.content);
-        setWordCount(calculateWordCount(doc.content));
-        setIsEditorReady(true);
-      } catch (error) {
-        console.error('Error fetching document:', error);
-        setError('Failed to load document');
-      } finally {
+    // Add cleanup function
+    return () => {
         setIsLoading(false);
-      }
+      setShowVersionHistory(false);
+      setShowShareDialog(false);
+      setShowExportDialog(false);
     };
+  }, []);
 
-    if (session?.user?.id) {
-      fetchDocument();
-    }
-  }, [params.documentId, session?.user?.id]);
-
-  const handleContentChange = (content: string) => {
-    setEditorContent(content);
-    setWordCount(calculateWordCount(content));
-  };
-
-  const handleEditorReady = () => {
-    setIsEditorReady(true);
-  };
-
-  const handleUpdateTitle = async () => {
-    if (!newTitle.trim() || isSavingTitle) return;
-
-    try {
-      setIsSavingTitle(true);
-      const response = await fetch(`/api/documents/${params.documentId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: newTitle.trim() })
-      });
-
-      if (!response.ok) throw new Error('Failed to update title');
-
-      const updatedDoc = await response.json();
-      setDocument(updatedDoc);
-      setIsEditingTitle(false);
-    } catch (error) {
-      console.error('Error updating title:', error);
-    } finally {
-      setIsSavingTitle(false);
-    }
-  };
-
-  const documentTabs = [
-    {
-      id: 'editor',
-      label: 'Editor',
-      icon: (
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-        </svg>
-      )
-    },
-    {
-      id: 'preview',
-      label: 'Preview',
-      icon: (
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-        </svg>
-      )
-    },
-    {
-      id: 'comments',
-      label: 'Comments',
-      icon: (
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
-        </svg>
-      )
-    }
-  ];
-
-  if (status === 'loading' || isLoading) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <LoadingSpinner size="large" />
-      </div>
-    );
-  }
+  const handleRevert = useCallback((content: string) => {
+    // Handle revert logic
+    setShowVersionHistory(false);
+  }, []);
 
   if (!session) {
-    router.push('/login');
-    return null;
-  }
-
-  if (error) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen">
-        <ErrorMessage message={error} />
-        <button
-          onClick={() => router.push('/')}
-          className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-        >
-          Go back to documents
-        </button>
-      </div>
-    );
-  }
-
-  if (!document) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <LoadingSpinner />
-      </div>
-    );
+    return null; // Let the session handler redirect
   }
 
   return (
     <div className="min-h-screen flex flex-col">
       <div className="flex-1 container mx-auto px-4 space-y-4">
-        {/* Header area with Share/Export */}
-        <div className="flex justify-between items-center pt-4">
+        {/* Header */}
+        <div className="space-y-4 pt-4">
           <DocumentBreadcrumbs documentId={params.documentId} />
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setShowShareDialog(true)}
-              className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-md"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-              </svg>
-              Share
-            </button>
-            <button
-              onClick={() => setShowExportDialog(true)}
-              className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-              </svg>
-              Export
-            </button>
-          </div>
-        </div>
-
-        {/* Rest of the content */}
-        <div className="grid grid-cols-12 gap-6 pb-24 lg:pb-0">
-          {/* Left Sidebar - Document Structure */}
-          <div className="hidden lg:block col-span-2 space-y-4">
-            <DocumentOutline />
-            <DocumentCollaborators documentId={params.documentId} />
-          </div>
-
-          {/* Main Editor Area */}
-          <div className="col-span-12 lg:col-span-7 space-y-4">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700">
-              {/* Editor Header */}
-              <div className="p-4 border-b dark:border-gray-700">
-              <UserPresenceIndicator documentId={params.documentId} />
-              <DocumentStats 
-                documentId={params.documentId}
-                content={editorContent} 
-              />
-                <DocumentTabs
-                  activeTab={activeTab}
-                  onTabChange={setActiveTab}
-                  tabs={documentTabs}
+          <DocumentToolbar
+            onShareClick={() => setShowShareDialog(true)}
+            onExportClick={() => setShowExportDialog(true)}
                 />
               </div>
 
-              {/* Editor Content */}
-              <div className="p-4">
-                {activeTab === 'editor' && (
-              <EditorArea 
-                documentId={params.documentId}
-                initialContent={document?.content || ''}
-                onContentChange={handleContentChange}
-                onEditorReady={handleEditorReady}
-              />
-                )}
-                {activeTab === 'preview' && (
-                  <DocumentPreview content={editorContent} />
-                )}
-                {activeTab === 'comments' && (
-                  <DocumentComments documentId={params.documentId} />
-                )}
-              </div>
-            </div>
+        {/* Main content */}
+        <div className="grid grid-cols-12 gap-6 pb-24 lg:pb-0">
+          {/* Editor area */}
+          <div className="col-span-12 lg:col-span-9 space-y-4">
+            {/* Your editor components */}
           </div>
           
           {/* Right Sidebar */}
@@ -297,6 +97,14 @@ export default function DocumentPage({ params }: { params: { documentId: string 
       </div>
 
       {/* Dialogs */}
+      {showVersionHistory && (
+        <MobileVersionHistory
+          documentId={params.documentId}
+          onRevert={handleRevert}
+          onClose={() => setShowVersionHistory(false)}
+        />
+      )}
+
       {showShareDialog && (
         <ShareDialog
           documentId={params.documentId}
