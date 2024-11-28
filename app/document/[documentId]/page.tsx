@@ -37,6 +37,8 @@ export default function DocumentPage({ params }: { params: { documentId: string 
     },
   });
 
+  const [activeTab, setActiveTab] = useState('editor');
+
   useEffect(() => {
     // Add cleanup function
     return () => {
@@ -60,13 +62,17 @@ export default function DocumentPage({ params }: { params: { documentId: string 
     setIsLoading(false);
   }, []);
 
+  const handleTabChange = (tabId: string) => {
+    setActiveTab(tabId);
+  };
+
   if (!session) {
     return null; // Let the session handler redirect
   }
 
   return (
     <div className="min-h-screen flex flex-col">
-      <div className="flex-1 container mx-auto px-4 space-y-4">
+      <div className="flex-1 container mx-auto px-2 sm:px-4 max-w-7xl space-y-4">
         {/* Header */}
         <div className="space-y-4 pt-4">
           <DocumentBreadcrumbs documentId={params.documentId} />
@@ -82,20 +88,29 @@ export default function DocumentPage({ params }: { params: { documentId: string 
           <div className="col-span-12 lg:col-span-9 space-y-4">
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700">
               <DocumentTabs
-                activeTab="editor"
-                onTabChange={() => {}}
+                activeTab={activeTab}
+                onTabChange={handleTabChange}
                 tabs={[
                   { id: 'editor', label: 'Editor' },
-                  { id: 'preview', label: 'Preview' }
+                  { id: 'preview', label: 'Preview' },
+                  { id: 'comments', label: 'Comments' }
                 ]}
               />
               <div className="p-4">
-                <EditorArea
-                  documentId={params.documentId}
-                  readOnly={false}
-                  onContentChange={handleContentChange}
-                  onEditorReady={handleEditorReady}
-                />
+                {activeTab === 'editor' && (
+                  <EditorArea
+                    documentId={params.documentId}
+                    readOnly={false}
+                    onContentChange={handleContentChange}
+                    onEditorReady={handleEditorReady}
+                  />
+                )}
+                {activeTab === 'preview' && (
+                  <DocumentPreview content={content} />
+                )}
+                {activeTab === 'comments' && (
+                  <DocumentComments documentId={params.documentId} />
+                )}
               </div>
             </div>
             <DocumentStats 
