@@ -15,7 +15,7 @@ export function MobileNavigation({ documentId, onVersionHistoryClick }: MobileNa
 
   return (
     <div className="bg-white dark:bg-gray-800 border-t dark:border-gray-700 shadow-lg">
-      <div className="grid grid-cols-3 items-center safe-area-inset-bottom">
+      <div className="grid grid-cols-3 items-center py-2 px-4">
         <Link
           href={`/document/${documentId}`}
           className={`flex flex-col items-center py-2 ${
@@ -52,6 +52,7 @@ export function MobileNavigation({ documentId, onVersionHistoryClick }: MobileNa
           <span className="text-xs mt-1">Chat</span>
         </Link>
       </div>
+      <div className="h-safe-bottom bg-white dark:bg-gray-800" />
     </div>
   );
 } 
