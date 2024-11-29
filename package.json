@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "start": "next start",
     "lint": "next lint",
     "setup-env": "node scripts/setup-env.js",
@@ -48,10 +48,10 @@
     "react-dom": "^18.2.0",
     "react-quill": "^2.0.0",
     "ws": "^8.16.0",
-    "zod": "^3.23.8"
+    "zod": "^3.23.8",
+    "@prisma/client": "^6.0.0"
   },
   "devDependencies": {
-    "@prisma/client": "^6.0.0",
     "@tailwindcss/typography": "^0.5.10",
     "@types/bcrypt": "^5.0.2",
     "@types/cookie": "^0.5.4",
