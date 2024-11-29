@@ -38,6 +38,7 @@ export default function DocumentPage({ params }: { params: { documentId: string 
   });
 
   const [activeTab, setActiveTab] = useState('editor');
+  const [showDesktopVersionHistory, setShowDesktopVersionHistory] = useState(false);
 
   useEffect(() => {
     // Add cleanup function
@@ -92,7 +93,7 @@ export default function DocumentPage({ params }: { params: { documentId: string 
           </div>
 
           {/* Main Editor Area */}
-          <div className="col-span-12 lg:col-span-7 xl:col-span-7 flex flex-col h-[calc(100vh-8rem)]">
+          <div className="col-span-12 lg:col-span-8 xl:col-span-8 flex flex-col h-[calc(100vh-8rem)]">
             <div className="flex-1 bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700 overflow-hidden">
               <DocumentTabs
                 activeTab={activeTab}
@@ -129,22 +130,59 @@ export default function DocumentPage({ params }: { params: { documentId: string 
           </div>
 
           {/* Right Sidebar */}
-          <div className="hidden lg:flex lg:col-span-5 xl:col-span-3 flex-col gap-4 h-[calc(100vh-8rem)]">
+          <div className="hidden lg:flex lg:col-span-4 xl:col-span-2 flex-col gap-4 h-[calc(100vh-8rem)]">
             <div className="flex-1 bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700">
               <ChatBox documentId={params.documentId} />
             </div>
-            <div className="flex-1 bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700">
-              <VersionHistory 
-                documentId={params.documentId} 
-                onRevert={handleRevert} 
-              />
-            </div>
+            <button
+              onClick={() => setShowDesktopVersionHistory(true)}
+              className="w-full p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700 
+                hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors
+                flex items-center justify-between"
+            >
+              <span className="text-sm font-medium text-gray-900 dark:text-white">Version History</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">View all versions</span>
+            </button>
             <div className="h-[200px] bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700">
               <DocumentCollaborators documentId={params.documentId} />
             </div>
           </div>
         </div>
       </div>
+
+      {/* Desktop Version History Modal */}
+      {showDesktopVersionHistory && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="fixed inset-0 bg-black/30 backdrop-blur-sm" 
+               onClick={() => setShowDesktopVersionHistory(false)} />
+          <div className="relative min-h-screen flex items-center justify-center p-4">
+            <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-2xl">
+              <div className="flex items-center justify-between p-4 border-b dark:border-gray-700">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  Version History
+                </h2>
+                <button
+                  onClick={() => setShowDesktopVersionHistory(false)}
+                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              <div className="p-4 max-h-[70vh] overflow-y-auto">
+                <VersionHistory 
+                  documentId={params.documentId} 
+                  onRevert={(content) => {
+                    handleRevert(content);
+                    setShowDesktopVersionHistory(false);
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Mobile Navigation - Keep existing code */}
       <div className="lg:hidden">
