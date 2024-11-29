@@ -29,6 +29,7 @@ export function DocumentList() {
       setIsLoading(true);
       setError(null);
       
+      console.log('Fetching documents with sort:', sort);
       const response = await fetch(`/api/documents?sort=${sort}&search=${encodeURIComponent(search)}`);
 
       if (!response.ok) {
@@ -37,6 +38,7 @@ export function DocumentList() {
       }
 
       const data = await response.json();
+      console.log('Received documents:', data);
       setDocuments(data);
       
       let docsToShow = data;
@@ -56,6 +58,7 @@ export function DocumentList() {
         }
       });
 
+      console.log('Sorted documents:', sortedDocs);
       setFilteredDocs(sortedDocs);
     } catch (error) {
       console.error('Error fetching documents:', error);
