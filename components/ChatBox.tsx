@@ -115,6 +115,23 @@ export function ChatBox({ documentId }: ChatBoxProps) {
     sendMessageAsync();
   };
 
+  const handleReaction = async (messageId: string, reaction: string) => {
+    try {
+      const response = await fetch(`/api/chat/${documentId}/reactions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messageId, reaction }),
+      });
+
+      if (!response.ok) throw new Error('Failed to add reaction');
+
+      // Optionally update the UI or handle the response
+    } catch (error) {
+      console.error('Error adding reaction:', error);
+      setError('Failed to add reaction');
+    }
+  };
+
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow border dark:border-gray-700 flex flex-col chat-container">
       <ChatHeader 
@@ -141,6 +158,7 @@ export function ChatBox({ documentId }: ChatBoxProps) {
                 username={msg.username}
                 timestamp={msg.createdAt.toISOString()}
                 isSelf={msg.userId === session?.user?.id}
+                onReact={(emoji) => handleReaction(msg.id, emoji)}
               />
             ))}
             <div ref={messagesEndRef} />

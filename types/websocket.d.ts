@@ -1,7 +1,10 @@
-import { WebSocket } from 'ws';
+declare module 'ws' {
+  interface WebSocket {
+    isAlive?: boolean;
+  }
+}
 
 export interface WebSocketClient extends WebSocket {
-  isAlive: boolean;
   userId?: string;
   username?: string;
   documentId?: string;
