@@ -39,15 +39,24 @@ export function DocumentList() {
       const data = await response.json();
       setDocuments(data);
       
+      let docsToShow = data;
       if (search.trim()) {
-        const filtered = data.filter((doc: Document) => 
+        docsToShow = data.filter((doc: Document) => 
           doc.title.toLowerCase().includes(search.toLowerCase()) ||
           doc.content.toLowerCase().includes(search.toLowerCase())
         );
-        setFilteredDocs(filtered);
-      } else {
-        setFilteredDocs(data);
       }
+
+      // Always apply sorting
+      const sortedDocs = [...docsToShow].sort((a, b) => {
+        if (sort === 'title') {
+          return a.title.localeCompare(b.title);
+        } else {
+          return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+        }
+      });
+
+      setFilteredDocs(sortedDocs);
     } catch (error) {
       console.error('Error fetching documents:', error);
       setError(typeof error === 'string' ? error : 'Failed to load documents');
