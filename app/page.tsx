@@ -8,13 +8,6 @@ import { DocumentList } from '@/components/DocumentList';
 
 export default function HomePage() {
   const { data: session, status } = useSession();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (status === 'authenticated') {
-      router.push('/document');
-    }
-  }, [status, router]);
 
   if (status === 'loading') {
     return (
@@ -25,7 +18,11 @@ export default function HomePage() {
   }
 
   if (status === 'authenticated') {
-    return null;
+    return (
+      <div className="container mx-auto p-6">
+        <DocumentList />
+      </div>
+    );
   }
 
   return (
