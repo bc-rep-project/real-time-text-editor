@@ -99,7 +99,16 @@ export function DocumentList() {
       doc.title.toLowerCase().includes(query.toLowerCase()) ||
       doc.content.toLowerCase().includes(query.toLowerCase())
     );
-    setFilteredDocs(filtered);
+
+    const sortedAndFiltered = [...filtered].sort((a, b) => {
+      if (sortBy === 'title') {
+        return a.title.localeCompare(b.title);
+      } else {
+        return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+      }
+    });
+    
+    setFilteredDocs(sortedAndFiltered);
   };
 
   return (
