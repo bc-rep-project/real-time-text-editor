@@ -298,3 +298,31 @@
   background: rgb(17, 24, 39);
   border-color: rgb(55, 65, 81);
 }
+
+/* Add these styles to maintain consistent heights */
+.editor-container {
+  height: calc(100vh - 13rem);
+  min-height: 500px;
+}
+
+@media (max-width: 1023px) {
+  .editor-container {
+    height: calc(100vh - 16rem);
+  }
+}
+
+.chat-container {
+  height: calc(100vh - 16rem);
+  min-height: 400px;
+}
+
+.version-history-container {
+  height: calc(100vh - 32rem);
+  min-height: 300px;
+  overflow-y: auto;
+}
+
+.collaborators-container {
+  max-height: calc(100vh - 32rem);
+  overflow-y: auto;
+}

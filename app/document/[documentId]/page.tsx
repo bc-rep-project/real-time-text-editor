@@ -72,9 +72,9 @@ export default function DocumentPage({ params }: { params: { documentId: string 
 
   return (
     <div className="min-h-screen flex flex-col">
-      <div className="flex-1 container mx-auto px-2 sm:px-4 max-w-7xl space-y-4">
-        {/* Header */}
-        <div className="space-y-4 pt-4">
+      <div className="flex-1 container mx-auto px-4 py-4 max-w-7xl">
+        {/* Header Section */}
+        <div className="mb-6">
           <DocumentBreadcrumbs documentId={params.documentId} />
           <DocumentToolbar
             onShareClick={() => setShowShareDialog(true)}
@@ -82,10 +82,15 @@ export default function DocumentPage({ params }: { params: { documentId: string 
           />
         </div>
 
-        {/* Main content */}
-        <div className="grid grid-cols-12 gap-6 pb-24 lg:pb-0">
-          {/* Editor area */}
-          <div className="col-span-12 lg:col-span-9 space-y-4">
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-12 gap-4">
+          {/* Left Sidebar - Document Outline */}
+          <div className="hidden xl:block col-span-2">
+            <DocumentOutline />
+          </div>
+
+          {/* Main Editor Area */}
+          <div className="col-span-12 lg:col-span-8 xl:col-span-7 space-y-4">
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700">
               <DocumentTabs
                 activeTab={activeTab}
@@ -118,30 +123,34 @@ export default function DocumentPage({ params }: { params: { documentId: string 
               content={content}
             />
           </div>
-          
+
           {/* Right Sidebar */}
-          <div className="hidden lg:block col-span-3 space-y-4">
+          <div className="hidden lg:block col-span-4 xl:col-span-3 space-y-4">
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700">
               <ChatBox documentId={params.documentId} />
             </div>
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700">
-              <VersionHistory documentId={params.documentId} onRevert={handleRevert} />
+              <VersionHistory 
+                documentId={params.documentId} 
+                onRevert={handleRevert} 
+              />
+            </div>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700">
+              <DocumentCollaborators documentId={params.documentId} />
             </div>
           </div>
         </div>
       </div>
 
-      {/* Mobile Navigation */}
+      {/* Mobile Navigation - Keep existing code */}
       <div className="lg:hidden">
-        <div className="fixed bottom-0 left-0 right-0 z-40">
-          <MobileNavigation 
-            documentId={params.documentId}
-            onVersionHistoryClick={() => setShowVersionHistory(true)} 
-          />
-        </div>
+        <MobileNavigation 
+          documentId={params.documentId}
+          onVersionHistoryClick={() => setShowVersionHistory(true)} 
+        />
       </div>
 
-      {/* Dialogs */}
+      {/* Dialogs - Keep existing code */}
       {showVersionHistory && (
         <MobileVersionHistory
           documentId={params.documentId}
@@ -155,14 +164,6 @@ export default function DocumentPage({ params }: { params: { documentId: string 
           documentId={params.documentId}
           isOpen={showShareDialog}
           onClose={() => setShowShareDialog(false)}
-        />
-      )}
-      
-      {showExportDialog && (
-        <ExportDialog
-          documentId={params.documentId}
-          isOpen={showExportDialog}
-          onClose={() => setShowExportDialog(false)}
         />
       )}
     </div>
