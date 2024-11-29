@@ -47,13 +47,9 @@ export async function GET(request: Request) {
       }
     ];
 
-    // Get all documents for the user with proper typing
+    // First get all documents without sorting
     const documents = await db.query<Document>('documents', {
-      where: whereConditions,
-      orderBy: {
-        field: sort,
-        direction
-      }
+      where: whereConditions
     });
 
     console.log('API: Raw documents:', documents);
@@ -68,9 +64,18 @@ export async function GET(request: Request) {
       updatedAt: new Date(doc.updatedAt).toISOString()
     }));
 
-    console.log('API: Formatted documents:', formattedDocuments);
+    // Sort documents in memory
+    const sortedDocuments = [...formattedDocuments].sort((a, b) => {
+      if (sort === 'title') {
+        return a.title.localeCompare(b.title);
+      } else {
+        return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+      }
+    });
 
-    return NextResponse.json(formattedDocuments);
+    console.log('API: Sorted documents:', sortedDocuments);
+
+    return NextResponse.json(sortedDocuments);
   } catch (error) {
     console.error('Failed to fetch documents:', error);
     // Return more detailed error information
