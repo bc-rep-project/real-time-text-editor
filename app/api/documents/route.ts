@@ -31,6 +31,9 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const search = searchParams.get('search') || '';
     const sort = searchParams.get('sort') || 'updatedAt';
+    
+    // Always sort updatedAt in descending order for recency
+    // Always sort title in ascending order for alphabetical order
     const direction = sort === 'title' ? 'asc' : 'desc';
 
     // Build where clauses with proper typing
