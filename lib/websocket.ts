@@ -13,6 +13,7 @@ interface ExtendedIncomingMessage extends IncomingMessage {
 export class DocumentWebSocketServer {
   private wss: WebSocketServer;
   private pingInterval!: NodeJS.Timeout;
+  private cursorPositions: Map<string, Map<string, any>> = new Map(); // documentId -> Map of userId -> position
 
   constructor(port: number) {
     this.wss = new WebSocketServer({ 
@@ -102,21 +103,54 @@ export class DocumentWebSocketServer {
   private async handleMessage(ws: WebSocketClient, data: Buffer | ArrayBuffer | Buffer[]) {
     try {
       const message = JSON.parse(data.toString());
-      console.log('Received message:', message.type);
-
-      if (message.type === 'documentUpdate') {
-        await adminDb.collection('documents')
-          .doc(message.documentId)
-          .update({
-            content: message.content,
-            updatedAt: new Date()
-          });
+      
+      switch (message.type) {
+        case 'documentUpdate':
+          await this.handleDocumentUpdate(ws, message);
+          break;
+        case 'cursorMove':
+          await this.handleCursorMove(ws, message);
+          break;
+        case 'selection':
+          await this.handleSelection(ws, message);
+          break;
       }
-
-      this.broadcastMessage(ws, message);
     } catch (error) {
       console.error('Error handling message:', error);
     }
+  }
+
+  private async handleDocumentUpdate(ws: WebSocketClient, message: any) {
+    const { documentId, content } = message;
+    await adminDb.collection('documents')
+      .doc(documentId)
+      .update({
+        content: content,
+        updatedAt: new Date()
+      });
+    this.broadcastMessage(ws, message);
+  }
+
+  private async handleCursorMove(ws: WebSocketClient, message: any) {
+    const { documentId, position, userId } = message;
+    let docCursors = this.cursorPositions.get(documentId) || new Map();
+    docCursors.set(userId, position);
+    this.cursorPositions.set(documentId, docCursors);
+    
+    this.broadcastMessage(ws, {
+      type: 'cursorUpdate',
+      documentId,
+      cursors: Object.fromEntries(docCursors)
+    });
+  }
+
+  private async handleSelection(ws: WebSocketClient, message: any) {
+    const { documentId, selection } = message;
+    this.broadcastMessage(ws, {
+      type: 'selection',
+      documentId,
+      data: { selection }
+    });
   }
 
   private broadcastMessage(sender: WebSocketClient, message: any) {

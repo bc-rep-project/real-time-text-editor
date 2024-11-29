@@ -11,6 +11,9 @@ interface ChatMessage {
   message: string;
   createdAt: Date;
   username?: string;
+  parentMessageId?: string;
+  reactions?: Record<string, string[]>;
+  mentions?: string[];
 }
 
 interface User {
@@ -73,7 +76,7 @@ export async function GET(
 // POST /api/chat/[documentId]
 export async function POST(
   request: Request,
-  { params }: { params: { documentId: string } }
+  { params }: { params: { documentId: string; messageId: string } }
 ) {
   try {
     const session = await getServerSession(authOptions);

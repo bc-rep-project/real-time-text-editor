@@ -8,6 +8,9 @@ import debounce from 'lodash/debounce';
 import { Dialog } from './Dialog';
 import type { Document } from '@/types/database';
 import { CreateNewDocumentButton } from './CreateNewDocumentButton';
+import { DocumentSearch } from './DocumentSearch';
+import { DocumentActions } from './DocumentActions';
+import { DeleteConfirmationDialog } from './DeleteConfirmationDialog';
 
 export function DocumentList() {
   const router = useRouter();
@@ -19,33 +22,47 @@ export function DocumentList() {
   const [isCreating, setIsCreating] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState<string | null>(null);
   const [newDocTitle, setNewDocTitle] = useState('');
+  const [filteredDocs, setFilteredDocs] = useState<Document[]>([]);
 
   const fetchDocuments = async (search: string, sort: string) => {
     try {
       setIsLoading(true);
       setError(null);
       
-      const searchParam = encodeURIComponent(search.trim());
-      const response = await fetch(
-        `/api/documents?sort=${sort}`
-      );
+      console.log('Fetching documents with sort:', sort);
+      const response = await fetch(`/api/documents?sort=${sort}&search=${encodeURIComponent(search)}`);
 
       if (!response.ok) {
-        throw new Error('Failed to fetch documents');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to fetch documents');
       }
 
       const data = await response.json();
+      console.log('Received documents:', data);
+      setDocuments(data);
       
-      const filteredDocs = search.trim()
-        ? data.filter((doc: Document) =>
-            doc.title.toLowerCase().includes(search.toLowerCase())
-          )
-        : data;
+      let docsToShow = data;
+      if (search.trim()) {
+        docsToShow = data.filter((doc: Document) => 
+          doc.title.toLowerCase().includes(search.toLowerCase()) ||
+          doc.content.toLowerCase().includes(search.toLowerCase())
+        );
+      }
 
-      setDocuments(filteredDocs);
+      // Always apply sorting
+      const sortedDocs = [...docsToShow].sort((a, b) => {
+        if (sort === 'title') {
+          return a.title.localeCompare(b.title);
+        } else {
+          return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+        }
+      });
+
+      console.log('Sorted documents:', sortedDocs);
+      setFilteredDocs(sortedDocs);
     } catch (error) {
       console.error('Error fetching documents:', error);
-      setError('Failed to load documents');
+      setError(typeof error === 'string' ? error : 'Failed to load documents');
     } finally {
       setIsLoading(false);
     }
@@ -54,7 +71,7 @@ export function DocumentList() {
   const debouncedFetch = useCallback(
     debounce((search: string, sort: string) => {
       fetchDocuments(search, sort);
-    }, 200),
+    }, 300),
     []
   );
 
@@ -83,42 +100,38 @@ export function DocumentList() {
     }
   };
 
+  const handleSearch = (query: string) => {
+    setSearchTerm(query);
+    if (!query.trim()) {
+      setFilteredDocs(documents);
+      return;
+    }
+    
+    const filtered = documents.filter((doc: Document) => 
+      doc.title.toLowerCase().includes(query.toLowerCase()) ||
+      doc.content.toLowerCase().includes(query.toLowerCase())
+    );
+
+    const sortedAndFiltered = [...filtered].sort((a, b) => {
+      if (sortBy === 'title') {
+        return a.title.localeCompare(b.title);
+      } else {
+        return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+      }
+    });
+    
+    setFilteredDocs(sortedAndFiltered);
+  };
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">My Documents</h1>
         <CreateNewDocumentButton onSuccess={() => fetchDocuments(searchTerm, sortBy)} />
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1">
-          <input
-            type="text"
-            placeholder="Search documents..."
-            value={searchTerm}
-            onChange={(e) => {
-              const value = e.target.value;
-              setSearchTerm(value);
-              if (!value.trim()) {
-                fetchDocuments('', sortBy);
-              }
-            }}
-            className="w-full h-10 px-4 py-2 border dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 
-            text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-            aria-label="Search documents"
-          />
-          {searchTerm && (
-            <button
-              onClick={() => setSearchTerm('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
-              aria-label="Clear search"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          )}
-        </div>
+        <DocumentSearch content={searchTerm} onSearch={handleSearch} />
         <div className="flex-shrink-0">
           <select
             value={sortBy}
@@ -138,41 +151,35 @@ export function DocumentList() {
         </div>
       ) : error ? (
         <ErrorMessage message={error} />
-      ) : documents.length === 0 ? (
+      ) : filteredDocs.length === 0 ? (
         <div className="text-center py-8 text-gray-500 dark:text-gray-400">
           {searchTerm ? `No documents found for "${searchTerm}"` : 'No documents found'}
         </div>
       ) : (
-        <div className="space-y-3">
-          {documents.map((doc) => (
-            <div
-              key={doc.id}
-              className="flex items-center justify-between p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm 
-              border dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-400 transition-colors duration-200"
+      <div className="grid gap-4">
+        {filteredDocs.map((doc) => (
+          <div key={doc.id} className="flex items-center justify-between p-4 bg-white dark:bg-gray-800 rounded-lg">
+            <button
+              onClick={() => router.push(`/document/${doc.id}`)}
+              className="flex-1 text-left"
             >
-              <button
-                onClick={() => router.push(`/document/${doc.id}`)}
-                className="flex-1 text-left"
-              >
-                <h3 className="font-medium text-gray-900 dark:text-white">{doc.title}</h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                  Last updated: {new Date(doc.updatedAt).toLocaleString()}
-                </p>
-              </button>
-              
-              <button
-                onClick={() => setShowDeleteDialog(doc.id)}
-                className="ml-4 p-2 text-gray-400 hover:text-red-500 dark:text-gray-500 dark:hover:text-red-400 
-                rounded-full hover:bg-red-50 dark:hover:bg-red-900/20"
-                aria-label="Delete document"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                </svg>
-              </button>
-            </div>
-          ))}
-        </div>
+              <h3 className="font-medium text-gray-900 dark:text-white">
+                {doc.title}
+              </h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                Last updated: {new Date(doc.updatedAt).toLocaleString()}
+              </p>
+            </button>
+            
+            <DocumentActions
+              documentId={doc.id}
+              onShare={() => {/* This is now handled within DocumentActions */}}
+              onExport={() => {/* This is now handled within DocumentActions */}}
+              onDelete={() => setShowDeleteDialog(doc.id)}
+            />
+          </div>
+        ))}
+      </div>
       )}
 
       <Dialog
@@ -180,23 +187,14 @@ export function DocumentList() {
         onClose={() => setShowDeleteDialog(null)}
         title="Delete Document"
       >
-        <p className="text-gray-600 dark:text-gray-300">
-          Are you sure you want to delete this document? This action cannot be undone.
-        </p>
-        <div className="mt-4 flex justify-end gap-2">
-          <button
-            onClick={() => setShowDeleteDialog(null)}
-            className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={() => showDeleteDialog && deleteDocument(showDeleteDialog)}
-            className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600"
-          >
-            Delete
-          </button>
-        </div>
+        <DeleteConfirmationDialog
+          onConfirm={async () => {
+            if (showDeleteDialog) {
+              await deleteDocument(showDeleteDialog);
+            }
+          }}
+          onCancel={() => setShowDeleteDialog(null)}
+        />
       </Dialog>
     </div>
   );

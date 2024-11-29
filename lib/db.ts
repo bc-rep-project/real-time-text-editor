@@ -52,10 +52,12 @@ export const db = {
   // Query documents with filters and ordering
   async query<T>(collection: string, options: QueryOptions = {}): Promise<T[]> {
     try {
+      console.log('DB: Starting query with options:', JSON.stringify(options, null, 2));
       let query: Query<DocumentData> | CollectionReference<DocumentData> = adminDb.collection(collection);
 
       if (options.where) {
         options.where.forEach(clause => {
+          console.log('DB: Adding where clause:', clause);
           query = query.where(
             clause.field,
             clause.op,
@@ -65,6 +67,7 @@ export const db = {
       }
 
       if (options.orderBy) {
+        console.log('DB: Adding orderBy:', options.orderBy);
         query = query.orderBy(
           options.orderBy.field,
           options.orderBy.direction
@@ -75,8 +78,9 @@ export const db = {
         query = query.limit(options.limit);
       }
 
+      console.log('DB: Executing query...');
       const snapshot = await query.get();
-      return snapshot.docs.map(doc => {
+      const results = snapshot.docs.map(doc => {
         const data = doc.data();
         // Safely handle timestamp conversions
         return {
@@ -86,8 +90,10 @@ export const db = {
           updatedAt: data.updatedAt?.toDate?.() || data.updatedAt
         } as T;
       });
+      console.log('DB: Query returned', results.length, 'documents');
+      return results;
     } catch (error) {
-      console.error('Error querying documents:', error);
+      console.error('DB: Error querying documents:', error);
       return [];
     }
   },
@@ -107,17 +113,46 @@ export const db = {
     }
   },
 
-  // Update an existing document
+  // Add mergeUpdates method
+  mergeUpdates(currentData: any, newData: any): any {
+    if (!currentData) return newData;
+    
+    const merged = { ...currentData };
+    
+    // Merge arrays if they exist
+    Object.keys(newData).forEach(key => {
+      if (Array.isArray(currentData[key]) && Array.isArray(newData[key])) {
+        merged[key] = [...new Set([...currentData[key], ...newData[key]])];
+      } else if (typeof currentData[key] === 'object' && typeof newData[key] === 'object') {
+        merged[key] = this.mergeUpdates(currentData[key], newData[key]);
+      } else {
+        merged[key] = newData[key];
+      }
+    });
+    
+    return merged;
+  },
+
+  // Update existing document with retry and merge
   async update(collection: string, id: string, data: any): Promise<void> {
-    try {
-      await adminDb.collection(collection).doc(id).update({
-        ...data,
-        updatedAt: new Date()
+    return this.retryOperation(async () => {
+      const ref = adminDb.collection(collection).doc(id);
+      await adminDb.runTransaction(async (transaction) => {
+        const doc = await transaction.get(ref);
+        if (!doc.exists) {
+          throw new Error('Document does not exist');
+        }
+        
+        // Merge changes with existing data
+        const currentData = doc.data();
+        const mergedData = this.mergeUpdates(currentData, data);
+        
+        transaction.update(ref, {
+          ...mergedData,
+          updatedAt: new Date()
+        });
       });
-    } catch (error) {
-      console.error('Error updating document:', error);
-      throw error;
-    }
+    });
   },
 
   // Delete a document
@@ -141,5 +176,19 @@ export const db = {
 
   doc(collectionName: string, docId: string) {
     return adminDb.collection(collectionName).doc(docId);
+  },
+
+  // Add retry mechanism for failed operations
+  async retryOperation<T>(operation: () => Promise<T>, maxRetries = 3): Promise<T> {
+    let lastError;
+    for (let i = 0; i < maxRetries; i++) {
+      try {
+        return await operation();
+      } catch (error) {
+        lastError = error;
+        await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000));
+      }
+    }
+    throw lastError;
   }
 }; 

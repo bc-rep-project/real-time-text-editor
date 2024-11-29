@@ -4,10 +4,28 @@ import { DocumentWebSocketServer } from './websocket';
 import { createHealthRouter } from './routes/health';
 import * as dotenv from 'dotenv';
 import { config } from './config';
+import { createServer } from 'http';
+import { WebSocketServer } from 'ws';
+import { parse } from 'url';
+import { getSession } from 'next-auth/react';
+import { db } from '@/lib/db';
 
 // Load environment variables
 if (process.env.NODE_ENV !== 'production') {
   dotenv.config();
+}
+
+interface WebSocketClient extends WebSocket {
+  documentId?: string;
+  userId?: string;
+  username?: string;
+  isAlive?: boolean;
+}
+
+interface Message {
+  type: 'documentUpdate' | 'chatMessage' | 'presence' | 'cursorUpdate';
+  documentId: string;
+  data: any;
 }
 
 async function startServer() {
@@ -66,4 +84,4 @@ async function startServer() {
 startServer().catch((error) => {
   console.error('Server startup error:', error);
   process.exit(1);
-}); 
+});

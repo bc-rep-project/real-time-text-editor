@@ -32,22 +32,42 @@ const modules = {
 
 interface EditorAreaProps {
   documentId: string;
-  initialContent: string;
-  onContentChange: (content: string) => void;
-  onEditorReady: () => void;
+  initialContent?: string;
+  readOnly?: boolean;
+  onContentChange?: (content: string) => void;
+  onEditorReady?: () => void;
 }
 
 export function EditorArea({ 
   documentId, 
-  initialContent, 
-  onContentChange,
-  onEditorReady 
+  initialContent = '', 
+  readOnly = false, 
+  onContentChange = () => {}, 
+  onEditorReady = () => {}
 }: EditorAreaProps) {
   const { data: session } = useSession();
+  const [content, setContent] = useState(initialContent);
   const { sendMessage, addMessageListener } = useWebSocket(documentId);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isTyping, setIsTyping] = useState(false);
+
+  // Fetch initial content when component mounts
+  useEffect(() => {
+    const fetchContent = async () => {
+      try {
+        const response = await fetch(`/api/documents/${documentId}`);
+        if (!response.ok) throw new Error('Failed to fetch document');
+        const data = await response.json();
+        setContent(data.content);
+        onContentChange(data.content); // Update parent component
+      } catch (error) {
+        console.error('Error fetching document:', error);
+      }
+    };
+
+    fetchContent();
+  }, [documentId]);
 
   // Call onEditorReady when the component mounts
   useEffect(() => {
@@ -56,8 +76,9 @@ export function EditorArea({
 
   // Handle content changes
   const handleContentChange = useCallback((newContent: string) => {
-    // Update word count immediately when content changes
+    setContent(newContent);
     onContentChange(newContent);
+    // Update word count immediately when content changes
     setIsTyping(true);
 
     // Notify other users of changes
@@ -100,29 +121,32 @@ export function EditorArea({
 
   return (
     <div className="flex flex-col h-full">
-      <div className="border rounded-lg bg-white overflow-hidden">
+      <div className="rounded-lg overflow-hidden">
         <ReactQuill
-          value={initialContent}
+          value={content}
           onChange={handleContentChange}
           modules={modules}
           theme="snow"
           placeholder="Start writing..."
-          className="h-[calc(100vh-16rem)] sm:h-[calc(100vh-14rem)] lg:h-[500px] mb-12"
+          readOnly={readOnly}
+          className="h-[500px] bg-white dark:bg-gray-800"
         />
       </div>
       
-      <div className="flex justify-between items-center mt-2 px-2 text-xs sm:text-sm text-gray-500">
-        <div className="flex items-center gap-2">
-          {isTyping && <span>•</span>}
-          {isSaving && (
-            <span className="flex items-center gap-1">
-              <LoadingSpinner size="small" />
-              Saving...
-            </span>
-          )}
+      {!readOnly && (
+        <div className="flex justify-between items-center mt-2 px-2 text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+          <div className="flex items-center gap-2">
+            {isTyping && <span>•</span>}
+            {isSaving && (
+              <span className="flex items-center gap-1">
+                <LoadingSpinner size="small" />
+                Saving...
+              </span>
+            )}
+          </div>
+          {error && <ErrorMessage message={error} />}
         </div>
-        {error && <ErrorMessage message={error} />}
-      </div>
+      )}
     </div>
   );
 } 

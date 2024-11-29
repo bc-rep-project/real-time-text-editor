@@ -2,14 +2,18 @@ import { WebSocket } from 'ws';
 import {
   WebSocketClient,
   WebSocketMessage,
+  MessageType,
   isPresenceData,
   isDocumentUpdateData,
-  isChatMessageData
+  isChatMessageData,
+  isTypingIndicatorData,
+  isSelectionData
 } from '../types';
 import { validateMessage } from '../utils/validator';
 
 export class WebSocketHandler {
   private documentClients: Map<string, Set<WebSocketClient>>;
+  private typingUsers: Map<string, Set<string>> = new Map(); // documentId -> Set of usernames
 
   constructor() {
     this.documentClients = new Map();
@@ -77,7 +81,38 @@ export class WebSocketHandler {
       return;
     }
 
-    this.broadcastToDocument(message.documentId, message, client);
+    // Add read receipts
+    const enrichedMessage = {
+      ...message,
+      data: {
+        ...message.data,
+        readBy: [client.userId],
+        timestamp: new Date().toISOString()
+      }
+    };
+
+    this.broadcastToDocument(message.documentId, enrichedMessage, client);
+  }
+
+  // Add typing indicator handler
+  public handleTypingIndicator(client: WebSocketClient, message: WebSocketMessage) {
+    if (!isTypingIndicatorData(message.data)) {
+      console.error('Invalid typing indicator data');
+      return;
+    }
+
+    const { documentId } = message;
+    const typingUsers = message.data.typingUsers || [];
+    
+    this.typingUsers.set(documentId, new Set(typingUsers));
+    
+    this.broadcastToDocument(documentId, {
+      type: 'typingIndicator',
+      documentId,
+      data: { 
+        typingUsers: Array.from(this.typingUsers.get(documentId) || new Set())
+      }
+    });
   }
 
   private broadcastToDocument(documentId: string, message: WebSocketMessage, excludeClient?: WebSocketClient) {
@@ -112,28 +147,35 @@ export class WebSocketHandler {
         return;
       }
 
-      // Add client to document if not already added
       if (client.documentId) {
         this.addClient(client.documentId, client);
       }
 
-      // Route message to appropriate handler
-      switch (message.type) {
-        case 'userPresence':
-          this.handleUserPresence(client, message);
-          break;
-        case 'documentUpdate':
-          this.handleDocumentUpdate(client, message);
-          break;
-        case 'chatMessage':
-          this.handleChatMessage(client, message);
-          break;
-        default:
-          console.error('Unknown message type:', message.type);
+      const handlers: Record<MessageType, (client: WebSocketClient, message: WebSocketMessage) => void> = {
+        userPresence: this.handleUserPresence.bind(this),
+        documentUpdate: this.handleDocumentUpdate.bind(this),
+        chatMessage: this.handleChatMessage.bind(this),
+        typingIndicator: this.handleTypingIndicator.bind(this),
+        selection: this.handleSelection.bind(this)
+      };
+
+      const handler = handlers[message.type];
+      if (handler) {
+        handler(client, message);
+      } else {
+        console.error('Unknown message type:', message.type);
       }
     } catch (error) {
       console.error('Error handling message:', error);
     }
+  }
+
+  private handleSelection(client: WebSocketClient, message: WebSocketMessage) {
+    if (!isSelectionData(message.data)) {
+      console.error('Invalid selection data');
+      return;
+    }
+    this.broadcastToDocument(message.documentId, message, client);
   }
 
   public handleDisconnect(client: WebSocketClient) {

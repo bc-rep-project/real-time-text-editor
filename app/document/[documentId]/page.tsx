@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { EditorArea } from '@/components/EditorArea';
@@ -12,287 +12,202 @@ import { ErrorMessage } from '@/components/ErrorMessage';
 import type { Document } from '@/types/database';
 import { MobileNavigation } from '@/components/MobileNavigation';
 import { MobileVersionHistory } from '@/components/MobileVersionHistory';
+import { DocumentBreadcrumbs } from '@/components/DocumentBreadcrumbs';
+import { DocumentToolbar } from '@/components/DocumentToolbar';
+import { DocumentTabs } from '@/components/DocumentTabs';
+import { DocumentPreview } from '@/components/DocumentPreview';
+import { DocumentStats } from '@/components/DocumentStats';
+import { DocumentComments } from '@/components/DocumentComments';
+import { ShareDialog } from '@/components/ShareDialog';
+import { ExportDialog } from '@/components/ExportDialog';
+import { DocumentOutline } from '@/components/DocumentOutline';
+import { DocumentCollaborators } from '@/components/DocumentCollaborators';
 
 export default function DocumentPage({ params }: { params: { documentId: string } }) {
-  const router = useRouter();
-  const { data: session, status } = useSession();
-  const [document, setDocument] = useState<Document | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isEditingTitle, setIsEditingTitle] = useState(false);
-  const [newTitle, setNewTitle] = useState('');
-  const [isSavingTitle, setIsSavingTitle] = useState(false);
-  const [wordCount, setWordCount] = useState(0);
-  const [editorContent, setEditorContent] = useState('');
-  const [isEditorReady, setIsEditorReady] = useState(false);
+  const [content, setContent] = useState('');
   const [showVersionHistory, setShowVersionHistory] = useState(false);
+  const [showShareDialog, setShowShareDialog] = useState(false);
+  const [showExportDialog, setShowExportDialog] = useState(false);
+  const router = useRouter();
+  const { data: session } = useSession({
+    required: true,
+    onUnauthenticated() {
+      router.push('/auth/signin');
+    },
+  });
 
-  const calculateWordCount = (content: string) => {
-    if (typeof window === 'undefined' || !content || content === '<p><br></p>' || content === '<p></p>') {
-      return 0;
-    }
-
-    try {
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(content, 'text/html');
-      const textContent = doc.body.textContent || '';
-      
-      const words = textContent
-        .trim()
-        .split(/\s+/)
-        .filter(word => word.length > 0);
-      
-      return words.length;
-    } catch (error) {
-      console.error('Error calculating word count:', error);
-      return 0;
-    }
-  };
+  const [activeTab, setActiveTab] = useState('editor');
+  const [showDesktopVersionHistory, setShowDesktopVersionHistory] = useState(false);
 
   useEffect(() => {
-    const fetchDocument = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-        const response = await fetch(`/api/documents/${params.documentId}`);
-        
-        if (!response.ok) {
-          throw new Error('Failed to fetch document');
-        }
-        
-        const doc = await response.json();
-        setDocument(doc);
-        setEditorContent(doc.content);
-        setWordCount(calculateWordCount(doc.content));
-        setIsEditorReady(true);
-      } catch (error) {
-        console.error('Error fetching document:', error);
-        setError('Failed to load document');
-      } finally {
+    // Add cleanup function
+    return () => {
         setIsLoading(false);
-      }
+      setShowVersionHistory(false);
+      setShowShareDialog(false);
+      setShowExportDialog(false);
     };
+  }, []);
 
-    if (session?.user?.id) {
-      fetchDocument();
-    }
-  }, [params.documentId, session?.user?.id]);
+  const handleRevert = useCallback((content: string) => {
+    // Handle revert logic
+    setShowVersionHistory(false);
+  }, []);
 
-  const handleContentUpdate = (newContent: string) => {
-    setEditorContent(newContent);
-    setWordCount(calculateWordCount(newContent));
-    if (document) {
-      setDocument(prev => prev ? { ...prev, content: newContent } : null);
-    }
+  const handleContentChange = useCallback((newContent: string) => {
+    setContent(newContent);
+  }, []);
+
+  const handleEditorReady = useCallback(() => {
+    setIsLoading(false);
+  }, []);
+
+  const handleTabChange = (tabId: string) => {
+    setActiveTab(tabId);
   };
-
-  const handleUpdateTitle = async () => {
-    if (!newTitle.trim() || isSavingTitle) return;
-
-    try {
-      setIsSavingTitle(true);
-      const response = await fetch(`/api/documents/${params.documentId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: newTitle.trim() })
-      });
-
-      if (!response.ok) throw new Error('Failed to update title');
-
-      const updatedDoc = await response.json();
-      setDocument(updatedDoc);
-      setIsEditingTitle(false);
-    } catch (error) {
-      console.error('Error updating title:', error);
-    } finally {
-      setIsSavingTitle(false);
-    }
-  };
-
-  if (status === 'loading' || isLoading) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <LoadingSpinner size="large" />
-      </div>
-    );
-  }
 
   if (!session) {
-    router.push('/login');
-    return null;
-  }
-
-  if (error) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen">
-        <ErrorMessage message={error} />
-        <button
-          onClick={() => router.push('/')}
-          className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-        >
-          Go back to documents
-        </button>
-      </div>
-    );
-  }
-
-  if (!document) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <LoadingSpinner />
-      </div>
-    );
+    return null; // Let the session handler redirect
   }
 
   return (
-    <div className="container mx-auto px-4 sm:px-6 pb-24 lg:pb-6 pt-4 sm:pt-6">
-      <div className="mb-4 sm:mb-6 flex justify-between items-center relative z-20">
-        <div className="flex-1 min-w-0">
-          {isEditingTitle ? (
-            <div className="flex items-center gap-2">
-              <input
-                type="text"
-                value={newTitle}
-                onChange={(e) => setNewTitle(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    handleUpdateTitle();
-                  } else if (e.key === 'Escape') {
-                    setIsEditingTitle(false);
-                  }
-                }}
-                className="text-xl sm:text-3xl font-bold px-2 py-1 border rounded-lg 
-                focus:outline-none focus:ring-2 focus:ring-blue-500 w-full
-                bg-white dark:bg-gray-800
-                text-gray-900 dark:text-white
-                border-gray-300 dark:border-gray-600"
-                placeholder="Document title"
-                autoFocus
-              />
-              <button
-                onClick={handleUpdateTitle}
-                disabled={isSavingTitle || !newTitle.trim()}
-                className="p-2 text-blue-500 hover:text-blue-600 disabled:opacity-50"
-              >
-                {isSavingTitle ? (
-                  <LoadingSpinner size="small" />
-                ) : (
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                )}
-              </button>
-              <button
-                onClick={() => setIsEditingTitle(false)}
-                className="p-2 text-gray-500 hover:text-gray-600"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-          ) : (
-            <div className="group flex items-center gap-2 overflow-hidden">
-              <h1 className="text-xl sm:text-3xl font-bold truncate text-gray-900 dark:text-white">
-                {document?.title}
-              </h1>
-              <button
-                onClick={() => {
-                  setNewTitle(document?.title || '');
-                  setIsEditingTitle(true);
-                }}
-                className="p-1 text-gray-400 hover:text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
-                aria-label="Edit title"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                </svg>
-              </button>
-            </div>
-          )}
-          <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1 truncate">
-            Last updated: {document && new Date(document.updatedAt).toLocaleString()}
-          </p>
+    <div className="min-h-screen flex flex-col">
+      <div className="flex-1 container mx-auto px-4 py-4 max-w-[1920px]">
+        {/* Header Section */}
+        <div className="mb-4">
+          <DocumentBreadcrumbs documentId={params.documentId} />
+          <div className="mt-2">
+            <DocumentToolbar
+              onShareClick={() => setShowShareDialog(true)}
+              onExportClick={() => setShowExportDialog(true)}
+            />
+          </div>
         </div>
-        <button
-          onClick={() => router.push('/')}
-          className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white ml-2 flex-shrink-0"
-          aria-label="Back to documents"
-        >
-          <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-          </svg>
-        </button>
-      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 relative mb-16 lg:mb-0">
-        <div className="lg:col-span-8 xl:col-span-9 relative z-10">
-          <EditorArea
-            documentId={params.documentId}
-            initialContent={editorContent}
-            onContentChange={handleContentUpdate}
-            onEditorReady={() => setIsEditorReady(true)}
-          />
-          {isEditorReady && (
-            <div className="flex justify-between items-center mt-4">
-              <div className="text-sm text-gray-500 dark:text-gray-400">
-                Words: {wordCount}
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-12 gap-6">
+          {/* Left Sidebar - Document Outline */}
+          <div className="hidden xl:block col-span-2 sticky top-4 self-start">
+            <DocumentOutline />
+          </div>
+
+          {/* Main Editor Area */}
+          <div className="col-span-12 lg:col-span-8 xl:col-span-8 flex flex-col h-[calc(100vh-8rem)]">
+            <div className="flex-1 bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700 overflow-hidden">
+              <DocumentTabs
+                activeTab={activeTab}
+                onTabChange={handleTabChange}
+                tabs={[
+                  { id: 'editor', label: 'Editor' },
+                  { id: 'preview', label: 'Preview' },
+                  { id: 'comments', label: 'Comments' }
+                ]}
+              />
+              <div className="h-[calc(100%-40px)]">
+                {activeTab === 'editor' && (
+                  <EditorArea
+                    documentId={params.documentId}
+                    readOnly={false}
+                    onContentChange={handleContentChange}
+                    onEditorReady={handleEditorReady}
+                  />
+                )}
+                {activeTab === 'preview' && (
+                  <DocumentPreview content={content} />
+                )}
+                {activeTab === 'comments' && (
+                  <DocumentComments documentId={params.documentId} />
+                )}
               </div>
-              <div className="block lg:hidden">
-                <MobileVersionHistory
-                  documentId={params.documentId}
-                  onRevert={(content) => {
-                    setEditorContent(content);
-                    setDocument(prev => prev ? {...prev, content} : null);
-                    setWordCount(calculateWordCount(content));
-                  }}
-                />
-              </div>
-              <button
-                onClick={() => setShowVersionHistory(true)}
-                className="hidden lg:flex items-center gap-1 text-gray-500 dark:text-gray-400 
-                hover:text-gray-700 dark:hover:text-gray-200"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <span className="text-sm">Version History</span>
-              </button>
             </div>
-          )}
-        </div>
-        
-        <div className="hidden lg:block lg:col-span-4 xl:col-span-3">
-          <div className="sticky top-4 space-y-4">
-            <UserPresenceIndicator documentId={params.documentId} />
-            <ChatBox documentId={params.documentId} />
+            <div className="mt-4">
+              <DocumentStats 
+                documentId={params.documentId}
+                content={content}
+              />
+            </div>
+          </div>
+
+          {/* Right Sidebar */}
+          <div className="hidden lg:flex lg:col-span-4 xl:col-span-2 flex-col gap-4 h-[calc(100vh-8rem)]">
+            <div className="flex-1 bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700">
+              <ChatBox documentId={params.documentId} />
+            </div>
+            <button
+              onClick={() => setShowDesktopVersionHistory(true)}
+              className="w-full p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700 
+                hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors
+                flex items-center justify-between"
+            >
+              <span className="text-sm font-medium text-gray-900 dark:text-white">Version History</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">View all versions</span>
+            </button>
+            <div className="h-[200px] bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700">
+              <DocumentCollaborators documentId={params.documentId} />
+            </div>
           </div>
         </div>
       </div>
 
-      {showVersionHistory && (
-        <div className="fixed inset-0 z-[60] hidden lg:block">
-          <div 
-            className="absolute inset-0 bg-black/30 backdrop-blur-sm"
-            onClick={() => setShowVersionHistory(false)}
-          />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl">
-            <VersionHistory
-              documentId={params.documentId}
-              onRevert={(content) => {
-                setEditorContent(content);
-                setDocument(prev => prev ? {...prev, content} : null);
-                setWordCount(calculateWordCount(content));
-                setShowVersionHistory(false);
-              }}
-            />
+      {/* Desktop Version History Modal */}
+      {showDesktopVersionHistory && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="fixed inset-0 bg-black/30 backdrop-blur-sm" 
+               onClick={() => setShowDesktopVersionHistory(false)} />
+          <div className="relative min-h-screen flex items-center justify-center p-4">
+            <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-2xl">
+              <div className="flex items-center justify-between p-4 border-b dark:border-gray-700">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  Version History
+                </h2>
+                <button
+                  onClick={() => setShowDesktopVersionHistory(false)}
+                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              <div className="p-4 max-h-[70vh] overflow-y-auto">
+                <VersionHistory 
+                  documentId={params.documentId} 
+                  onRevert={(content) => {
+                    handleRevert(content);
+                    setShowDesktopVersionHistory(false);
+                  }}
+                />
+              </div>
+            </div>
           </div>
         </div>
       )}
 
-      <div className="fixed bottom-0 left-0 right-0 z-40 lg:hidden">
-        <MobileNavigation documentId={params.documentId} />
+      {/* Mobile Navigation - Keep existing code */}
+      <div className="lg:hidden">
+        <MobileNavigation 
+          documentId={params.documentId}
+          onVersionHistoryClick={() => setShowVersionHistory(true)} 
+        />
       </div>
+
+      {/* Dialogs - Keep existing code */}
+      {showVersionHistory && (
+        <MobileVersionHistory
+          documentId={params.documentId}
+          onRevert={handleRevert}
+          onClose={() => setShowVersionHistory(false)}
+        />
+      )}
+
+      {showShareDialog && (
+        <ShareDialog
+          documentId={params.documentId}
+          isOpen={showShareDialog}
+          onClose={() => setShowShareDialog(false)}
+        />
+      )}
     </div>
   );
 } 

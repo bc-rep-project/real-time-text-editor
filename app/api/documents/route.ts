@@ -31,7 +31,12 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const search = searchParams.get('search') || '';
     const sort = searchParams.get('sort') || 'updatedAt';
-    const direction = 'desc';
+    
+    // Always sort updatedAt in descending order for recency
+    // Always sort title in ascending order for alphabetical order
+    const direction = sort === 'title' ? 'asc' : 'desc';
+
+    console.log('API: Fetching documents with:', { sort, direction });
 
     // Build where clauses with proper typing
     const whereConditions: WhereClause[] = [
@@ -42,26 +47,44 @@ export async function GET(request: Request) {
       }
     ];
 
-    // Get all documents for the user with proper typing
+    // First get all documents without sorting
     const documents = await db.query<Document>('documents', {
-      where: whereConditions,
-      orderBy: {
-        field: sort,
-        direction: direction as 'asc' | 'desc'
-      }
+      where: whereConditions
     });
 
-    // Format dates
+    console.log('API: Raw documents:', documents);
+
+    // Format dates and ensure all fields are present
     const formattedDocuments = documents.map(doc => ({
-      ...doc,
+      id: doc.id,
+      title: doc.title || 'Untitled',
+      content: doc.content || '',
+      userId: doc.userId,
+      createdAt: new Date(doc.createdAt).toISOString(),
       updatedAt: new Date(doc.updatedAt).toISOString()
     }));
 
-    return NextResponse.json(formattedDocuments);
+    // Sort documents in memory
+    const sortedDocuments = [...formattedDocuments].sort((a, b) => {
+      if (sort === 'title') {
+        return a.title.localeCompare(b.title);
+      } else {
+        return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+      }
+    });
+
+    console.log('API: Sorted documents:', sortedDocuments);
+
+    return NextResponse.json(sortedDocuments);
   } catch (error) {
     console.error('Failed to fetch documents:', error);
+    // Return more detailed error information
     return NextResponse.json(
-      { error: 'Internal Server Error' },
+      { 
+        error: 'Internal Server Error',
+        details: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined
+      },
       { status: 500 }
     );
   }

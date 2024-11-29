@@ -19,11 +19,25 @@
       "queryScope": "COLLECTION",
       "fields": [
         {
-          "fieldPath": "title",
+          "fieldPath": "userId",
           "order": "ASCENDING"
         },
         {
-          "fieldPath": "updatedAt",
+          "fieldPath": "title",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "documents",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "userId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "title",
           "order": "DESCENDING"
         }
       ]
