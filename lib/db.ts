@@ -52,10 +52,12 @@ export const db = {
   // Query documents with filters and ordering
   async query<T>(collection: string, options: QueryOptions = {}): Promise<T[]> {
     try {
+      console.log('DB: Starting query with options:', JSON.stringify(options, null, 2));
       let query: Query<DocumentData> | CollectionReference<DocumentData> = adminDb.collection(collection);
 
       if (options.where) {
         options.where.forEach(clause => {
+          console.log('DB: Adding where clause:', clause);
           query = query.where(
             clause.field,
             clause.op,
@@ -65,6 +67,7 @@ export const db = {
       }
 
       if (options.orderBy) {
+        console.log('DB: Adding orderBy:', options.orderBy);
         query = query.orderBy(
           options.orderBy.field,
           options.orderBy.direction
@@ -75,8 +78,9 @@ export const db = {
         query = query.limit(options.limit);
       }
 
+      console.log('DB: Executing query...');
       const snapshot = await query.get();
-      return snapshot.docs.map(doc => {
+      const results = snapshot.docs.map(doc => {
         const data = doc.data();
         // Safely handle timestamp conversions
         return {
@@ -86,8 +90,10 @@ export const db = {
           updatedAt: data.updatedAt?.toDate?.() || data.updatedAt
         } as T;
       });
+      console.log('DB: Query returned', results.length, 'documents');
+      return results;
     } catch (error) {
-      console.error('Error querying documents:', error);
+      console.error('DB: Error querying documents:', error);
       return [];
     }
   },

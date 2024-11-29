@@ -36,6 +36,8 @@ export async function GET(request: Request) {
     // Always sort title in ascending order for alphabetical order
     const direction = sort === 'title' ? 'asc' : 'desc';
 
+    console.log('API: Fetching documents with:', { sort, direction });
+
     // Build where clauses with proper typing
     const whereConditions: WhereClause[] = [
       {
@@ -54,6 +56,8 @@ export async function GET(request: Request) {
       }
     });
 
+    console.log('API: Raw documents:', documents);
+
     // Format dates and ensure all fields are present
     const formattedDocuments = documents.map(doc => ({
       id: doc.id,
@@ -64,11 +68,18 @@ export async function GET(request: Request) {
       updatedAt: new Date(doc.updatedAt).toISOString()
     }));
 
+    console.log('API: Formatted documents:', formattedDocuments);
+
     return NextResponse.json(formattedDocuments);
   } catch (error) {
     console.error('Failed to fetch documents:', error);
+    // Return more detailed error information
     return NextResponse.json(
-      { error: 'Internal Server Error' },
+      { 
+        error: 'Internal Server Error',
+        details: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined
+      },
       { status: 500 }
     );
   }
