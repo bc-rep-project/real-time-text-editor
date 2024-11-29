@@ -31,7 +31,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const search = searchParams.get('search') || '';
     const sort = searchParams.get('sort') || 'updatedAt';
-    const direction = 'desc';
+    const direction = sort === 'title' ? 'asc' : 'desc';
 
     // Build where clauses with proper typing
     const whereConditions: WhereClause[] = [
@@ -47,13 +47,17 @@ export async function GET(request: Request) {
       where: whereConditions,
       orderBy: {
         field: sort,
-        direction: direction as 'asc' | 'desc'
+        direction
       }
     });
 
-    // Format dates
+    // Format dates and ensure all fields are present
     const formattedDocuments = documents.map(doc => ({
-      ...doc,
+      id: doc.id,
+      title: doc.title || 'Untitled',
+      content: doc.content || '',
+      userId: doc.userId,
+      createdAt: new Date(doc.createdAt).toISOString(),
       updatedAt: new Date(doc.updatedAt).toISOString()
     }));
 
