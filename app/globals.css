@@ -326,3 +326,46 @@
   max-height: calc(100vh - 32rem);
   overflow-y: auto;
 }
+
+/* Update these styles */
+.editor-container {
+  height: 100%;
+  min-height: 0; /* Remove min-height constraint */
+  display: flex;
+  flex-direction: column;
+}
+
+.ProseMirror {
+  flex: 1;
+  min-height: 0; /* Remove min-height constraint */
+  height: auto; /* Let it fill available space */
+  overflow-y: auto;
+}
+
+/* Update chat container height */
+.chat-container {
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Update version history container */
+.version-history-container {
+  height: 100%;
+  overflow-y: auto;
+}
+
+/* Update collaborators container */
+.collaborators-container {
+  height: 100%;
+  overflow-y: auto;
+}
+
+/* Add styles for sticky sidebars */
+.sticky-sidebar {
+  position: sticky;
+  top: 1rem;
+  height: calc(100vh - 8rem);
+  overflow-y: auto;
+}

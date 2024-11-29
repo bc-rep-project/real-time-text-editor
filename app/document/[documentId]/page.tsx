@@ -72,26 +72,28 @@ export default function DocumentPage({ params }: { params: { documentId: string 
 
   return (
     <div className="min-h-screen flex flex-col">
-      <div className="flex-1 container mx-auto px-4 py-4 max-w-7xl">
+      <div className="flex-1 container mx-auto px-4 py-4 max-w-[1920px]">
         {/* Header Section */}
-        <div className="mb-6">
+        <div className="mb-4">
           <DocumentBreadcrumbs documentId={params.documentId} />
-          <DocumentToolbar
-            onShareClick={() => setShowShareDialog(true)}
-            onExportClick={() => setShowExportDialog(true)}
-          />
+          <div className="mt-2">
+            <DocumentToolbar
+              onShareClick={() => setShowShareDialog(true)}
+              onExportClick={() => setShowExportDialog(true)}
+            />
+          </div>
         </div>
 
         {/* Main Content Grid */}
-        <div className="grid grid-cols-12 gap-4">
+        <div className="grid grid-cols-12 gap-6">
           {/* Left Sidebar - Document Outline */}
-          <div className="hidden xl:block col-span-2">
+          <div className="hidden xl:block col-span-2 sticky top-4 self-start">
             <DocumentOutline />
           </div>
 
           {/* Main Editor Area */}
-          <div className="col-span-12 lg:col-span-8 xl:col-span-7 space-y-4">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700">
+          <div className="col-span-12 lg:col-span-7 xl:col-span-7 flex flex-col h-[calc(100vh-8rem)]">
+            <div className="flex-1 bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700 overflow-hidden">
               <DocumentTabs
                 activeTab={activeTab}
                 onTabChange={handleTabChange}
@@ -101,7 +103,7 @@ export default function DocumentPage({ params }: { params: { documentId: string 
                   { id: 'comments', label: 'Comments' }
                 ]}
               />
-              <div className="p-4">
+              <div className="h-[calc(100%-40px)]">
                 {activeTab === 'editor' && (
                   <EditorArea
                     documentId={params.documentId}
@@ -118,24 +120,26 @@ export default function DocumentPage({ params }: { params: { documentId: string 
                 )}
               </div>
             </div>
-            <DocumentStats 
-              documentId={params.documentId}
-              content={content}
-            />
+            <div className="mt-4">
+              <DocumentStats 
+                documentId={params.documentId}
+                content={content}
+              />
+            </div>
           </div>
 
           {/* Right Sidebar */}
-          <div className="hidden lg:block col-span-4 xl:col-span-3 space-y-4">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700">
+          <div className="hidden lg:flex lg:col-span-5 xl:col-span-3 flex-col gap-4 h-[calc(100vh-8rem)]">
+            <div className="flex-1 bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700">
               <ChatBox documentId={params.documentId} />
             </div>
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700">
+            <div className="flex-1 bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700">
               <VersionHistory 
                 documentId={params.documentId} 
                 onRevert={handleRevert} 
               />
             </div>
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700">
+            <div className="h-[200px] bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700">
               <DocumentCollaborators documentId={params.documentId} />
             </div>
           </div>
