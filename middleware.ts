@@ -67,6 +67,7 @@ export const config = {
     '/api/documents/:path*',
     '/api/chat/:path*',
     '/api/notifications/:path*',
+    '/api/documents/[documentId]/collaborators/:path*',
     '/ws',
   ],
 }; 
