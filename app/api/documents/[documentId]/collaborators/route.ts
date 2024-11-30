@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
+import { authOptions } from '@/app/api/auth/[...nextauth]/options';
 import { adminDb } from '@/lib/firebase-admin';
 import { z } from 'zod';
 
@@ -22,30 +23,64 @@ export async function GET(
   { params }: { params: { documentId: string } }
 ) {
   try {
-    const session = await getServerSession();
+    const session = await getServerSession(authOptions);
+    
     if (!session?.user?.email) {
+      console.error('No session or user email found');
       return new NextResponse('Unauthorized', { status: 401 });
     }
 
     // Get user's ID from their email
     const usersRef = adminDb.collection('users');
-    const userQuery = await usersRef.where('email', '==', session.user.email).get();
+    const userQuery = await usersRef
+      .where('email', '==', session.user.email)
+      .limit(1)
+      .get();
     
     if (userQuery.empty) {
-      return new NextResponse('User not found', { status: 404 });
+      console.error('User not found in Firestore:', session.user.email);
+      // Create user if they don't exist
+      const newUserRef = await usersRef.add({
+        email: session.user.email,
+        name: session.user.name || '',
+        image: session.user.image || '',
+        createdAt: new Date().toISOString(),
+      });
+      var userId = newUserRef.id;
+    } else {
+      var userId = userQuery.docs[0].id;
     }
-
-    const userId = userQuery.docs[0].id;
 
     // Check if user has access to the document
     const collaboratorsRef = adminDb.collection('documentCollaborators');
     const userAccessQuery = await collaboratorsRef
       .where('documentId', '==', params.documentId)
       .where('userId', '==', userId)
+      .limit(1)
       .get();
 
     if (userAccessQuery.empty) {
-      return new NextResponse('Forbidden', { status: 403 });
+      // If user is document owner, grant them admin access
+      const documentRef = adminDb.collection('documents').doc(params.documentId);
+      const documentDoc = await documentRef.get();
+      
+      if (!documentDoc.exists) {
+        return new NextResponse('Document not found', { status: 404 });
+      }
+
+      const documentData = documentDoc.data();
+      if (documentData?.createdBy === userId) {
+        // Add user as admin collaborator
+        await collaboratorsRef.add({
+          documentId: params.documentId,
+          userId,
+          role: 'admin',
+          addedAt: new Date().toISOString(),
+          addedBy: userId,
+        });
+      } else {
+        return new NextResponse('Forbidden', { status: 403 });
+      }
     }
 
     // Get all collaborators for the document
