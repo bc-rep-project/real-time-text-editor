@@ -1,7 +1,14 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { prisma } from '@/lib/prisma';
+import { adminDb } from '@/lib/firebase-admin';
 import { z } from 'zod';
+
+interface FirestoreUser {
+  id: string;
+  name?: string;
+  email?: string;
+  image?: string;
+}
 
 const collaboratorSchema = z.object({
   email: z.string().email(),
@@ -21,34 +28,37 @@ export async function GET(
     }
 
     // Check if user has access to the document
-    const userAccess = await prisma.documentCollaborator.findFirst({
-      where: {
-        documentId: params.documentId,
-        userId: session.user.id,
-      },
-    });
+    const collaboratorsRef = adminDb.collection('documentCollaborators');
+    const userAccessQuery = await collaboratorsRef
+      .where('documentId', '==', params.documentId)
+      .where('userId', '==', session.user.id)
+      .get();
 
-    if (!userAccess) {
+    if (userAccessQuery.empty) {
       return new NextResponse('Forbidden', { status: 403 });
     }
 
     // Get all collaborators for the document
-    const collaborators = await prisma.documentCollaborator.findMany({
-      where: {
-        documentId: params.documentId,
-      },
-      include: {
+    const collaboratorsQuery = await collaboratorsRef
+      .where('documentId', '==', params.documentId)
+      .get();
+
+    const collaborators = [];
+    for (const doc of collaboratorsQuery.docs) {
+      const data = doc.data();
+      // Get user details
+      const userDoc = await adminDb.collection('users').doc(data.userId).get();
+      const userData = userDoc.data() as Omit<FirestoreUser, 'id'>;
+
+      collaborators.push({
+        id: doc.id,
+        ...data,
         user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            image: true,
-          },
+          id: data.userId,
+          ...userData,
         },
-        team: true,
-      },
-    });
+      });
+    }
 
     return NextResponse.json(collaborators);
   } catch (error) {
@@ -68,15 +78,14 @@ export async function POST(
     }
 
     // Check if user is admin
-    const userAccess = await prisma.documentCollaborator.findFirst({
-      where: {
-        documentId: params.documentId,
-        userId: session.user.id,
-        role: 'admin',
-      },
-    });
+    const collaboratorsRef = adminDb.collection('documentCollaborators');
+    const userAccessQuery = await collaboratorsRef
+      .where('documentId', '==', params.documentId)
+      .where('userId', '==', session.user.id)
+      .where('role', '==', 'admin')
+      .get();
 
-    if (!userAccess) {
+    if (userAccessQuery.empty) {
       return new NextResponse('Forbidden', { status: 403 });
     }
 
@@ -84,62 +93,62 @@ export async function POST(
     const validatedData = collaboratorSchema.parse(body);
 
     // Find user by email
-    const user = await prisma.user.findFirst({
-      where: { email: validatedData.email },
-    });
+    const usersRef = adminDb.collection('users');
+    const userQuery = await usersRef.where('email', '==', validatedData.email).get();
 
-    if (!user) {
+    if (userQuery.empty) {
       return new NextResponse('User not found', { status: 404 });
     }
 
-    // Check if collaborator already exists
-    const existingCollaborator = await prisma.documentCollaborator.findUnique({
-      where: {
-        documentId_userId: {
-          documentId: params.documentId,
-          userId: user.id,
-        },
-      },
-    });
+    const userDoc = userQuery.docs[0];
+    const userData = userDoc.data() as Omit<FirestoreUser, 'id'>;
+    const user: FirestoreUser = {
+      id: userDoc.id,
+      ...userData,
+    };
 
-    if (existingCollaborator) {
+    // Check if collaborator already exists
+    const existingCollabQuery = await collaboratorsRef
+      .where('documentId', '==', params.documentId)
+      .where('userId', '==', user.id)
+      .get();
+
+    if (!existingCollabQuery.empty) {
       return new NextResponse('User is already a collaborator', { status: 400 });
     }
 
     // Create collaborator
-    const collaborator = await prisma.documentCollaborator.create({
-      data: {
-        documentId: params.documentId,
-        userId: user.id,
-        role: validatedData.role,
-        addedBy: session.user.id,
-        expiresAt: validatedData.expiresAt ? new Date(validatedData.expiresAt) : null,
-        teamId: validatedData.teamId,
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            image: true,
-          },
-        },
-        team: true,
-      },
-    });
+    const collaboratorData = {
+      documentId: params.documentId,
+      userId: user.id,
+      role: validatedData.role,
+      addedBy: session.user.id,
+      addedAt: new Date().toISOString(),
+      expiresAt: validatedData.expiresAt || null,
+      teamId: validatedData.teamId || null,
+    };
+
+    const collaboratorRef = await collaboratorsRef.add(collaboratorData);
 
     // Log the action
-    await prisma.accessLog.create({
-      data: {
-        documentId: params.documentId,
-        action: 'granted',
-        performedBy: session.user.id,
-        details: `Added ${user.email} as ${validatedData.role}`,
-      },
+    await adminDb.collection('accessLogs').add({
+      documentId: params.documentId,
+      action: 'granted',
+      performedBy: session.user.id,
+      details: `Added ${user.email || 'user'} as ${validatedData.role}`,
+      timestamp: new Date().toISOString(),
     });
 
-    return NextResponse.json(collaborator);
+    return NextResponse.json({
+      id: collaboratorRef.id,
+      ...collaboratorData,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        image: user.image,
+      },
+    });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return new NextResponse('Invalid request data', { status: 400 });
