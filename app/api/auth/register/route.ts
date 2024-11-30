@@ -29,10 +29,13 @@ export async function POST(request: Request) {
     // Hash password
     const hashedPassword = await hash(password, 12);
 
-    // Create user
+    // Create user with username as email
     const userId = await db.add('users', {
       username,
-      password: hashedPassword
+      email: username,
+      password: hashedPassword,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
     });
 
     return NextResponse.json(
