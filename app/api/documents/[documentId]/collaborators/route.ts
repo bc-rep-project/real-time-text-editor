@@ -23,15 +23,28 @@ export async function GET(
 ) {
   try {
     const session = await getServerSession();
-    if (!session?.user) {
+    if (!session?.user?.email) {
       return new NextResponse('Unauthorized', { status: 401 });
     }
+
+    // Get current user's ID from their email
+    const usersRef = adminDb.collection('users');
+    const currentUserQuery = await usersRef
+      .where('email', '==', session.user.email)
+      .limit(1)
+      .get();
+    
+    if (currentUserQuery.empty) {
+      return new NextResponse('User not found', { status: 404 });
+    }
+
+    const currentUserId = currentUserQuery.docs[0].id;
 
     // Check if user has access to the document
     const collaboratorsRef = adminDb.collection('documentCollaborators');
     const userAccessQuery = await collaboratorsRef
       .where('documentId', '==', params.documentId)
-      .where('userId', '==', session.user.id)
+      .where('userId', '==', currentUserId)
       .get();
 
     if (userAccessQuery.empty) {
@@ -74,18 +87,15 @@ export async function POST(
   { params }: { params: { documentId: string } }
 ) {
   try {
-    const userEmail = request.headers.get('x-user-email');
-    const userName = request.headers.get('x-user-name');
-    
-    if (!userEmail) {
-      console.error('No user email found in headers');
+    const session = await getServerSession();
+    if (!session?.user?.email) {
       return new NextResponse('Unauthorized', { status: 401 });
     }
 
     // Get current user's ID from their email
     const usersRef = adminDb.collection('users');
     const currentUserQuery = await usersRef
-      .where('email', '==', userEmail)
+      .where('email', '==', session.user.email)
       .limit(1)
       .get();
     
@@ -120,6 +130,7 @@ export async function POST(
       // Create new user if they don't exist
       const newUserRef = await usersRef.add({
         email: validatedData.email,
+        name: null,
         createdAt: new Date().toISOString(),
       });
       var userId = newUserRef.id;
