@@ -23,15 +23,25 @@ export async function GET(
 ) {
   try {
     const session = await getServerSession();
-    if (!session?.user) {
+    if (!session?.user?.email) {
       return new NextResponse('Unauthorized', { status: 401 });
     }
+
+    // Get user's ID from their email
+    const usersRef = adminDb.collection('users');
+    const userQuery = await usersRef.where('email', '==', session.user.email).get();
+    
+    if (userQuery.empty) {
+      return new NextResponse('User not found', { status: 404 });
+    }
+
+    const userId = userQuery.docs[0].id;
 
     // Check if user has access to the document
     const collaboratorsRef = adminDb.collection('documentCollaborators');
     const userAccessQuery = await collaboratorsRef
       .where('documentId', '==', params.documentId)
-      .where('userId', '==', session.user.id)
+      .where('userId', '==', userId)
       .get();
 
     if (userAccessQuery.empty) {
@@ -73,15 +83,25 @@ export async function POST(
 ) {
   try {
     const session = await getServerSession();
-    if (!session?.user) {
+    if (!session?.user?.email) {
       return new NextResponse('Unauthorized', { status: 401 });
     }
+
+    // Get user's ID from their email
+    const usersRef = adminDb.collection('users');
+    const currentUserQuery = await usersRef.where('email', '==', session.user.email).get();
+    
+    if (currentUserQuery.empty) {
+      return new NextResponse('User not found', { status: 404 });
+    }
+
+    const currentUserId = currentUserQuery.docs[0].id;
 
     // Check if user is admin
     const collaboratorsRef = adminDb.collection('documentCollaborators');
     const userAccessQuery = await collaboratorsRef
       .where('documentId', '==', params.documentId)
-      .where('userId', '==', session.user.id)
+      .where('userId', '==', currentUserId)
       .where('role', '==', 'admin')
       .get();
 
@@ -93,7 +113,6 @@ export async function POST(
     const validatedData = collaboratorSchema.parse(body);
 
     // Find user by email
-    const usersRef = adminDb.collection('users');
     const userQuery = await usersRef.where('email', '==', validatedData.email).get();
 
     if (userQuery.empty) {
@@ -122,7 +141,7 @@ export async function POST(
       documentId: params.documentId,
       userId: user.id,
       role: validatedData.role,
-      addedBy: session.user.id,
+      addedBy: currentUserId,
       addedAt: new Date().toISOString(),
       expiresAt: validatedData.expiresAt || null,
       teamId: validatedData.teamId || null,
@@ -134,7 +153,7 @@ export async function POST(
     await adminDb.collection('accessLogs').add({
       documentId: params.documentId,
       action: 'granted',
-      performedBy: session.user.id,
+      performedBy: currentUserId,
       details: `Added ${user.email || 'user'} as ${validatedData.role}`,
       timestamp: new Date().toISOString(),
     });
