@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { prisma } from '@/lib/prisma';
+import { adminDb } from '@/lib/firebase-admin';
 
 export async function GET(
   request: Request,
@@ -13,35 +13,40 @@ export async function GET(
     }
 
     // Check if user has access to the document
-    const userAccess = await prisma.documentCollaborator.findFirst({
-      where: {
-        documentId: params.documentId,
-        userId: session.user.id,
-      },
-    });
+    const collaboratorsRef = adminDb.collection('documentCollaborators');
+    const userAccessQuery = await collaboratorsRef
+      .where('documentId', '==', params.documentId)
+      .where('userId', '==', session.user.id)
+      .get();
 
-    if (!userAccess) {
+    if (userAccessQuery.empty) {
       return new NextResponse('Forbidden', { status: 403 });
     }
 
     // Get access logs with user information
-    const logs = await prisma.accessLog.findMany({
-      where: {
-        documentId: params.documentId,
-      },
-      include: {
+    const logsRef = adminDb.collection('accessLogs');
+    const logsQuery = await logsRef
+      .where('documentId', '==', params.documentId)
+      .orderBy('timestamp', 'desc')
+      .limit(100)
+      .get();
+
+    const logs = [];
+    for (const doc of logsQuery.docs) {
+      const data = doc.data();
+      // Get user details
+      const userDoc = await adminDb.collection('users').doc(data.performedBy).get();
+      const userData = userDoc.data();
+
+      logs.push({
+        id: doc.id,
+        ...data,
         performedByUser: {
-          select: {
-            name: true,
-            email: true,
-          },
+          name: userData?.name,
+          email: userData?.email,
         },
-      },
-      orderBy: {
-        timestamp: 'desc',
-      },
-      take: 100, // Limit to last 100 logs
-    });
+      });
+    }
 
     return NextResponse.json(logs);
   } catch (error) {
