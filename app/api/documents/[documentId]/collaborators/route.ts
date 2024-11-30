@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/options';
 import { adminDb } from '@/lib/firebase-admin';
 import { z } from 'zod';
 
@@ -23,64 +22,20 @@ export async function GET(
   { params }: { params: { documentId: string } }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-    
-    if (!session?.user?.email) {
-      console.error('No session or user email found');
+    const session = await getServerSession();
+    if (!session?.user) {
       return new NextResponse('Unauthorized', { status: 401 });
-    }
-
-    // Get user's ID from their email
-    const usersRef = adminDb.collection('users');
-    const userQuery = await usersRef
-      .where('email', '==', session.user.email)
-      .limit(1)
-      .get();
-    
-    if (userQuery.empty) {
-      console.error('User not found in Firestore:', session.user.email);
-      // Create user if they don't exist
-      const newUserRef = await usersRef.add({
-        email: session.user.email,
-        name: session.user.name || '',
-        image: session.user.image || '',
-        createdAt: new Date().toISOString(),
-      });
-      var userId = newUserRef.id;
-    } else {
-      var userId = userQuery.docs[0].id;
     }
 
     // Check if user has access to the document
     const collaboratorsRef = adminDb.collection('documentCollaborators');
     const userAccessQuery = await collaboratorsRef
       .where('documentId', '==', params.documentId)
-      .where('userId', '==', userId)
-      .limit(1)
+      .where('userId', '==', session.user.id)
       .get();
 
     if (userAccessQuery.empty) {
-      // If user is document owner, grant them admin access
-      const documentRef = adminDb.collection('documents').doc(params.documentId);
-      const documentDoc = await documentRef.get();
-      
-      if (!documentDoc.exists) {
-        return new NextResponse('Document not found', { status: 404 });
-      }
-
-      const documentData = documentDoc.data();
-      if (documentData?.createdBy === userId) {
-        // Add user as admin collaborator
-        await collaboratorsRef.add({
-          documentId: params.documentId,
-          userId,
-          role: 'admin',
-          addedAt: new Date().toISOString(),
-          addedBy: userId,
-        });
-      } else {
-        return new NextResponse('Forbidden', { status: 403 });
-      }
+      return new NextResponse('Forbidden', { status: 403 });
     }
 
     // Get all collaborators for the document
@@ -93,14 +48,16 @@ export async function GET(
       const data = doc.data();
       // Get user details
       const userDoc = await adminDb.collection('users').doc(data.userId).get();
-      const userData = userDoc.data() as Omit<FirestoreUser, 'id'>;
+      const userData = userDoc.data() as FirestoreUser;
 
       collaborators.push({
         id: doc.id,
         ...data,
         user: {
           id: data.userId,
-          ...userData,
+          name: userData?.name,
+          email: userData?.email,
+          image: userData?.image,
         },
       });
     }
@@ -117,14 +74,20 @@ export async function POST(
   { params }: { params: { documentId: string } }
 ) {
   try {
-    const session = await getServerSession();
-    if (!session?.user?.email) {
+    const userEmail = request.headers.get('x-user-email');
+    const userName = request.headers.get('x-user-name');
+    
+    if (!userEmail) {
+      console.error('No user email found in headers');
       return new NextResponse('Unauthorized', { status: 401 });
     }
 
-    // Get user's ID from their email
+    // Get current user's ID from their email
     const usersRef = adminDb.collection('users');
-    const currentUserQuery = await usersRef.where('email', '==', session.user.email).get();
+    const currentUserQuery = await usersRef
+      .where('email', '==', userEmail)
+      .limit(1)
+      .get();
     
     if (currentUserQuery.empty) {
       return new NextResponse('User not found', { status: 404 });
@@ -148,23 +111,27 @@ export async function POST(
     const validatedData = collaboratorSchema.parse(body);
 
     // Find user by email
-    const userQuery = await usersRef.where('email', '==', validatedData.email).get();
+    const userQuery = await usersRef
+      .where('email', '==', validatedData.email)
+      .limit(1)
+      .get();
 
     if (userQuery.empty) {
-      return new NextResponse('User not found', { status: 404 });
+      // Create new user if they don't exist
+      const newUserRef = await usersRef.add({
+        email: validatedData.email,
+        createdAt: new Date().toISOString(),
+      });
+      var userId = newUserRef.id;
+    } else {
+      var userId = userQuery.docs[0].id;
     }
-
-    const userDoc = userQuery.docs[0];
-    const userData = userDoc.data() as Omit<FirestoreUser, 'id'>;
-    const user: FirestoreUser = {
-      id: userDoc.id,
-      ...userData,
-    };
 
     // Check if collaborator already exists
     const existingCollabQuery = await collaboratorsRef
       .where('documentId', '==', params.documentId)
-      .where('userId', '==', user.id)
+      .where('userId', '==', userId)
+      .limit(1)
       .get();
 
     if (!existingCollabQuery.empty) {
@@ -174,7 +141,7 @@ export async function POST(
     // Create collaborator
     const collaboratorData = {
       documentId: params.documentId,
-      userId: user.id,
+      userId,
       role: validatedData.role,
       addedBy: currentUserId,
       addedAt: new Date().toISOString(),
@@ -189,18 +156,20 @@ export async function POST(
       documentId: params.documentId,
       action: 'granted',
       performedBy: currentUserId,
-      details: `Added ${user.email || 'user'} as ${validatedData.role}`,
+      details: `Added ${validatedData.email} as ${validatedData.role}`,
       timestamp: new Date().toISOString(),
     });
+
+    // Get user details for response
+    const userDoc = await adminDb.collection('users').doc(userId).get();
+    const userData = userDoc.data() as Omit<FirestoreUser, 'id'>;
 
     return NextResponse.json({
       id: collaboratorRef.id,
       ...collaboratorData,
       user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        image: user.image,
+        id: userId,
+        ...userData,
       },
     });
   } catch (error) {

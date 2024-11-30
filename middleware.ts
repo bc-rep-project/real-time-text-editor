@@ -3,19 +3,32 @@ import { NextResponse } from 'next/server';
 
 export default withAuth(
   function middleware(req) {
-    const token = req.nextauth?.token;
-    
     // Allow WebSocket upgrade requests
     if (req.headers.get('upgrade') === 'websocket') {
       return NextResponse.next();
     }
 
+    const token = req.nextauth?.token;
     if (!token) {
       if (req.nextUrl.pathname.startsWith('/api/')) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        return new NextResponse(
+          JSON.stringify({ error: 'Authentication required' }),
+          { 
+            status: 401,
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          }
+        );
       }
       return NextResponse.redirect(new URL('/login', req.url));
     }
+
+    // Add user info to headers for API routes
+    const requestHeaders = new Headers(req.headers);
+    requestHeaders.set('x-user-id', token.sub as string);
+    requestHeaders.set('x-user-email', token.email as string);
+    requestHeaders.set('x-user-name', token.name as string);
 
     // Add CORS headers for WebSocket connections
     if (req.method === 'OPTIONS') {
@@ -29,7 +42,11 @@ export default withAuth(
       });
     }
 
-    return NextResponse.next();
+    return NextResponse.next({
+      request: {
+        headers: requestHeaders,
+      },
+    });
   },
   {
     callbacks: {
@@ -49,6 +66,7 @@ export const config = {
     '/documents/:path*',
     '/api/documents/:path*',
     '/api/chat/:path*',
-    '/ws', // Add WebSocket path
+    '/api/notifications/:path*',
+    '/ws',
   ],
 }; 
