@@ -26,7 +26,9 @@ export function DocumentCollaborators({ documentId }: DocumentCollaboratorsProps
       try {
         setIsLoading(true);
         setError(null);
-        const response = await fetch(`/api/documents/${documentId}/collaborators`);
+        const response = await fetch(`/api/documents/${documentId}/collaborators`, {
+          credentials: 'include'
+        });
         
         if (!response.ok) {
           throw new Error('Failed to fetch collaborators');

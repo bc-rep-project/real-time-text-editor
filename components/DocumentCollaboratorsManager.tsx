@@ -57,19 +57,25 @@ export function DocumentCollaboratorsManager({
         setError(null);
 
         // Fetch collaborators
-        const collabResponse = await fetch(`/api/documents/${documentId}/collaborators`);
+        const collabResponse = await fetch(`/api/documents/${documentId}/collaborators`, {
+          credentials: 'include'
+        });
         if (!collabResponse.ok) throw new Error('Failed to fetch collaborators');
         const collabData = await collabResponse.json();
         setCollaborators(collabData);
 
         // Fetch teams
-        const teamsResponse = await fetch('/api/teams');
+        const teamsResponse = await fetch('/api/teams', {
+          credentials: 'include'
+        });
         if (!teamsResponse.ok) throw new Error('Failed to fetch teams');
         const teamsData = await teamsResponse.json();
         setTeams(teamsData);
 
         // Fetch access logs
-        const logsResponse = await fetch(`/api/documents/${documentId}/access-logs`);
+        const logsResponse = await fetch(`/api/documents/${documentId}/access-logs`, {
+          credentials: 'include'
+        });
         if (!logsResponse.ok) throw new Error('Failed to fetch access logs');
         const logsData = await logsResponse.json();
         setAccessLogs(logsData);
@@ -90,6 +96,7 @@ export function DocumentCollaboratorsManager({
     try {
       const response = await fetch(`/api/documents/${documentId}/collaborators`, {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email: newCollaboratorEmail,
@@ -115,6 +122,7 @@ export function DocumentCollaboratorsManager({
     try {
       const response = await fetch(`/api/documents/${documentId}/collaborators/${userId}`, {
         method: 'PATCH',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ role: newRole }),
       });
@@ -135,6 +143,7 @@ export function DocumentCollaboratorsManager({
     try {
       const response = await fetch(`/api/documents/${documentId}/collaborators/${userId}`, {
         method: 'DELETE',
+        credentials: 'include'
       });
 
       if (!response.ok) throw new Error('Failed to remove collaborator');
