@@ -1,14 +1,20 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { prisma } from '@/lib/prisma';
-import { z } from 'zod';
+import { adminDb } from '@/lib/firebase-admin';
 import { nanoid } from 'nanoid';
 
-const temporaryLinkSchema = z.object({
-  role: z.enum(['viewer', 'commenter', 'editor']),
-  expiresAt: z.string().datetime(),
-  maxUses: z.number().optional(),
-});
+interface TemporaryLink {
+  id: string;
+  documentId: string;
+  url: string;
+  role: string;
+  createdBy: string;
+  createdAt: string;
+  expiresAt: string;
+  usageCount: number;
+  maxUses?: number;
+  isRevoked: boolean;
+}
 
 export async function GET(
   request: Request,
@@ -21,35 +27,27 @@ export async function GET(
     }
 
     // Check if user has access to the document
-    const userAccess = await prisma.documentCollaborator.findFirst({
-      where: {
-        documentId: params.documentId,
-        userId: session.user.id,
-      },
-    });
+    const collaboratorsRef = adminDb.collection('documentCollaborators');
+    const userAccessQuery = await collaboratorsRef
+      .where('documentId', '==', params.documentId)
+      .where('userId', '==', session.user.id)
+      .get();
 
-    if (!userAccess) {
+    if (userAccessQuery.empty) {
       return new NextResponse('Forbidden', { status: 403 });
     }
 
-    // Get all active temporary links
-    const links = await prisma.temporaryLink.findMany({
-      where: {
-        documentId: params.documentId,
-        isRevoked: false,
-        expiresAt: {
-          gt: new Date(),
-        },
-      },
-      include: {
-        createdByUser: {
-          select: {
-            name: true,
-            email: true,
-          },
-        },
-      },
-    });
+    // Get all temporary links for the document
+    const linksRef = adminDb.collection('temporaryLinks');
+    const linksQuery = await linksRef
+      .where('documentId', '==', params.documentId)
+      .orderBy('createdAt', 'desc')
+      .get();
+
+    const links = linksQuery.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
 
     return NextResponse.json(links);
   } catch (error) {
@@ -68,64 +66,54 @@ export async function POST(
       return new NextResponse('Unauthorized', { status: 401 });
     }
 
-    // Check if user is admin or editor
-    const userAccess = await prisma.documentCollaborator.findFirst({
-      where: {
-        documentId: params.documentId,
-        userId: session.user.id,
-        role: {
-          in: ['admin', 'editor'],
-        },
-      },
-    });
+    // Check if user has access to the document
+    const collaboratorsRef = adminDb.collection('documentCollaborators');
+    const userAccessQuery = await collaboratorsRef
+      .where('documentId', '==', params.documentId)
+      .where('userId', '==', session.user.id)
+      .where('role', 'in', ['admin', 'editor'])
+      .get();
 
-    if (!userAccess) {
+    if (userAccessQuery.empty) {
       return new NextResponse('Forbidden', { status: 403 });
     }
 
     const body = await request.json();
-    const validatedData = temporaryLinkSchema.parse(body);
-
-    // Generate unique URL-safe token
-    const token = nanoid(32);
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-    const url = `${baseUrl}/documents/${params.documentId}/share/${token}`;
+    const { role, expiresAt, maxUses } = body;
 
     // Create temporary link
-    const link = await prisma.temporaryLink.create({
-      data: {
-        documentId: params.documentId,
-        url,
-        role: validatedData.role,
-        createdBy: session.user.id,
-        expiresAt: new Date(validatedData.expiresAt),
-        maxUses: validatedData.maxUses,
-      },
-      include: {
-        createdByUser: {
-          select: {
-            name: true,
-            email: true,
-          },
-        },
-      },
-    });
+    const token = nanoid();
+    const url = `${token}`;
+
+    const linkData = {
+      documentId: params.documentId,
+      url,
+      role,
+      createdBy: session.user.id,
+      createdAt: new Date().toISOString(),
+      expiresAt: new Date(expiresAt).toISOString(),
+      usageCount: 0,
+      maxUses: maxUses || null,
+      isRevoked: false,
+    };
+
+    const linksRef = adminDb.collection('temporaryLinks');
+    const linkRef = await linksRef.add(linkData);
 
     // Log the action
-    await prisma.accessLog.create({
-      data: {
-        documentId: params.documentId,
-        action: 'granted',
-        performedBy: session.user.id,
-        details: `Created temporary ${validatedData.role} access link`,
-      },
+    await adminDb.collection('accessLogs').add({
+      documentId: params.documentId,
+      action: 'created',
+      performedBy: session.user.id,
+      details: `Created temporary ${role} access link`,
+      timestamp: new Date().toISOString(),
     });
 
-    return NextResponse.json(link);
+    return NextResponse.json({
+      id: linkRef.id,
+      ...linkData,
+    });
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return new NextResponse('Invalid request data', { status: 400 });
-    }
     console.error('Error creating temporary link:', error);
     return new NextResponse('Internal Server Error', { status: 500 });
   }
@@ -141,45 +129,40 @@ export async function DELETE(
       return new NextResponse('Unauthorized', { status: 401 });
     }
 
-    // Check if user is admin or editor
-    const userAccess = await prisma.documentCollaborator.findFirst({
-      where: {
-        documentId: params.documentId,
-        userId: session.user.id,
-        role: {
-          in: ['admin', 'editor'],
-        },
-      },
-    });
+    // Check if user has access to the document
+    const collaboratorsRef = adminDb.collection('documentCollaborators');
+    const userAccessQuery = await collaboratorsRef
+      .where('documentId', '==', params.documentId)
+      .where('userId', '==', session.user.id)
+      .where('role', 'in', ['admin', 'editor'])
+      .get();
 
-    if (!userAccess) {
+    if (userAccessQuery.empty) {
       return new NextResponse('Forbidden', { status: 403 });
     }
 
     const { linkId } = await request.json();
-    if (!linkId) {
-      return new NextResponse('Missing link ID', { status: 400 });
-    }
 
     // Revoke the link
-    await prisma.temporaryLink.update({
-      where: {
-        id: linkId,
-        documentId: params.documentId,
-      },
-      data: {
-        isRevoked: true,
-      },
+    const linkRef = adminDb.collection('temporaryLinks').doc(linkId);
+    const linkDoc = await linkRef.get();
+
+    if (!linkDoc.exists) {
+      return new NextResponse('Link not found', { status: 404 });
+    }
+
+    await linkRef.update({
+      isRevoked: true,
+      updatedAt: new Date().toISOString(),
     });
 
     // Log the action
-    await prisma.accessLog.create({
-      data: {
-        documentId: params.documentId,
-        action: 'revoked',
-        performedBy: session.user.id,
-        details: 'Revoked temporary access link',
-      },
+    await adminDb.collection('accessLogs').add({
+      documentId: params.documentId,
+      action: 'revoked',
+      performedBy: session.user.id,
+      details: 'Temporary link revoked',
+      timestamp: new Date().toISOString(),
     });
 
     return new NextResponse(null, { status: 204 });

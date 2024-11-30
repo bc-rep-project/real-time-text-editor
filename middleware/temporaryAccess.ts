@@ -1,6 +1,19 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { adminDb } from '@/lib/firebase-admin';
+
+interface TemporaryLink {
+  id: string;
+  documentId: string;
+  url: string;
+  role: string;
+  createdBy: string;
+  createdAt: string;
+  expiresAt: string;
+  usageCount: number;
+  maxUses?: number;
+  isRevoked: boolean;
+}
 
 export async function validateTemporaryAccess(
   request: NextRequest,
@@ -9,25 +22,25 @@ export async function validateTemporaryAccess(
 ) {
   try {
     // Find the temporary link
-    const link = await prisma.temporaryLink.findFirst({
-      where: {
-        documentId,
-        url: {
-          endsWith: `/${token}`,
-        },
-        isRevoked: false,
-        expiresAt: {
-          gt: new Date(),
-        },
-      },
-    });
+    const linksRef = adminDb.collection('temporaryLinks');
+    const linkQuery = await linksRef
+      .where('documentId', '==', documentId)
+      .where('url', '==', token)
+      .where('isRevoked', '==', false)
+      .where('expiresAt', '>', new Date().toISOString())
+      .get();
 
-    if (!link) {
+    if (linkQuery.empty) {
       return {
         error: 'Invalid or expired link',
         status: 403,
       };
     }
+
+    const link = {
+      id: linkQuery.docs[0].id,
+      ...linkQuery.docs[0].data()
+    } as TemporaryLink;
 
     // Check usage limits
     if (link.maxUses && link.usageCount >= link.maxUses) {
@@ -38,9 +51,8 @@ export async function validateTemporaryAccess(
     }
 
     // Increment usage count
-    await prisma.temporaryLink.update({
-      where: { id: link.id },
-      data: { usageCount: { increment: 1 } },
+    await linksRef.doc(link.id).update({
+      usageCount: (link.usageCount || 0) + 1
     });
 
     // Create temporary session data
@@ -58,7 +70,7 @@ export async function validateTemporaryAccess(
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      expires: link.expiresAt,
+      expires: new Date(link.expiresAt),
     });
 
     return { response, sessionData };
@@ -84,17 +96,13 @@ export async function validateTemporarySession(request: NextRequest) {
     }
 
     // Verify the link still exists and is valid
-    const link = await prisma.temporaryLink.findUnique({
-      where: {
-        id: sessionData.linkId,
-        isRevoked: false,
-        expiresAt: {
-          gt: new Date(),
-        },
-      },
-    });
+    const linkDoc = await adminDb.collection('temporaryLinks').doc(sessionData.linkId).get();
+    const link = linkDoc.exists ? linkDoc.data() as TemporaryLink : null;
 
-    if (!link || (link.maxUses && link.usageCount >= link.maxUses)) {
+    if (!link || 
+        link.isRevoked || 
+        new Date(link.expiresAt) <= new Date() ||
+        (link.maxUses && link.usageCount >= link.maxUses)) {
       return null;
     }
 

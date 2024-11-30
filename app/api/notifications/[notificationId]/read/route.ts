@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { prisma } from '@/lib/prisma';
+import { adminDb } from '@/lib/firebase-admin';
 import { apiRateLimiter } from '@/lib/rateLimiter';
 
 export async function POST(
@@ -19,18 +19,27 @@ export async function POST(
       return new NextResponse('Too Many Requests', { status: 429 });
     }
 
-    // Mark notification as read
-    const notification = await prisma.notification.update({
-      where: {
-        id: params.notificationId,
-        userId: session.user.id, // Ensure user owns the notification
-      },
-      data: {
-        read: true,
-      },
-    });
+    // Get notification
+    const notificationRef = adminDb.collection('notifications').doc(params.notificationId);
+    const notificationDoc = await notificationRef.get();
 
-    return NextResponse.json(notification);
+    if (!notificationDoc.exists) {
+      return new NextResponse('Notification not found', { status: 404 });
+    }
+
+    const notificationData = notificationDoc.data();
+    if (notificationData?.userId !== session.user.id) {
+      return new NextResponse('Forbidden', { status: 403 });
+    }
+
+    // Mark notification as read
+    await notificationRef.update({ read: true });
+
+    return NextResponse.json({
+      id: notificationDoc.id,
+      ...notificationData,
+      read: true
+    });
   } catch (error) {
     console.error('Error marking notification as read:', error);
     return new NextResponse('Internal Server Error', { status: 500 });

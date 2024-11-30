@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { prisma } from '@/lib/prisma';
+import { adminDb } from '@/lib/firebase-admin';
 import { apiRateLimiter } from '@/lib/rateLimiter';
 
 export async function GET(request: Request) {
@@ -17,15 +17,17 @@ export async function GET(request: Request) {
     }
 
     // Get notifications for the user
-    const notifications = await prisma.notification.findMany({
-      where: {
-        userId: session.user.id,
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-      take: 50, // Limit to last 50 notifications
-    });
+    const notificationsRef = adminDb.collection('notifications');
+    const notificationsQuery = await notificationsRef
+      .where('userId', '==', session.user.id)
+      .orderBy('createdAt', 'desc')
+      .limit(50)
+      .get();
+
+    const notifications = notificationsQuery.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
 
     return NextResponse.json(notifications);
   } catch (error) {
@@ -51,17 +53,23 @@ export async function POST(request: Request) {
     const { type, title, message, documentId, documentTitle, recipientId } = body;
 
     // Create notification
-    const notification = await prisma.notification.create({
-      data: {
-        type,
-        title,
-        message,
-        documentId,
-        documentTitle,
-        userId: recipientId,
-        createdAt: new Date(),
-      },
-    });
+    const notificationsRef = adminDb.collection('notifications');
+    const notificationData = {
+      type,
+      title,
+      message,
+      documentId,
+      documentTitle,
+      userId: recipientId,
+      createdAt: new Date().toISOString(),
+      read: false
+    };
+
+    const notificationRef = await notificationsRef.add(notificationData);
+    const notification = {
+      id: notificationRef.id,
+      ...notificationData
+    };
 
     // Broadcast notification via WebSocket if recipient is online
     const wsServer = (global as any).wsServer;
