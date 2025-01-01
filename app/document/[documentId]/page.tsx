@@ -16,7 +16,8 @@ interface Document {
 }
 
 export default function DocumentPage() {
-  const { documentId } = useParams();
+  const params = useParams();
+  const documentId = params?.documentId as string;
   const { data: session, status } = useSession();
   const [document, setDocument] = useState<Document | null>(null);
   const [error, setError] = useState<string | null>(null);
