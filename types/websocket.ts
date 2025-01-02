@@ -7,7 +7,7 @@ export interface WebSocketClient extends WebSocket {
   username?: string;
 }
 
-export type MessageType = 'userPresence' | 'documentUpdate' | 'chatMessage' | 'typingIndicator' | 'selection';
+export type MessageType = 'documentUpdate' | 'userPresence' | 'chatMessage' | 'typingIndicator' | 'selection';
 
 export interface TypingIndicatorData {
   documentId: string;
@@ -34,7 +34,17 @@ export type WebSocketMessageData =
 export interface WebSocketMessage {
   type: MessageType;
   documentId: string;
-  data: WebSocketMessageData;
+  data: {
+    type: MessageType;
+    content?: string;
+    userId?: string;
+    username?: string;
+    action?: 'join' | 'leave';
+    selection?: {
+      from: number;
+      to: number;
+    };
+  };
 }
 
 export interface CommentReply {

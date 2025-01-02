@@ -16,21 +16,28 @@ interface EditorProps {
 
 export function Editor({ websocket, documentId, onSelectionChange }: EditorProps) {
   return (
-    <div className="h-full">
-      {/* Editor implementation will go here */}
-      <textarea 
-        className="w-full h-full p-4 resize-none"
-        onChange={(e) => {
-          websocket.sendMessage({
-            type: 'documentUpdate',
-            documentId,
-            data: { 
+    <div className="h-full flex flex-col">
+      {/* Toolbar */}
+      <div className="border-b dark:border-gray-700 p-2">
+        {/* Add toolbar buttons here */}
+      </div>
+      
+      {/* Editor Area */}
+      <div className="flex-1 p-4">
+        <textarea 
+          className="w-full h-full p-4 resize-none border rounded dark:border-gray-700 dark:bg-gray-800"
+          onChange={(e) => {
+            websocket.sendMessage({
               type: 'documentUpdate',
-              content: e.target.value 
-            }
-          });
-        }}
-      />
+              documentId,
+              data: { 
+                type: 'documentUpdate',
+                content: e.target.value 
+              }
+            });
+          }}
+        />
+      </div>
     </div>
   );
 } 
