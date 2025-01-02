@@ -35,4 +35,30 @@ export interface WebSocketMessage {
   type: MessageType;
   documentId: string;
   data: WebSocketMessageData;
-} 
+}
+
+export interface CommentReply {
+  id: string;
+  commentId: string;
+  userId: string;
+  content: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface Comment {
+  id: string;
+  documentId: string;
+  userId: string;
+  content: string;
+  selection: {
+    from: number;
+    to: number;
+  };
+  createdAt: Date;
+  updatedAt: Date;
+  resolved: boolean;
+  replies: CommentReply[];
+}
+
+export type MessageHandler = (event: { data: string }) => void; 
