@@ -91,13 +91,15 @@ export default function DocumentPage() {
         {/* Main Content Grid */}
         <div className="grid grid-cols-12 gap-6">
           {/* Left Sidebar - Document Outline */}
-          <div className="hidden xl:block col-span-2 sticky top-4 self-start">
-            <DocumentOutline />
+          <div className="hidden xl:block col-span-2">
+            <div className="sticky top-4">
+              <DocumentOutline />
+            </div>
           </div>
 
           {/* Main Editor Area */}
-          <div className="col-span-12 lg:col-span-8 xl:col-span-8 flex flex-col h-[calc(100vh-8rem)]">
-            <div className="flex-1 bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700 overflow-hidden">
+          <div className="col-span-12 lg:col-span-7 xl:col-span-7">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700 overflow-hidden">
               <DocumentTabs
                 activeTab={activeTab}
                 onTabChange={handleTabChange}
@@ -107,7 +109,7 @@ export default function DocumentPage() {
                   { id: 'comments', label: 'Comments' }
                 ]}
               />
-              <div className="h-[calc(100%-40px)]">
+              <div className="h-[calc(100vh-16rem)]">
                 {activeTab === 'editor' && (
                   <EditorArea
                     documentId={documentId}
@@ -136,21 +138,23 @@ export default function DocumentPage() {
           </div>
 
           {/* Right Sidebar */}
-          <div className="hidden lg:flex lg:col-span-4 xl:col-span-2 flex-col gap-4 h-[calc(100vh-8rem)]">
-            <div className="flex-1 bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700">
-              <ChatBox documentId={documentId} />
-            </div>
-            <button
-              onClick={() => setShowDesktopVersionHistory(true)}
-              className="w-full p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700 
-                hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors
-                flex items-center justify-between"
-            >
-              <span className="text-sm font-medium text-gray-900 dark:text-white">Version History</span>
-              <span className="text-xs text-gray-500 dark:text-gray-400">View all versions</span>
-            </button>
-            <div className="h-[200px] bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700">
-              <DocumentCollaborators documentId={documentId} />
+          <div className="hidden lg:flex lg:col-span-3 xl:col-span-3 flex-col gap-4">
+            <div className="sticky top-4 space-y-4">
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700 p-4">
+                <ChatBox documentId={documentId} />
+              </div>
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700">
+                <DocumentCollaborators documentId={documentId} />
+              </div>
+              <button
+                onClick={() => setShowDesktopVersionHistory(true)}
+                className="w-full p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700 
+                  hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors
+                  flex items-center justify-between"
+              >
+                <span className="text-sm font-medium">Version History</span>
+                <span className="text-xs text-gray-500">View all versions</span>
+              </button>
             </div>
           </div>
         </div>
