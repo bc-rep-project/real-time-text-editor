@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { EditorArea } from '@/components/EditorArea';
 import { ChatBox } from '@/components/ChatBox';
 import { VersionHistory } from '@/components/VersionHistory';
@@ -23,7 +23,9 @@ import { ExportDialog } from '@/components/ExportDialog';
 import { DocumentOutline } from '@/components/DocumentOutline';
 import { DocumentCollaborators } from '@/components/DocumentCollaborators';
 
-export default function DocumentPage({ params }: { params: { documentId: string } }) {
+export default function DocumentPage() {
+  const params = useParams();
+  const documentId = params?.documentId as string;
   const [isLoading, setIsLoading] = useState(true);
   const [content, setContent] = useState('');
   const [showVersionHistory, setShowVersionHistory] = useState(false);
@@ -76,11 +78,12 @@ export default function DocumentPage({ params }: { params: { documentId: string 
       <div className="flex-1 container mx-auto px-4 py-4 max-w-[1920px]">
         {/* Header Section */}
         <div className="mb-4">
-          <DocumentBreadcrumbs documentId={params.documentId} />
+          <DocumentBreadcrumbs documentId={documentId} />
           <div className="mt-2">
             <DocumentToolbar
-              onShareClick={() => setShowShareDialog(true)}
-              onExportClick={() => setShowExportDialog(true)}
+              onToggleComments={() => setActiveTab('comments')}
+              onToggleHistory={() => setShowDesktopVersionHistory(true)}
+              onToggleChat={() => setActiveTab('chat')}
             />
           </div>
         </div>
@@ -107,23 +110,26 @@ export default function DocumentPage({ params }: { params: { documentId: string 
               <div className="h-[calc(100%-40px)]">
                 {activeTab === 'editor' && (
                   <EditorArea
-                    documentId={params.documentId}
+                    documentId={documentId}
                     readOnly={false}
                     onContentChange={handleContentChange}
                     onEditorReady={handleEditorReady}
                   />
                 )}
                 {activeTab === 'preview' && (
-                  <DocumentPreview content={content} />
+                  <DocumentPreview 
+                    content={content} 
+                    documentId={documentId}
+                  />
                 )}
                 {activeTab === 'comments' && (
-                  <DocumentComments documentId={params.documentId} />
+                  <DocumentComments documentId={documentId} />
                 )}
               </div>
             </div>
             <div className="mt-4">
               <DocumentStats 
-                documentId={params.documentId}
+                documentId={documentId}
                 content={content}
               />
             </div>
@@ -132,7 +138,7 @@ export default function DocumentPage({ params }: { params: { documentId: string 
           {/* Right Sidebar */}
           <div className="hidden lg:flex lg:col-span-4 xl:col-span-2 flex-col gap-4 h-[calc(100vh-8rem)]">
             <div className="flex-1 bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700">
-              <ChatBox documentId={params.documentId} />
+              <ChatBox documentId={documentId} />
             </div>
             <button
               onClick={() => setShowDesktopVersionHistory(true)}
@@ -144,7 +150,7 @@ export default function DocumentPage({ params }: { params: { documentId: string 
               <span className="text-xs text-gray-500 dark:text-gray-400">View all versions</span>
             </button>
             <div className="h-[200px] bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700">
-              <DocumentCollaborators documentId={params.documentId} />
+              <DocumentCollaborators documentId={documentId} />
             </div>
           </div>
         </div>
@@ -172,7 +178,7 @@ export default function DocumentPage({ params }: { params: { documentId: string 
               </div>
               <div className="p-4 max-h-[70vh] overflow-y-auto">
                 <VersionHistory 
-                  documentId={params.documentId} 
+                  documentId={documentId} 
                   onRevert={(content) => {
                     handleRevert(content);
                     setShowDesktopVersionHistory(false);
@@ -187,7 +193,7 @@ export default function DocumentPage({ params }: { params: { documentId: string 
       {/* Mobile Navigation - Keep existing code */}
       <div className="lg:hidden">
         <MobileNavigation 
-          documentId={params.documentId}
+          documentId={documentId}
           onVersionHistoryClick={() => setShowVersionHistory(true)} 
         />
       </div>
@@ -195,7 +201,7 @@ export default function DocumentPage({ params }: { params: { documentId: string 
       {/* Dialogs - Keep existing code */}
       {showVersionHistory && (
         <MobileVersionHistory
-          documentId={params.documentId}
+          documentId={documentId}
           onRevert={handleRevert}
           onClose={() => setShowVersionHistory(false)}
         />
@@ -203,7 +209,7 @@ export default function DocumentPage({ params }: { params: { documentId: string 
 
       {showShareDialog && (
         <ShareDialog
-          documentId={params.documentId}
+          documentId={documentId}
           isOpen={showShareDialog}
           onClose={() => setShowShareDialog(false)}
         />
