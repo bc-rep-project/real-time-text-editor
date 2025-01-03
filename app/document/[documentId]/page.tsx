@@ -98,18 +98,8 @@ export default function DocumentPage() {
 
         {/* Three Column Layout */}
         <div className="grid grid-cols-12 gap-6">
-          {/* Left Sidebar - Document Outline */}
-          <div className="hidden xl:block col-span-2">
-            <div className="sticky top-20">
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700 p-4">
-                <h3 className="text-sm font-medium mb-3">Document Outline</h3>
-                <DocumentOutline />
-              </div>
-            </div>
-          </div>
-
-          {/* Main Editor Area */}
-          <div className="col-span-12 xl:col-span-7 lg:col-span-8">
+          {/* Main Editor Area - Adjust column span */}
+          <div className="col-span-12 lg:col-span-8">
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700 overflow-hidden">
               <DocumentTabs
                 activeTab={activeTab}
@@ -149,9 +139,18 @@ export default function DocumentPage() {
             </div>
           </div>
 
-          {/* Right Sidebar */}
-          <div className="hidden lg:block lg:col-span-4 xl:col-span-3">
+          {/* Right Sidebar - Update with Document Outline */}
+          <div className="hidden lg:block lg:col-span-4">
             <div className="sticky top-20 space-y-4">
+              {/* Document Outline */}
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700">
+                <div className="p-4 border-b dark:border-gray-700">
+                  <h3 className="text-sm font-medium">Document Outline</h3>
+                </div>
+                <DocumentOutline />
+              </div>
+
+              {/* Chat */}
               <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700">
                 <div className="p-4 border-b dark:border-gray-700">
                   <h3 className="text-sm font-medium">Chat</h3>
@@ -159,6 +158,7 @@ export default function DocumentPage() {
                 <ChatBox documentId={documentId} />
               </div>
 
+              {/* Collaborators */}
               <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700">
                 <div className="p-4 border-b dark:border-gray-700">
                   <h3 className="text-sm font-medium">Collaborators</h3>
@@ -166,6 +166,7 @@ export default function DocumentPage() {
                 <DocumentCollaborators documentId={documentId} />
               </div>
 
+              {/* Version History Button */}
               <button
                 onClick={() => setShowDesktopVersionHistory(true)}
                 className="w-full p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700 
