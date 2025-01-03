@@ -4,6 +4,7 @@ import { AuthProvider } from '@/components/AuthProvider';
 import './globals.css';
 import { Navigation } from '@/components/Navigation';
 import { ThemeProvider } from '@/components/ThemeProvider';
+import { WebSocketProvider } from '@/contexts/WebSocketContext';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -22,10 +23,12 @@ export default function RootLayout({
       <body className={inter.className}>
         <ThemeProvider>
           <AuthProvider>
-            <Navigation />
-            <main className="min-h-screen">
-              {children}
-            </main>
+            <WebSocketProvider>
+              <Navigation />
+              <main className="min-h-screen">
+                {children}
+              </main>
+            </WebSocketProvider>
           </AuthProvider>
         </ThemeProvider>
       </body>
