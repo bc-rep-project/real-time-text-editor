@@ -1,29 +1,33 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { EditorArea } from '@/components/EditorArea';
-import { ChatBox } from '@/components/ChatBox';
-import { VersionHistory } from '@/components/VersionHistory';
-import { UserPresenceIndicator } from '@/components/UserPresenceIndicator';
-import { LoadingSpinner } from '@/components/LoadingSpinner';
-import { ErrorMessage } from '@/components/ErrorMessage';
-import type { Document } from '@/types/database';
-import { MobileNavigation } from '@/components/MobileNavigation';
-import { MobileVersionHistory } from '@/components/MobileVersionHistory';
 import { DocumentBreadcrumbs } from '@/components/DocumentBreadcrumbs';
 import { DocumentToolbar } from '@/components/DocumentToolbar';
+import { DocumentCollaborators } from '@/components/DocumentCollaborators';
+import { DocumentComments } from '@/components/DocumentComments';
+import { DocumentHistory } from '@/components/DocumentHistory';
+import { DocumentStats } from '@/components/DocumentStats';
+import { AutoSaveStatus } from '@/components/AutoSaveStatus';
+import { UserPresenceIndicator } from '@/components/UserPresenceIndicator';
+import { ChatBox } from '@/components/ChatBox';
+import { MobileNavigation } from '@/components/MobileNavigation';
+import { useWebSocket } from '@/hooks/useWebSocket';
+import { useAuth } from '@/hooks/useAuth';
+import { DocumentCollaboratorsManager } from '@/components/DocumentCollaboratorsManager';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import { DocumentOutline } from '@/components/DocumentOutline';
 import { DocumentTabs } from '@/components/DocumentTabs';
 import { DocumentPreview } from '@/components/DocumentPreview';
-import { DocumentStats } from '@/components/DocumentStats';
-import { DocumentComments } from '@/components/DocumentComments';
+import { VersionHistory } from '@/components/VersionHistory';
+import { MobileVersionHistory } from '@/components/MobileVersionHistory';
 import { ShareDialog } from '@/components/ShareDialog';
-import { ExportDialog } from '@/components/ExportDialog';
-import { DocumentOutline } from '@/components/DocumentOutline';
-import { DocumentCollaborators } from '@/components/DocumentCollaborators';
 
-export default function DocumentPage({ params }: { params: { documentId: string } }) {
+export default function DocumentPage() {
+  const params = useParams();
+  const documentId = params?.documentId as string;
   const [isLoading, setIsLoading] = useState(true);
   const [content, setContent] = useState('');
   const [showVersionHistory, setShowVersionHistory] = useState(false);
@@ -76,7 +80,7 @@ export default function DocumentPage({ params }: { params: { documentId: string 
       <div className="flex-1 container mx-auto px-4 py-4 max-w-[1920px]">
         {/* Header Section */}
         <div className="mb-4">
-          <DocumentBreadcrumbs documentId={params.documentId} />
+          <DocumentBreadcrumbs documentId={documentId} />
           <div className="mt-2">
             <DocumentToolbar
               onShareClick={() => setShowShareDialog(true)}
@@ -107,7 +111,7 @@ export default function DocumentPage({ params }: { params: { documentId: string 
               <div className="h-[calc(100%-40px)]">
                 {activeTab === 'editor' && (
                   <EditorArea
-                    documentId={params.documentId}
+                    documentId={documentId}
                     readOnly={false}
                     onContentChange={handleContentChange}
                     onEditorReady={handleEditorReady}
@@ -117,13 +121,13 @@ export default function DocumentPage({ params }: { params: { documentId: string 
                   <DocumentPreview content={content} />
                 )}
                 {activeTab === 'comments' && (
-                  <DocumentComments documentId={params.documentId} />
+                  <DocumentComments documentId={documentId} />
                 )}
               </div>
             </div>
             <div className="mt-4">
               <DocumentStats 
-                documentId={params.documentId}
+                documentId={documentId}
                 content={content}
               />
             </div>
@@ -132,7 +136,7 @@ export default function DocumentPage({ params }: { params: { documentId: string 
           {/* Right Sidebar */}
           <div className="hidden lg:flex lg:col-span-4 xl:col-span-2 flex-col gap-4 h-[calc(100vh-8rem)]">
             <div className="flex-1 bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700">
-              <ChatBox documentId={params.documentId} />
+              <ChatBox documentId={documentId} />
             </div>
             <button
               onClick={() => setShowDesktopVersionHistory(true)}
@@ -144,7 +148,7 @@ export default function DocumentPage({ params }: { params: { documentId: string 
               <span className="text-xs text-gray-500 dark:text-gray-400">View all versions</span>
             </button>
             <div className="h-[200px] bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700">
-              <DocumentCollaborators documentId={params.documentId} />
+              <DocumentCollaborators documentId={documentId} />
             </div>
           </div>
         </div>
@@ -172,7 +176,7 @@ export default function DocumentPage({ params }: { params: { documentId: string 
               </div>
               <div className="p-4 max-h-[70vh] overflow-y-auto">
                 <VersionHistory 
-                  documentId={params.documentId} 
+                  documentId={documentId} 
                   onRevert={(content) => {
                     handleRevert(content);
                     setShowDesktopVersionHistory(false);
@@ -187,7 +191,7 @@ export default function DocumentPage({ params }: { params: { documentId: string 
       {/* Mobile Navigation - Keep existing code */}
       <div className="lg:hidden">
         <MobileNavigation 
-          documentId={params.documentId}
+          documentId={documentId}
           onVersionHistoryClick={() => setShowVersionHistory(true)} 
         />
       </div>
@@ -195,7 +199,7 @@ export default function DocumentPage({ params }: { params: { documentId: string 
       {/* Dialogs - Keep existing code */}
       {showVersionHistory && (
         <MobileVersionHistory
-          documentId={params.documentId}
+          documentId={documentId}
           onRevert={handleRevert}
           onClose={() => setShowVersionHistory(false)}
         />
@@ -203,7 +207,7 @@ export default function DocumentPage({ params }: { params: { documentId: string 
 
       {showShareDialog && (
         <ShareDialog
-          documentId={params.documentId}
+          documentId={documentId}
           isOpen={showShareDialog}
           onClose={() => setShowShareDialog(false)}
         />
