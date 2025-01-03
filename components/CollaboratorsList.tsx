@@ -55,7 +55,7 @@ export function CollaboratorsList({ documentId }: { documentId: string }) {
 
   if (isLoading) return <LoadingSpinner />;
   if (error) return <ErrorMessage message={error} />;
-
+  
   return (
     <div className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
       <h3 className="font-medium mb-4">Collaborators</h3>
