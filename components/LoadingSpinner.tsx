@@ -1,3 +1,5 @@
+'use client';
+
 export function LoadingSpinner({ size = 'medium' }: { size?: 'small' | 'medium' | 'large' }) {
   const sizeClasses = {
     small: 'h-4 w-4',

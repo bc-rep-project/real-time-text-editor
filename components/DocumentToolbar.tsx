@@ -10,11 +10,18 @@ interface ToolbarButton {
 }
 
 interface DocumentToolbarProps {
-  onShareClick: () => void;
-  onExportClick: () => void;
+  onToggleComments: () => void;
+  onToggleHistory: () => void;
+  onToggleChat: () => void;
+  onManageCollaborators: () => void;
 }
 
-export function DocumentToolbar({ onShareClick, onExportClick }: DocumentToolbarProps) {
+export function DocumentToolbar({
+  onToggleComments,
+  onToggleHistory,
+  onToggleChat,
+  onManageCollaborators
+}: DocumentToolbarProps) {
   const [fontSize, setFontSize] = useState('16px');
   const [fontFamily, setFontFamily] = useState('default');
 

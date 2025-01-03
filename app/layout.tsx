@@ -4,6 +4,7 @@ import { AuthProvider } from '@/components/AuthProvider';
 import './globals.css';
 import { Navigation } from '@/components/Navigation';
 import { ThemeProvider } from '@/components/ThemeProvider';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -21,12 +22,14 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
         <ThemeProvider>
-          <AuthProvider>
-            <Navigation />
-            <main className="min-h-screen">
-              {children}
-            </main>
-          </AuthProvider>
+          <ErrorBoundary>
+            <AuthProvider>
+              <Navigation />
+              <main className="min-h-screen">
+                {children}
+              </main>
+            </AuthProvider>
+          </ErrorBoundary>
         </ThemeProvider>
       </body>
     </html>

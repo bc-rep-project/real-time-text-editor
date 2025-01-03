@@ -4,10 +4,17 @@ import { useState, useEffect } from 'react';
 
 interface DocumentStatsProps {
   documentId: string;
-  content: string;
+  content?: string;
+}
+
+async function fetchDocumentContent(documentId: string): Promise<string> {
+  const response = await fetch(`/api/documents/${documentId}`);
+  const data = await response.json();
+  return data.content;
 }
 
 export function DocumentStats({ documentId, content }: DocumentStatsProps) {
+  const [documentContent, setDocumentContent] = useState(content || '');
   const [stats, setStats] = useState({
     wordCount: 0,
     readingTime: 0,
@@ -15,9 +22,16 @@ export function DocumentStats({ documentId, content }: DocumentStatsProps) {
   });
 
   useEffect(() => {
+    if (!content) {
+      // Fetch content if not provided
+      fetchDocumentContent(documentId).then(setDocumentContent);
+    }
+  }, [documentId, content]);
+
+  useEffect(() => {
     const calculateStats = () => {
       // Calculate word count
-      const words = content
+      const words = documentContent
         .replace(/<[^>]*>/g, '') // Remove HTML tags
         .trim()
         .split(/\s+/)
@@ -39,7 +53,7 @@ export function DocumentStats({ documentId, content }: DocumentStatsProps) {
     };
 
     calculateStats();
-  }, [documentId, content]);
+  }, [documentId, documentContent]);
 
   return (
     <div className="grid grid-cols-3 gap-4 p-4 bg-white dark:bg-gray-800 rounded-lg">

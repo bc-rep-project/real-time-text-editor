@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import config from '@/config';
+import { getToken } from 'next-auth/jwt';
 
 interface WebSocketMessage {
   type: 'documentUpdate' | 'chatMessage' | 'userPresence';
@@ -17,50 +18,35 @@ export function useWebSocket(documentId: string) {
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout>();
   const messageHandlersRef = useRef<Set<MessageHandler>>(new Set());
+  const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'disconnected'>('disconnected');
+  const [error, setError] = useState<string | null>(null);
 
-  const connect = useCallback(() => {
-    if (wsRef.current?.readyState === WebSocket.OPEN) return;
+  const connect = useCallback(async () => {
+    if (!session?.user) return;
 
-    const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = `${wsProtocol}//${process.env.NEXT_PUBLIC_WS_URL}/ws?documentId=${documentId}`;
-    const ws = new WebSocket(wsUrl);
-    wsRef.current = ws;
+    try {
+      const response = await fetch('/api/auth/token');
+      const { token } = await response.json();
+      
+      const ws = new WebSocket(
+        `${config.websocket.url}?documentId=${documentId}&token=${token}`
+      );
+      
+      ws.onopen = () => {
+        setConnectionStatus('connected');
+        setError(null);
+      };
 
-    ws.onopen = () => {
-      console.log('WebSocket connected');
-      // Send initial presence
-      if (session?.user) {
-        ws.send(JSON.stringify({
-          type: 'userPresence',
-          documentId,
-          data: {
-            userId: session.user.id,
-            username: session.user.name,
-            action: 'join'
-          }
-        }));
-      }
-    };
+      ws.onerror = (error) => {
+        setError('WebSocket connection error');
+        setConnectionStatus('disconnected');
+      };
 
-    ws.onclose = () => {
-      console.log('WebSocket disconnected, attempting to reconnect...');
-      // Attempt to reconnect after delay
-      reconnectTimeoutRef.current = setTimeout(connect, config.websocket.reconnectDelay);
-    };
-
-    ws.onerror = (error) => {
-      console.error('WebSocket error:', error);
-    };
-
-    ws.onmessage = (event) => {
-      messageHandlersRef.current.forEach(handler => {
-        try {
-          handler(event);
-        } catch (error) {
-          console.error('Error in message handler:', error);
-        }
-      });
-    };
+      wsRef.current = ws;
+    } catch (error) {
+      setError('Failed to establish WebSocket connection');
+      setConnectionStatus('disconnected');
+    }
   }, [documentId, session]);
 
   // Connect on mount and reconnect on session/documentId change
@@ -112,10 +98,13 @@ export function useWebSocket(documentId: string) {
     };
   }, []);
 
+  // Return connection status and error
   return {
     sendMessage,
     addMessageListener,
     reconnect: connect,
+    connectionStatus,
+    error,
     isConnected: wsRef.current?.readyState === WebSocket.OPEN
   };
 } 
