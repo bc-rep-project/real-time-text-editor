@@ -74,31 +74,42 @@ export default function DocumentPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <div className="flex-1 container mx-auto px-4 py-4 max-w-[1920px]">
-        {/* Header Section */}
-        <div className="mb-4">
-          <DocumentBreadcrumbs documentId={documentId} />
-          <div className="mt-2">
-            <DocumentToolbar
-              onToggleComments={() => setActiveTab('comments')}
-              onToggleHistory={() => setShowDesktopVersionHistory(true)}
-              onToggleChat={() => setActiveTab('chat')}
-            />
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      {/* Top Navigation Bar */}
+      <div className="sticky top-0 z-40 bg-white dark:bg-gray-800 border-b dark:border-gray-700 shadow-sm">
+        <div className="container mx-auto px-4 py-2">
+          <div className="flex items-center justify-between">
+            <DocumentBreadcrumbs documentId={documentId} />
+            <UserPresenceIndicator documentId={documentId} />
           </div>
         </div>
+      </div>
 
-        {/* Main Content Grid */}
+      {/* Main Content */}
+      <div className="container mx-auto px-4 py-6">
         <div className="grid grid-cols-12 gap-6">
-          {/* Left Sidebar - Document Outline */}
+          {/* Left Sidebar */}
           <div className="hidden xl:block col-span-2">
-            <div className="sticky top-4">
-              <DocumentOutline />
+            <div className="sticky top-20 space-y-4">
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700 p-4">
+                <h3 className="text-sm font-semibold mb-3">Document Outline</h3>
+                <DocumentOutline />
+              </div>
             </div>
           </div>
 
           {/* Main Editor Area */}
-          <div className="col-span-12 lg:col-span-7 xl:col-span-7">
+          <div className="col-span-12 xl:col-span-7 lg:col-span-8 space-y-4">
+            {/* Toolbar */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700">
+              <DocumentToolbar
+                onToggleComments={() => setActiveTab('comments')}
+                onToggleHistory={() => setShowDesktopVersionHistory(true)}
+                onToggleChat={() => setActiveTab('chat')}
+              />
+            </div>
+
+            {/* Editor/Preview/Comments */}
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700 overflow-hidden">
               <DocumentTabs
                 activeTab={activeTab}
@@ -109,7 +120,7 @@ export default function DocumentPage() {
                   { id: 'comments', label: 'Comments' }
                 ]}
               />
-              <div className="h-[calc(100vh-16rem)]">
+              <div className="h-[calc(100vh-12rem)]">
                 {activeTab === 'editor' && (
                   <EditorArea
                     documentId={documentId}
@@ -129,7 +140,9 @@ export default function DocumentPage() {
                 )}
               </div>
             </div>
-            <div className="mt-4">
+
+            {/* Document Stats */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700 p-4">
               <DocumentStats 
                 documentId={documentId}
                 content={content}
@@ -138,29 +151,56 @@ export default function DocumentPage() {
           </div>
 
           {/* Right Sidebar */}
-          <div className="hidden lg:flex lg:col-span-3 xl:col-span-3 flex-col gap-4">
-            <div className="sticky top-4 space-y-4">
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700 p-4">
-                <ChatBox documentId={documentId} />
-              </div>
+          <div className="hidden lg:block lg:col-span-4 xl:col-span-3">
+            <div className="sticky top-20 space-y-4">
+              {/* Chat */}
               <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700">
+                <div className="p-4 border-b dark:border-gray-700">
+                  <h3 className="text-sm font-semibold">Chat</h3>
+                </div>
+                <div className="h-[400px]">
+                  <ChatBox documentId={documentId} />
+                </div>
+              </div>
+
+              {/* Collaborators */}
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700">
+                <div className="p-4 border-b dark:border-gray-700">
+                  <h3 className="text-sm font-semibold">Collaborators</h3>
+                </div>
                 <DocumentCollaborators documentId={documentId} />
               </div>
+
+              {/* Version History Button */}
               <button
                 onClick={() => setShowDesktopVersionHistory(true)}
                 className="w-full p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700 
-                  hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors
-                  flex items-center justify-between"
+                  hover:bg-gray-100 dark:hover:bg-gray-750 transition-colors
+                  flex items-center justify-between group"
               >
-                <span className="text-sm font-medium">Version History</span>
-                <span className="text-xs text-gray-500">View all versions</span>
+                <div>
+                  <span className="text-sm font-medium">Version History</span>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">View and restore previous versions</p>
+                </div>
+                <svg className="w-5 h-5 text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-400" 
+                  fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
               </button>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Desktop Version History Modal */}
+      {/* Mobile Navigation */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t dark:border-gray-700">
+        <MobileNavigation 
+          documentId={documentId}
+          onVersionHistoryClick={() => setShowVersionHistory(true)} 
+        />
+      </div>
+
+      {/* Modals */}
       {showDesktopVersionHistory && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="fixed inset-0 bg-black/30 backdrop-blur-sm" 
@@ -168,9 +208,7 @@ export default function DocumentPage() {
           <div className="relative min-h-screen flex items-center justify-center p-4">
             <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-2xl">
               <div className="flex items-center justify-between p-4 border-b dark:border-gray-700">
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  Version History
-                </h2>
+                <h2 className="text-lg font-semibold">Version History</h2>
                 <button
                   onClick={() => setShowDesktopVersionHistory(false)}
                   className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
@@ -194,28 +232,20 @@ export default function DocumentPage() {
         </div>
       )}
 
-      {/* Mobile Navigation - Keep existing code */}
-      <div className="lg:hidden">
-        <MobileNavigation 
-          documentId={documentId}
-          onVersionHistoryClick={() => setShowVersionHistory(true)} 
-        />
-      </div>
-
-      {/* Dialogs - Keep existing code */}
-      {showVersionHistory && (
-        <MobileVersionHistory
-          documentId={documentId}
-          onRevert={handleRevert}
-          onClose={() => setShowVersionHistory(false)}
-        />
-      )}
-
+      {/* Other Modals */}
       {showShareDialog && (
         <ShareDialog
           documentId={documentId}
           isOpen={showShareDialog}
           onClose={() => setShowShareDialog(false)}
+        />
+      )}
+
+      {showVersionHistory && (
+        <MobileVersionHistory
+          documentId={documentId}
+          onRevert={handleRevert}
+          onClose={() => setShowVersionHistory(false)}
         />
       )}
     </div>
