@@ -10,13 +10,17 @@ interface ToolbarButton {
 }
 
 interface DocumentToolbarProps {
-  onToggleComments: () => void;
-  onToggleHistory: () => void;
-  onToggleChat: () => void;
-  onManageCollaborators: () => void;
+  onShareClick: () => void;
+  onExportClick: () => void;
+  onToggleComments?: () => void;
+  onToggleHistory?: () => void;
+  onToggleChat?: () => void;
+  onManageCollaborators?: () => void;
 }
 
 export function DocumentToolbar({
+  onShareClick,
+  onExportClick,
   onToggleComments,
   onToggleHistory,
   onToggleChat,
