@@ -100,7 +100,7 @@ export default function DocumentPage() {
         <div className="grid grid-cols-12 gap-6">
           {/* Main Editor Area - Adjust column span */}
           <div className="col-span-12 lg:col-span-8">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700 overflow-hidden">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700 overflow-hidden h-full flex flex-col">
               <DocumentTabs
                 activeTab={activeTab}
                 onTabChange={handleTabChange}
@@ -110,7 +110,7 @@ export default function DocumentPage() {
                   { id: 'comments', label: 'Comments' }
                 ]}
               />
-              <div className="h-[calc(100vh-12rem)]">
+              <div className="flex-1 min-h-0">
                 {activeTab === 'editor' && (
                   <EditorArea
                     documentId={documentId}
@@ -129,13 +129,12 @@ export default function DocumentPage() {
                   <DocumentComments documentId={documentId} />
                 )}
               </div>
-            </div>
-
-            <div className="mt-4">
-              <DocumentStats 
-                documentId={documentId}
-                content={content}
-              />
+              <div className="border-t dark:border-gray-700 p-4 bg-gray-50 dark:bg-gray-800/50">
+                <DocumentStats 
+                  documentId={documentId}
+                  content={content}
+                />
+              </div>
             </div>
           </div>
 
